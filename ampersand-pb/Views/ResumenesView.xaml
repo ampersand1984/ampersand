@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="ampersand_pb.Views.ResumenesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <ItemsControl ItemsSource="{Binding Resumenes}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <WrapPanel/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Button Margin="10"
+                        Command="{Binding Path=DataContext.SeleccionarResumenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        CommandParameter="{Binding}">
+                    <Button.Content>
+                        <StackPanel>
+                            <TextBlock Text="{Binding TextoPeriodo}" FontSize="14" FontWeight="Bold" Margin="5"/>
+                            <TextBlock Text="{Binding FechaDeCierre, StringFormat='{}{0:dd/MM/yyyy}'}" FontSize="10" Margin="5"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

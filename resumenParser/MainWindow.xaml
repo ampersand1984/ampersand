@@ -1,0 +1,67 @@
+﻿<Window x:Class="ResumenParser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="600" Width="800">
+    <TabControl>
+        <TabItem Header="FileLines">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Período:" Margin="5"/>
+                    <TextBox Text="{Binding Periodo}" Margin="5"/>
+                    <TextBlock Text="Fecha de cierre:" Margin="5"/>
+                    <TextBox Text="{Binding FechaDeCierre}" Margin="5"/>
+                    <Button Content="Convertir" Command="{Binding ConvertirCommand}" MinWidth="100"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Margin="5"/>
+                </StackPanel>
+                <TextBox Text="{Binding ResumenText}" Grid.Row="1" Grid.ColumnSpan="2"
+                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                     TextWrapping="Wrap" AcceptsReturn="True"/>
+            </Grid>
+
+        </TabItem>
+        <TabItem Header="Xml">
+            <TextBox Text="{Binding ParserResult}"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        </TabItem>
+        <TabItem Header="Grid">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <DataGrid Grid.RowSpan="2" Grid.Column="0" ItemsSource="{Binding Movimientos}" x:Name="dataGrid"
+                              CellEditEnding="DataGrid_CellEditEnding"
+                              ScrollViewer.CanContentScroll="True" 
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                        </Style>
+                    </DataGrid.RowStyle>
+                </DataGrid>
+                <StackPanel Grid.Column="1" Margin="10, 0">
+                    <TextBlock Text="Tags"/>
+                    <ListBox ItemsSource="{Binding Tags}" SelectionMode="Multiple" SelectedItem="{Binding SelectedTags}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListBoxItem}">
+                                <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                    <Button Content="Aplicar tags" Command="{Binding AplicarTagsCommand}" MinWidth="100"/>
+                </StackPanel>
+                <Button Grid.Column="1" Grid.Row="1" Content="Guardar" Command="{Binding SaveCommand}" MinWidth="100"
+                        VerticalAlignment="Bottom"/>
+            </Grid>
+        </TabItem>
+    </TabControl>
+</Window>

@@ -1,0 +1,18 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:V="clr-namespace:ampersand_pb.Views"
+                    xmlns:VM="clr-namespace:ampersand_pb.ViewModels">
+
+    <!--<DataTemplate DataType="{x:Type VM:CalendarioViewModel}">
+        <V:CalendarioV/>
+    </DataTemplate>-->
+
+    <DataTemplate DataType="{x:Type VM:MovimientosViewModel}">
+        <V:MovimientosView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type VM:ResumenesViewModel}">
+        <V:ResumenesView/>
+    </DataTemplate>
+
+</ResourceDictionary>

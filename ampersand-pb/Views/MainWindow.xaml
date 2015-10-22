@@ -1,0 +1,46 @@
+﻿<Window x:Class="ampersand_pb.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="&amp;pb" Width="800" Height="600">
+
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding CloseCurrentMainWindowItemCommand}" />
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="5*"/>
+        </Grid.ColumnDefinitions>
+        <ItemsControl Grid.Column="0" ItemsSource="{Binding ActionList}">
+            <ItemsControl.ItemsPanel>                
+                <ItemsPanelTemplate>
+                    <StackPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Content="{Binding Description}"
+                            Command="{Binding Command}"
+                            Margin="10"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        
+        <TabControl Grid.Column="1"
+                    ItemsSource="{Binding MainWindowItems}"
+                    SelectedItem="{Binding CurrentMainWindowItem}">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}"/>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <ContentControl Content="{Binding}"/>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+        
+    </Grid>
+</Window>
