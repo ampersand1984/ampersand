@@ -41,7 +41,7 @@ namespace ampersand_pb.Models
         private string _descripcionAdicional;
         public string DescripcionAdicional
         {
-            get { return _descripcionAdicional; }
+            get { return _descripcionAdicional ?? string.Empty; }
             set { _descripcionAdicional = value; OnPropertyChanged("DescripcionAdicional"); }
         }        
 

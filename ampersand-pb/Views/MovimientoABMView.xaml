@@ -20,6 +20,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid.Resources>
@@ -67,5 +68,12 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+
+        <Button Content="Guardar" 
+                Command="{Binding SaveCommand}"
+                Grid.Column="1"
+                Grid.Row="9"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Right"/>
     </Grid>
 </UserControl>

@@ -167,6 +167,11 @@
                     Grid.Row="2"
                     VerticalAlignment="Bottom"
                     Margin="10"/>
+                <Button Content="Guardar cambios"
+                    Command="{Binding SaveCommand}"
+                    Grid.Row="2"
+                    VerticalAlignment="Bottom"
+                    Margin="10"/>
             </StackPanel>
         </Grid>
     </Grid>

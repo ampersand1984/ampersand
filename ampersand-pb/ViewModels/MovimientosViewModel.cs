@@ -30,6 +30,7 @@ namespace ampersand_pb.ViewModels
         }
 
         private bool _esProyeccion;
+        private bool _huboCambios;
 
         private IMovimientosDataAccess _movimientosDA;
         private ResumenModel _resumenM;
@@ -108,7 +109,7 @@ namespace ampersand_pb.ViewModels
         private ICommand _editarMovimientoCommand;
         public ICommand EditarMovimientoCommand
         {
-            get { return _editarMovimientoCommand ?? (_editarMovimientoCommand = new RelayCommand(param => this.EditarMovimientoCommandExecute())); }
+            get { return _editarMovimientoCommand ?? (_editarMovimientoCommand = new RelayCommand(param => this.EditarMovimientoCommandExecute(), param => EditarMovimientoCommandCanExecute())); }
         }
 
         private ICommand _importarInfoDeResumenAnteriorCommand;
@@ -122,6 +123,28 @@ namespace ampersand_pb.ViewModels
             }
         }
 
+        private ICommand _saveCommand;
+        public ICommand SaveCommand
+        {
+            get
+            {
+                if (_saveCommand == null)
+                    _saveCommand = new RelayCommand(param => SaveCommandExecute(), param => SaveCommandCanExecute());
+                return _saveCommand;
+            }
+        }
+
+        private bool SaveCommandCanExecute()
+        {
+            return _huboCambios && _esProyeccion == false;
+        }
+
+        private void SaveCommandExecute()
+        {
+            _movimientosDA.SaveMovimientos(_resumenM, Movimientos);
+            _huboCambios = false;
+        }        
+
         private bool ImportarInfoDeResumenAnteriorCommandCanExecute()
         {
             return EsElUtimoMes && _esProyeccion == false;
@@ -130,6 +153,9 @@ namespace ampersand_pb.ViewModels
         private void ImportarInfoDeResumenAnteriorCommandExecute()
         {
             var movimientosAnteriores = _movimientosDA.GetMovimientosDeResumenAnterior(_resumenM.FechaDeCierre);
+
+            var movimientosActualizados = new List<BaseMovimiento>();
+
             foreach (var movAnterior in movimientosAnteriores)
             {
                 var movActual = Movimientos.FirstOrDefault(a => a.IdMovimiento.Equals(movAnterior.IdMovimiento) &&
@@ -140,10 +166,27 @@ namespace ampersand_pb.ViewModels
                     movActual.DescripcionAdicional = movAnterior.DescripcionAdicional;
                     movActual.EsMensual = movAnterior.EsMensual;
                     movActual.EsAjeno = movAnterior.EsAjeno;
-                }                
+
+                    movimientosActualizados.Add(movActual);
+                }
+                else
+                {
+                    movActual = Movimientos.Except(movimientosActualizados)
+                                           .FirstOrDefault(a => a.Descripcion.Equals(movAnterior.Descripcion));
+                    if (movActual != null)
+                    {
+                        movActual.Tags = movAnterior.Tags;
+                        movActual.DescripcionAdicional = movAnterior.DescripcionAdicional;
+                        movActual.EsMensual = movAnterior.EsMensual;
+                        movActual.EsAjeno = movAnterior.EsAjeno;
+
+                        movimientosActualizados.Add(movActual);
+                    }
+                }
             }
+
+            _huboCambios = true;
         }
-        
 
         protected override void OnRequestCloseEvent()
         {
@@ -151,6 +194,11 @@ namespace ampersand_pb.ViewModels
                 EditVM.CloseCommand.Execute(null);
             else
                 base.OnRequestCloseEvent();
+        }
+
+        private bool EditarMovimientoCommandCanExecute()
+        {
+            return _esProyeccion == false;
         }
 
         private void EditarMovimientoCommandExecute()
@@ -161,12 +209,24 @@ namespace ampersand_pb.ViewModels
 
                 var baseMovimiento = Movimientos.ElementAt(SelectedIndex);
                 var movimientoABMVM = new MovimientoABMViewModel(baseMovimiento, tags);
-                movimientoABMVM.CloseEvent += (sender, e) =>
-                    {
-                        EditVM = null;
-                    };
+                movimientoABMVM.CloseEvent += MovimientoABMVM_CloseEvent;
+                movimientoABMVM.SaveEvent += MovimientoABMVM_SaveEvent;
                 EditVM = movimientoABMVM;
             }
+        }
+
+        private void MovimientoABMVM_SaveEvent(object sender, EventArgs e)
+        {
+            var movimientoABMVM = sender as MovimientoABMViewModel;
+            movimientoABMVM.CloseEvent -= MovimientoABMVM_CloseEvent;
+            movimientoABMVM.SaveEvent -= MovimientoABMVM_SaveEvent;
+            movimientoABMVM = null;
+        }
+
+        private void MovimientoABMVM_CloseEvent(object sender, EventArgs e)
+        {
+            EditVM = null;
+            _huboCambios = true;
         }
 
         private bool ProyectarCommandCanExecute()
@@ -235,7 +295,7 @@ namespace ampersand_pb.ViewModels
                     }
                 }
             }
-            _agrupaciones = tags.OrderBy(a => a.Descripcion);
+            _agrupaciones = tags.OrderByDescending(a => a.Monto);
         }
 
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;

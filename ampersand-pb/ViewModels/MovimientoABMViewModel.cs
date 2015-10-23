@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using ampersand.Core;
 using ampersand_pb.Models;
+using System.Windows.Input;
+using ampersand.Core.Common;
 
 namespace ampersand_pb.ViewModels
 {
@@ -87,5 +89,41 @@ namespace ampersand_pb.ViewModels
 
             return tags.OrderByDescending(a => a.Seleccionada).ThenBy(a => a.Tag);
         }
+
+        private ICommand _saveCommand;
+        public ICommand SaveCommand
+        {
+            get
+            {
+                if (_saveCommand == null)
+                    _saveCommand = new RelayCommand(para => SaveCommandExecute(), param => SaveCommandCanExecute());
+                return _saveCommand;
+            }
+        }
+
+        private bool SaveCommandCanExecute()
+        {
+            return true;
+        }
+
+        private void SaveCommandExecute()
+        {
+            _modelOriginal.DescripcionAdicional = _model.DescripcionAdicional;
+            _modelOriginal.Monto = _model.Monto;
+            _modelOriginal.EsMensual = _model.EsMensual;
+            _modelOriginal.EsAjeno = _model.EsAjeno;
+            _modelOriginal.Tags = this.Tags.Where(a => a.Seleccionada).Select(a => a.Tag).ToList();
+            
+            CloseCommand.Execute(null);
+        }
+
+        public event EventHandler<EventArgs> SaveEvent;
+        private void OnSaveEvent()
+        {
+            var handler = this.SaveEvent;
+            if (handler != null)
+                handler(this, EventArgs.Empty);
+        }
+        
     }
 }

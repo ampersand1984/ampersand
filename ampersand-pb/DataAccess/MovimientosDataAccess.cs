@@ -176,6 +176,39 @@ namespace ampersand_pb.DataAccess
 
             return resultado;
         }
+
+        public void SaveMovimientos(ResumenModel resumenM, IEnumerable<BaseMovimiento> movimientos)
+        {
+            var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo)));
+
+            foreach (var mov in movimientos)
+            {
+                var xMov = new XElement("Mov", new XAttribute("Tipo", mov.Tipo),
+                                               new XAttribute("IdMovimiento", mov.IdMovimiento),
+                                               new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
+                                               new XAttribute("Descripcion", mov.Descripcion),
+                                               new XAttribute("Monto", mov.Monto));
+
+                if (mov.DescripcionAdicional.Length > 0)
+                    xMov.Add(new XAttribute("DescripcionAdicional", mov.DescripcionAdicional));
+
+                if (mov.Cuota.Length > 0)
+                    xMov.Add(new XAttribute("Cuota", mov.Cuota));
+
+                if (mov.Tags.Any())
+                    xMov.Add(new XAttribute("Tags", string.Join(";", mov.Tags)));
+
+                if (mov.EsMensual)
+                    xMov.Add(new XAttribute("EsMensual", mov.EsMensual));
+
+                if (mov.EsAjeno)
+                    xMov.Add(new XAttribute("EsAjeno", mov.EsAjeno));
+
+                xdoc.Root.Add(xMov);
+            }
+
+            xdoc.Save(resumenM.FilePath);
+        }
     }
 
     public interface IMovimientosDataAccess
@@ -184,5 +217,7 @@ namespace ampersand_pb.DataAccess
         IEnumerable<BaseMovimiento> GetMovimientos(string file, string periodo);
 
         IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(DateTime fechaCierreActual);
+
+        void SaveMovimientos(ResumenModel resumenM, IEnumerable<BaseMovimiento> movimientos);
     }
 }
