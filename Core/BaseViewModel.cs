@@ -37,7 +37,7 @@ namespace ampersand.Core
         }
                     
         public event EventHandler CloseEvent;
-        protected void OnRequestCloseEvent()
+        protected virtual void OnRequestCloseEvent()
         {
             EventHandler handler = this.CloseEvent;
             if (handler != null)

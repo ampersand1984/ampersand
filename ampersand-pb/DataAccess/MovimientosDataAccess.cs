@@ -71,6 +71,25 @@ namespace ampersand_pb.DataAccess
             return resultado;
         }
 
+        public IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(DateTime fechaCierreActual)
+        {
+            var resumenes = this.GetResumenes();
+
+            var fechaCierreAnterior = fechaCierreActual.AddMonths(-1);
+            var periodoAnterior = fechaCierreAnterior.GetPeriodo();
+
+            var resumen = resumenes.FirstOrDefault(a => a.Periodo.Equals(periodoAnterior));
+            if (resumen != null)
+            {
+                var movimientos = this.GetMovimientos(resumen.FilePath, periodoAnterior);
+                return movimientos;
+            }
+            else
+            {
+                throw new ArgumentException(string.Format("No hay información del período {0}", periodoAnterior));
+            }
+        }
+
         private BaseMovimiento GetPago(XElement xmlPago)
         {
             var idMovimiento = GetValueFromXml<int>("IdMovimiento", xmlPago, 0);
@@ -163,5 +182,7 @@ namespace ampersand_pb.DataAccess
     {
         IEnumerable<ResumenModel> GetResumenes();
         IEnumerable<BaseMovimiento> GetMovimientos(string file, string periodo);
+
+        IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(DateTime fechaCierreActual);
     }
 }

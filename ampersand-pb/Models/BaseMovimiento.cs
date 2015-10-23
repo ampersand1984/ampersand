@@ -14,16 +14,15 @@ namespace ampersand_pb.Models
         public BaseMovimiento()
         {
             Tipo = TipoMovimiento.Credito;
-            Cuota = string.Empty;
-            Error = string.Empty;
         }
 
         public TipoMovimiento Tipo { get; set; }
 
+        private int _idMovimiento;
         public int IdMovimiento
         {
-            get;
-            set;
+            get { return _idMovimiento; }
+            set { _idMovimiento = value; }
         }
 
         public DateTime Fecha
@@ -32,17 +31,19 @@ namespace ampersand_pb.Models
             set;
         }
 
+        private string _descripcion;
         public string Descripcion
         {
-            get;
-            set;
+            get { return _descripcion ?? string.Empty; }
+            set { _descripcion = value; }
         }
 
+        private string _descripcionAdicional;
         public string DescripcionAdicional
         {
-            get;
-            set;
-        }
+            get { return _descripcionAdicional; }
+            set { _descripcionAdicional = value; OnPropertyChanged("DescripcionAdicional"); }
+        }        
 
         public decimal Monto
         {
@@ -56,10 +57,20 @@ namespace ampersand_pb.Models
             set;
         }
 
-        public bool EsMensual { get; set; }
+        private bool _esMensual;
+        public bool EsMensual
+        {
+            get { return _esMensual; }
+            set { _esMensual = value; OnPropertyChanged("EsMensual"); }
+        }
 
-        public bool EsAjeno { get; set; }
-
+        private bool _esAjeno;
+        public bool EsAjeno
+        {
+            get { return _esAjeno; }
+            set { _esAjeno = value; OnPropertyChanged("EsAjeno"); }
+        }
+        
         public string Error
         {
             get;
@@ -105,7 +116,9 @@ namespace ampersand_pb.Models
 
         public object Clone()
         {
-            return this.MemberwiseClone();
+            var clone = this.MemberwiseClone() as BaseMovimiento;
+            clone.Tags = new List<string>(this.Tags);
+            return clone;
         }
 
         public override string ToString()

@@ -41,7 +41,7 @@ namespace ampersand.Core.Common
 
         public static string GetPeriodo(this DateTime fecha)
         {
-            var periodo = fecha.Year.ToString() + fecha.Month.ToString("00");
+            var periodo = string.Format("{0}{1}", fecha.Year, fecha.Month.ToString("00"));
             return periodo;
         }
 

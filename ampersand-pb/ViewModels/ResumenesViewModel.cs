@@ -47,17 +47,17 @@ namespace ampersand_pb.ViewModels
         {
             if (resumenM != null)
             {
-                var movimientosVM = new MovimientosViewModel(_movimientosDA, resumenM);
+                var movimientosVM = new MovimientosViewModel(resumenM, _movimientosDA);
                 OnPublishViewModelEvent(movimientosVM);
             }
         }
 
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;
-        private void OnPublishViewModelEvent(MovimientosViewModel movimientosVM)
+        private void OnPublishViewModelEvent(BaseViewModel viewModel)
         {
             var handler = this.PublishViewModelEvent;
             if (handler != null)
-                handler(this, new PublishViewModelEventArgs(movimientosVM));
+                handler(this, new PublishViewModelEventArgs(viewModel));
         }
     }
 }

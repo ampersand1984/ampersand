@@ -8,10 +8,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="1*"/>
@@ -20,33 +16,26 @@
         <Grid.Resources>
             <common:BooleanToVisibilityConverter x:Key="boolToVis"/>
         </Grid.Resources>
+        
+        <ContentControl Content="{Binding EditVM}"
+                        Grid.ColumnSpan="2"
+                        Panel.ZIndex="2"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+        </ContentControl>
 
-        <TextBlock Grid.Row="0"
-                   Grid.Column="0"
-                   HorizontalAlignment="Center" 
-                   VerticalAlignment="Bottom">
-            <Run Text="{Binding TextoPeriodo, Mode=OneWay}"/>
-        </TextBlock>
-
-        <TextBlock Grid.Row="0"
-                   Grid.Column="0" 
-                   HorizontalAlignment="Right" 
-                   VerticalAlignment="Bottom"
-                   Margin="10">
-            <Run Text="Total resúmen: $"/>
-            <Run Text="{Binding TotalResumen, Mode=OneWay}"/>
-        </TextBlock>
-
-        <ListBox Grid.Row="1"
-                 Grid.Column="0" 
+        <ListBox Grid.Column="0" 
                  ItemsSource="{Binding Movimientos}"
                  HorizontalContentAlignment="Stretch"
-                 Margin="10">
+                 Margin="10"
+                 SelectedIndex="{Binding SelectedIndex}">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     <Setter Property="BorderThickness" Value="0,0,0,1" />
                     <Setter Property="BorderBrush" Value="Silver" />
+                    <Setter Property="common:ControlDoubleClick.Command" Value="{Binding DataContext.EditarMovimientoCommand,
+                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"/>
                 </Style>
             </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
@@ -122,41 +111,63 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        
-        <ItemsControl Grid.Row="1"
-                      Grid.Column="1"
-                      ItemsSource="{Binding Agrupaciones}"
-                      Margin="10">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Grid Margin="0,0,0,10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="{Binding Descripcion}"
-                                   Background="LightGreen" 
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Text="{Binding Monto, StringFormat={}{0:C0}.00}"
-                                   HorizontalAlignment="Right"
-                                   FontWeight="Bold"
-                                   Grid.Row="1"/>
-                    </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <Button Content="Proyectar"
-                Command="{Binding ProyectarCommand}"
-                Visibility="{Binding EsElUtimoMes, Converter={StaticResource boolToVis}}"
-                Grid.Row="1"
-                Grid.Column="1"
-                VerticalAlignment="Bottom"
-                Margin="10"/>
-                
+
+        <Grid Grid.Column="1"
+              Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Margin="0,0,0,10">
+                <TextBlock Text="Total resúmen"
+                           HorizontalAlignment="Right" />
+                <TextBlock Text="{Binding TotalResumen, StringFormat={}{0:C0}.00, Mode=OneWay}"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Right" />
+            </StackPanel>
+
+            <ItemsControl Grid.Row="1"
+                          ItemsSource="{Binding Agrupaciones}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{Binding Descripcion}"
+                                       Background="LightGreen" 
+                                       HorizontalAlignment="Right"/>
+                            <TextBlock Text="{Binding Monto, StringFormat={}{0:C0}.00}"
+                                       HorizontalAlignment="Right"
+                                       FontWeight="Bold"
+                                       Grid.Row="1"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel Grid.Row="2" Margin="0,0,0,10">
+                <Button Content="Importar info del mes anterior"
+                    Command="{Binding ImportarInfoDeResumenAnteriorCommand}"
+                    Visibility="{Binding EsElUtimoMes, Converter={StaticResource boolToVis}}"
+                    Grid.Row="2"
+                    VerticalAlignment="Bottom"
+                    Margin="10"/>
+                <Button Content="Proyectar"
+                    Command="{Binding ProyectarCommand}"
+                    Visibility="{Binding EsElUtimoMes, Converter={StaticResource boolToVis}}"
+                    Grid.Row="2"
+                    VerticalAlignment="Bottom"
+                    Margin="10"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

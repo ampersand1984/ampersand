@@ -77,9 +77,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Common\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Common\ControlDoubleClick.cs" />
     <Compile Include="DataAccess\MovimientosDataAccess.cs" />
     <Compile Include="Models\BaseMovimiento.cs" />
     <Compile Include="Models\ResumenModel.cs" />
+    <Compile Include="Models\TagModel.cs" />
     <Compile Include="ViewModels\EditViewModelEventArgs.cs" />
     <Compile Include="ViewModels\IMainWindowItem.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
@@ -94,6 +96,9 @@
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MovimientoABMView.xaml.cs">
+      <DependentUpon>MovimientoABMView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MovimientosView.xaml.cs">
       <DependentUpon>MovimientosView.xaml</DependentUpon>
     </Compile>
@@ -105,6 +110,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MovimientoABMView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
