@@ -146,10 +146,18 @@ namespace ampersand_pb.ViewModels
 
         private void AgregarMainWindowItem(IMainWindowItem mainWindowItem)
         {
-            mainWindowItem.PublishViewModelEvent += PublishViewModelEvent;
-            mainWindowItem.CloseEvent += ViewModelCloseEvent;
-            MainWindowItems.Add(mainWindowItem);
-            CurrentMainWindowItem = _mainWindowItems.LastOrDefault();
+            if (MainWindowItems.Any(a => a.DisplayName.Equals(mainWindowItem.DisplayName)))
+            {
+                CurrentMainWindowItem = MainWindowItems.First(a => a.DisplayName.Equals(mainWindowItem.DisplayName));
+                mainWindowItem = null;
+            }
+            else
+            {
+                mainWindowItem.PublishViewModelEvent += PublishViewModelEvent;
+                mainWindowItem.CloseEvent += ViewModelCloseEvent;
+                MainWindowItems.Add(mainWindowItem);
+                CurrentMainWindowItem = _mainWindowItems.LastOrDefault();
+            }
         }
 
         private void MostrarActualCommandExecute()

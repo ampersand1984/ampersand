@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              xmlns:common="clr-namespace:ampersand_pb.Common"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
@@ -16,101 +17,151 @@
         <Grid.Resources>
             <common:BooleanToVisibilityConverter x:Key="boolToVis"/>
         </Grid.Resources>
-        
-        <ContentControl Content="{Binding EditVM}"
-                        Grid.ColumnSpan="2"
-                        Panel.ZIndex="2"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch">
-        </ContentControl>
 
-        <ListBox Grid.Column="0" 
-                 ItemsSource="{Binding Movimientos}"
-                 HorizontalContentAlignment="Stretch"
-                 Margin="10"
-                 SelectedIndex="{Binding SelectedIndex}">
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                    <Setter Property="BorderBrush" Value="Silver" />
-                    <Setter Property="common:ControlDoubleClick.Command" Value="{Binding DataContext.EditarMovimientoCommand,
-                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"/>
+        <Controls:TransitioningContentControl x:Name="transitioning" Width="150" Height="50" Transition="LeftReplace"
+                                              Content="{Binding EditVM}"
+                                              Grid.ColumnSpan="2"
+                                              Panel.ZIndex="2"
+                                              HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Stretch"
+                                              VerticalContentAlignment="Stretch"
+                                              VerticalAlignment="Stretch"
+                                              Background="Green">
+
+        <DataGrid ItemsSource="{Binding Movimientos}"
+                  SelectedIndex="{Binding SelectedIndex}"
+                  HorizontalContentAlignment="Stretch"
+                  Grid.Column="0"
+                  Margin="10"
+                  IsReadOnly="True"
+                  AutoGenerateColumns="False" >
+            <DataGrid.Resources>
+                <Style x:Key="leftTopAlignment"
+                       TargetType="{x:Type DataGridCell}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Grid Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Left"
+                                                      VerticalAlignment="Top"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
-            </ListBox.ItemContainerStyle>
-            <ListBox.ItemTemplate>
-                <DataTemplate>                    
-                    <Grid Margin="0,0,0,5">
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
+                <Style x:Key="rightTopAlignment"
+                       TargetType="{x:Type DataGridCell}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Grid Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Right"
+                                                      VerticalAlignment="Top"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <!--<Style x:Key="leftHeaderAlignment" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                    <Setter Property="OverridesDefaultStyle" Value="False"/>
+                </Style>
+                <Style x:Key="rightHeaderAlignment" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                    <Setter Property="OverridesDefaultStyle" Value="False"/>
+                </Style>-->
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Fecha" 
+                                    Binding="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}    '}" 
+                                    Width="auto" 
+                                    CellStyle="{StaticResource leftTopAlignment}"/>
+                
+                <DataGridTemplateColumn Header="Descripcion"
+                                        Width="5*"
+                                        CellStyle="{StaticResource leftTopAlignment}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="{Binding Descripcion}"
+                                           Grid.Row="0"/>
+                                <TextBlock Text="{Binding DescripcionAdicional}"
+                                           TextWrapping="Wrap"
+                                           FontSize="9"
+                                           Grid.Row="1"/>
+                                <ItemsControl ItemsSource="{Binding Tags}"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Bottom"
+                                              Grid.Row="2">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}"
+                                                       Background="LightGreen"
+                                                       Margin="1"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <DataGridTextColumn Header="Cuota" 
+                                    Binding="{Binding Cuota}"
+                                    Width="auto"
+                                    CellStyle="{StaticResource leftTopAlignment}"/>
+                
+                <DataGridTextColumn Header="Monto" 
+                                    Binding="{Binding Monto, StringFormat={}{0:C0}.00}" 
+                                    FontSize="12" 
+                                    FontWeight="Bold"
+                                    Width="1*"
+                                    CellStyle="{StaticResource rightTopAlignment}"/>
+            </DataGrid.Columns>
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <Grid Margin="15">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="C0"/>
-                            <ColumnDefinition Width="4*" SharedSizeGroup="C1"/>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="C2"/>
-                            <ColumnDefinition Width="1*" SharedSizeGroup="C3"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
-                        <TextBlock Text="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}'}"
-                                   Margin="0,0,10,0"
-                                   HorizontalAlignment="Left"
-                                   Grid.Row="0"
-                                   Grid.Column="0"/>
-
-                        <TextBlock Text="{Binding Descripcion}"
-                                   HorizontalAlignment="Left"
-                                   Grid.Row="0"
-                                   Grid.Column="1"/>
-
-                        <TextBlock Text="{Binding Cuota}"
-                                   FontSize="9"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Bottom"
-                                   Grid.Row="0"
-                                   Grid.Column="2"/>
-
-                        <TextBlock Text="{Binding Monto, StringFormat={}{0:C0}.00}" 
-                                   Margin="0,0,10,0"
-                                   HorizontalAlignment="Right"
-                                   FontSize="12" 
-                                   FontWeight="Bold"
-                                   Grid.Row="0"
-                                   Grid.Column="3"/>
-
-                        <TextBlock Text="{Binding DescripcionAdicional}"
-                                   FontSize="9"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   TextWrapping="Wrap"
-                                   Grid.Row="1"
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Es mensaual" 
+                                   Visibility="{Binding EsMensual, Converter={StaticResource boolToVis}}" 
+                                   IsEnabled="False"
+                                   Grid.Column="0"
+                                   Margin="0,0,30,0"/>
+                        <TextBlock Text="Es ajeno" 
+                                   Visibility="{Binding EsAjeno, Converter={StaticResource boolToVis}}" 
+                                   IsEnabled="False"
                                    Grid.Column="1"
-                                   Grid.ColumnSpan="2"/>
-                        
-                        <ItemsControl ItemsSource="{Binding Tags}"
-                                      HorizontalAlignment="Left"
-                                      VerticalAlignment="Bottom"
-                                      Grid.Row="2"
-                                      Grid.Column="1">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}"
-                                               Background="LightGreen"
-                                               Margin="1"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
+                                   Margin="0,0,30,0"/>
+                        <Button Content="Editar" 
+                                Command="{Binding Path=DataContext.EditarMovimientoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Grid.Column="2"
+                                Grid.Row="1"/>
+                                
                     </Grid>
                 </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            </DataGrid.RowDetailsTemplate>
+        </DataGrid>
 
         <Grid Grid.Column="1"
               Margin="10">
