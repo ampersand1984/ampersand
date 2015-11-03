@@ -84,8 +84,6 @@ namespace ampersand_pb.Models
             set { _tags = value; OnPropertyChanged("Tags"); }
         }
 
-        public bool IsSelected { get; set; }
-
         public int CoutasPendientes
         {
             get
@@ -102,6 +100,14 @@ namespace ampersand_pb.Models
                 return cuotasPendientes;
             }
         }
+
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set { _isSelected = value; OnIsSelectedChangedEvent(); }
+        }
+        
 
         public void IncrementarCuotasPendientes()
         {
@@ -126,5 +132,23 @@ namespace ampersand_pb.Models
             var str = string.Format("{0}, {1}", Descripcion, Monto);
             return str;
         }
+
+        public event EventHandler<IsSelectedChangedEventHandler> IsSelectedChangedEvent;
+        private void OnIsSelectedChangedEvent()
+        {
+            var handler = this.IsSelectedChangedEvent;
+            if (handler != null)
+                handler(this, new IsSelectedChangedEventHandler(this.IsSelected));
+        }
+    }
+
+    public class IsSelectedChangedEventHandler: EventArgs
+    {
+        public IsSelectedChangedEventHandler(bool isSelected)
+        {
+            IsSelected = isSelected;
+        }
+
+        public bool IsSelected { get; private set; }
     }
 }

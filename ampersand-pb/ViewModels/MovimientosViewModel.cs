@@ -26,7 +26,7 @@ namespace ampersand_pb.ViewModels
 
             _movimientos = new ObservableCollection<BaseMovimiento>(movimientos);
 
-            CargarAgrupaciones();
+            _agrupaciones = GetAgrupaciones(_movimientos);
         }
 
         private bool _esProyeccion;
@@ -54,6 +54,11 @@ namespace ampersand_pb.ViewModels
         public decimal TotalResumen
         {
             get { return  Movimientos.Sum(a => a.Monto); }
+        }
+
+        public decimal TotalSeleccion
+        {
+            get { return Movimientos.Where(a => a.IsSelected).Sum(a => a.Monto); }
         }        
 
         private ObservableCollection<BaseMovimiento> _movimientos;
@@ -78,6 +83,13 @@ namespace ampersand_pb.ViewModels
         public IEnumerable<AgrupacionItem> Agrupaciones
         {
             get { return _agrupaciones; }
+        }
+
+        private IEnumerable<AgrupacionItem> _agrupacionesSeleccion;
+        public IEnumerable<AgrupacionItem> AgrupacionesSeleccion
+        {
+            get { return _agrupacionesSeleccion; }
+            set { _agrupacionesSeleccion = value; OnPropertyChanged("AgrupacionesSeleccion"); }
         }
 
         public bool EsElUtimoMes
@@ -261,15 +273,33 @@ namespace ampersand_pb.ViewModels
 
             _movimientos = new ObservableCollection<BaseMovimiento>(movimientos);
 
-            CargarAgrupaciones();
+            _agrupaciones = GetAgrupaciones(_movimientos);
+
+            foreach (var item in _movimientos)
+            {
+                item.IsSelectedChangedEvent += Item_IsSelectedChangedEvent;
+            }
 
             OnPropertyChanged("TotalResumen");
         }
 
-        private void CargarAgrupaciones()
+        private void Item_IsSelectedChangedEvent(object sender, IsSelectedChangedEventHandler e)
+        {
+            if (Movimientos.Count(a => a.IsSelected) > 1)
+            {
+                AgrupacionesSeleccion = GetAgrupaciones(Movimientos.Where(a => a.IsSelected));                
+            }
+            else
+            {
+                AgrupacionesSeleccion = null;
+            }
+            OnPropertyChanged("TotalSeleccion");
+        }
+
+        private IEnumerable<AgrupacionItem> GetAgrupaciones(IEnumerable<BaseMovimiento> movimientos)
         {
             var tags = new List<AgrupacionItem>();
-            foreach (var mov in Movimientos.Where(a => a.Tags.Any()))
+            foreach (var mov in movimientos.Where(a => a.Tags.Any()))
             {
                 foreach (var tag in mov.Tags)
                 {
@@ -295,7 +325,7 @@ namespace ampersand_pb.ViewModels
                     }
                 }
             }
-            _agrupaciones = tags.OrderByDescending(a => a.Monto);
+            return tags.OrderByDescending(a => a.Monto);
         }
 
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;
