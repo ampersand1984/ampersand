@@ -17,6 +17,7 @@
         <Grid.Resources>
             <common:BooleanToVisibilityConverter x:Key="boolToVis"/>
             <common:NullToVisibilityConverter x:Key="nullToVis"/>
+            <common:EqualToVisibilityConverter x:Key="equalToVisibility"/>
         </Grid.Resources>
 
         <Controls:TransitioningContentControl x:Name="transitioning" Transition="LeftReplace"
@@ -143,13 +144,24 @@
                                         Header="Ajeno"
                                         Binding="{Binding EsAjeno}"/>
 
-                <DataGridTextColumn Header="Cuota" 
-                                    Binding="{Binding Cuota}"
+                <DataGridTemplateColumn Header="Cuota" 
                                     Width="auto"
-                                    CellStyle="{StaticResource leftTopAlignment}"/>
-                
+                                    CellStyle="{StaticResource leftTopAlignment}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Cuota}" />
+                                <TextBlock Text=" ✓" 
+                                           Visibility="{Binding CoutasPendientes, Converter={StaticResource equalToVisibility}, ConverterParameter='0'}"
+                                           FontWeight="ExtraBold"
+                                           Foreground="Green"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
                 <DataGridTextColumn Header="Monto" 
-                                    Binding="{Binding Monto, StringFormat={}{0:C0}.00}" 
+                                    Binding="{Binding Monto}" 
                                     FontSize="12" 
                                     FontWeight="Bold"
                                     Width="1*"
@@ -170,7 +182,7 @@
             <StackPanel Margin="0,0,0,10">
                 <TextBlock Text="Total resúmen"
                            HorizontalAlignment="Right" />
-                <TextBlock Text="{Binding TotalResumen, StringFormat={}{0:C0}.00, Mode=OneWay}"
+                <TextBlock Text="{Binding TotalResumen, Mode=OneWay}"
                            FontWeight="Bold"
                            HorizontalAlignment="Right" />
             </StackPanel>
@@ -192,7 +204,7 @@
                             <TextBlock Text="{Binding Descripcion}"
                                        Background="LightGreen" 
                                        HorizontalAlignment="Right"/>
-                            <TextBlock Text="{Binding Monto, StringFormat={}{0:C0}.00}"
+                            <TextBlock Text="{Binding Monto}"
                                        HorizontalAlignment="Right"
                                        FontWeight="Bold"
                                        Grid.Row="1"/>
@@ -206,7 +218,7 @@
                         Visibility="{Binding AgrupacionesSeleccion, Converter={StaticResource nullToVis}}">
                 <TextBlock Text="Total selección"
                            HorizontalAlignment="Right" />
-                <TextBlock Text="{Binding TotalSeleccion, StringFormat={}{0:C0}.00, Mode=OneWay}"
+                <TextBlock Text="{Binding TotalSeleccion, Mode=OneWay}"
                            FontWeight="Bold"
                            HorizontalAlignment="Right" />
             </StackPanel>

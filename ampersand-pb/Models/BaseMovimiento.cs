@@ -88,7 +88,7 @@ namespace ampersand_pb.Models
         {
             get
             {
-                var cuotasPendientes = 0;
+                var cuotasPendientes = -1;
                 if (!Cuota.IsNullOrEmpty())
                 {
                     var cuotasPagas = int.Parse(Cuota.Substring(0, 2));

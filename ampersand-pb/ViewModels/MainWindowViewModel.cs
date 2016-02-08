@@ -14,7 +14,12 @@ namespace ampersand_pb.ViewModels
     public class MainWindowViewModel : BaseViewModel
     {
         public MainWindowViewModel()
+            :this(new PreferenciasDataAccess()) { }
+
+        public MainWindowViewModel(IPreferenciasDataAccess preferenciasDA)
         {
+            _preferenciasDA = preferenciasDA;
+
             ActionList = new List<ActionItem>()
             {
                 new ActionItem
@@ -29,13 +34,30 @@ namespace ampersand_pb.ViewModels
                 },
                 new ActionItem
                 {
-                    Description = "Configuraciones",
-                    Command = this.MostrarConfiguracionesCommand
+                    Description = "Preferencias",
+                    Command = this.MostrarPreferenciasCommand
                 }
             };
         }
 
         private string _filesPath = @"C:\Google Drive\Resumen y comprobantes\Apb\";
+
+        private IPreferenciasDataAccess _preferenciasDA;
+
+        private IMovimientosDataAccess _movimientosDA;
+        public IMovimientosDataAccess MovimientosDA
+        {
+            get
+            {
+                if (_movimientosDA == null)
+                    _movimientosDA = new MovimientosDataAccess(_filesPath);
+                return _movimientosDA;
+            }
+            set
+            {
+                _movimientosDA = value;
+            }
+        }
 
         public IEnumerable<ActionItem> ActionList { get; private set; }
 
@@ -62,12 +84,12 @@ namespace ampersand_pb.ViewModels
         }
 
         private ICommand _mostrarConfiguracionesCommand;
-        public ICommand MostrarConfiguracionesCommand
+        public ICommand MostrarPreferenciasCommand
         {
             get
             {
                 if (_mostrarConfiguracionesCommand == null)
-                    _mostrarConfiguracionesCommand = new RelayCommand(param => MostrarConfiguracionesCommandExecute());
+                    _mostrarConfiguracionesCommand = new RelayCommand(param => MostrarPreferenciasCommandExecute());
                 return _mostrarConfiguracionesCommand;
             }
         }
@@ -165,7 +187,7 @@ namespace ampersand_pb.ViewModels
             throw new NotImplementedException();
         }
 
-        private object MostrarConfiguracionesCommandExecute()
+        private object MostrarPreferenciasCommandExecute()
         {
             throw new NotImplementedException();
         }
@@ -181,21 +203,6 @@ namespace ampersand_pb.ViewModels
             EditViewModel.CloseEvent -= new EventHandler(EditViewModel_CloseEvent);
             EditViewModel.Dispose();
             EditViewModel = null;
-        }
-
-        private IMovimientosDataAccess _movimientosDA;
-        public IMovimientosDataAccess MovimientosDA
-        {
-            get
-            {
-                if (_movimientosDA == null)
-                    _movimientosDA = new MovimientosDataAccess(_filesPath);
-                return _movimientosDA;
-            }
-            set
-            {
-                _movimientosDA = value;
-            }
         }
 
         private void EditViewModelEvent(object sender, EditViewModelEventArgs e)

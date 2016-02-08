@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
+using ampersand.Core.Common;
+
+namespace ampersand_pb.Common
+{
+    public class EqualToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            var strValue = value != null ? value.ToString() : string.Empty;
+            var strParameter = parameter != null ? parameter.ToString() : string.Empty;
+
+            if (strValue.IsNullOrEmpty() || strParameter.IsNullOrEmpty())
+                return Visibility.Collapsed;
+
+            var result = strValue.Equals(strParameter) ? Visibility.Visible : Visibility.Collapsed;
+
+            return result;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

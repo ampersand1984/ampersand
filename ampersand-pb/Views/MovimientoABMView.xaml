@@ -45,7 +45,7 @@
         <TextBox Grid.Row="3" Text="{Binding DescripcionAdicional}" Grid.Column="1"/>
 
         <TextBlock Grid.Row="4" Text="Monto"/>
-        <TextBox Grid.Row="4" Text="{Binding Monto, StringFormat={}{0:C0}.00}" Grid.Column="1"/>
+        <TextBox Grid.Row="4" Text="{Binding Monto}" Grid.Column="1"/>
 
         <TextBlock Grid.Row="5" Text="Cuota"/>
         <TextBox Grid.Row="5" Text="{Binding Cuota}" IsEnabled="False" Grid.Column="1"/>

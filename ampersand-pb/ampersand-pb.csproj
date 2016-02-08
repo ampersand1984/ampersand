@@ -82,8 +82,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Common\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Common\EqualToVisibilityConverter.cs" />
     <Compile Include="Common\NullToVisibilityConverter.cs" />
     <Compile Include="DataAccess\MovimientosDataAccess.cs" />
+    <Compile Include="DataAccess\PreferenciasDataAccess.cs" />
     <Compile Include="Models\BaseMovimiento.cs" />
     <Compile Include="Models\ResumenModel.cs" />
     <Compile Include="Models\TagModel.cs" />

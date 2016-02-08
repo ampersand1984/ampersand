@@ -179,7 +179,10 @@ namespace ampersand_pb.DataAccess
 
         public void SaveMovimientos(ResumenModel resumenM, IEnumerable<BaseMovimiento> movimientos)
         {
-            var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo)));
+            var total = movimientos.Sum(a => a.Monto);
+            var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
+                                                                 new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
+                                                                 new XAttribute("Total", total)));
 
             foreach (var mov in movimientos)
             {
