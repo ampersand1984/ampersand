@@ -17,7 +17,9 @@ namespace ampersand_pb.ViewModels
         {
             _movimientosDA = movimientosDA;
 
-            Resumenes = _movimientosDA.GetResumenes();
+            var resumenes = _movimientosDA.GetResumenes();
+
+            ResumenesAgrupados = resumenes.Agrupar();
         }
 
         private IMovimientosDataAccess _movimientosDA;
@@ -30,7 +32,7 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        public IEnumerable<ResumenModel> Resumenes { get; set; }
+        public IEnumerable<ResumenAgrupadoModel> ResumenesAgrupados { get; private set; }
 
         private ICommand _seleccionarResumenCommand;
         public ICommand SeleccionarResumenCommand
@@ -38,16 +40,16 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_seleccionarResumenCommand == null)
-                    _seleccionarResumenCommand = new RelayCommand(param => SeleccionarResumenCommandExecute(param as ResumenModel));
+                    _seleccionarResumenCommand = new RelayCommand(param => SeleccionarResumenCommandExecute(param as ResumenAgrupadoModel));
                 return _seleccionarResumenCommand;
             }
         }
 
-        private void SeleccionarResumenCommandExecute(ResumenModel resumenM)
+        private void SeleccionarResumenCommandExecute(ResumenAgrupadoModel resumenAgrupadoM)
         {
-            if (resumenM != null)
+            if (resumenAgrupadoM != null)
             {
-                var movimientosVM = new MovimientosViewModel(resumenM, _movimientosDA);
+                var movimientosVM = new MovimientosViewModel(resumenAgrupadoM, _movimientosDA);
                 OnPublishViewModelEvent(movimientosVM);
             }
         }

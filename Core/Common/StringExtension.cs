@@ -29,11 +29,11 @@ namespace ampersand.Core.Common
             return result;
         }
 
-        public static string GetPeriodo(string str)
+        public static string GetPeriodo(string strFecha)
         {
-            var strYear = str.Substring(0, 4);
+            var strYear = strFecha.Substring(0, 4);
             var year = int.Parse(strYear);
-            var strMonth = str.Substring(4, 2);
+            var strMonth = strFecha.Substring(4, 2);
             var month = int.Parse(strMonth);
 
             return year.ToString() + month.ToString("00");

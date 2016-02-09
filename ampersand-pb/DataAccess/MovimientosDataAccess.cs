@@ -46,21 +46,23 @@ namespace ampersand_pb.DataAccess
         //    return xdoc;
         //}
 
-        public IEnumerable<BaseMovimiento> GetMovimientos(string file, string periodo)
+        public IEnumerable<BaseMovimiento> GetMovimientos(ResumenAgrupadoModel resumenAgrupadoM)
         {
             var resultado = new List<BaseMovimiento>();
 
             try
             {
-                var xdoc = GetXDocument(file, periodo);
-                var pagos = from XElement mov in xdoc.Root.Elements("Mov")
-                            select mov;
-
-                foreach (var xmlPago in pagos)
+                foreach (var resumen in resumenAgrupadoM.Resumenes)
                 {
-                    var pago = GetPago(xmlPago);
-                    if (pago != null)
-                        resultado.Add(pago);
+                    var pagos = from XElement mov in resumen.XDoc.Root.Elements("Mov")
+                                select mov;
+
+                    foreach (var xmlPago in pagos)
+                    {
+                        var pago = GetPago(xmlPago);
+                        if (pago != null)
+                            resultado.Add(pago);
+                    }
                 }
             }
             catch (Exception)
@@ -71,24 +73,23 @@ namespace ampersand_pb.DataAccess
             return resultado;
         }
 
-        public IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(DateTime fechaCierreActual)
-        {
-            var resumenes = this.GetResumenes();
+        //public IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(string periodoActual)
+        //{
+        //    var resumenes = this.GetResumenes();
 
-            var fechaCierreAnterior = fechaCierreActual.AddMonths(-1);
-            var periodoAnterior = fechaCierreAnterior.GetPeriodo();
+        //    var periodoAnterior = (periodoActual + "01").ToDateTime().AddMonths(-1).GetPeriodo();
 
-            var resumen = resumenes.FirstOrDefault(a => a.Periodo.Equals(periodoAnterior));
-            if (resumen != null)
-            {
-                var movimientos = this.GetMovimientos(resumen.FilePath, periodoAnterior);
-                return movimientos;
-            }
-            else
-            {
-                throw new ArgumentException(string.Format("No hay información del período {0}", periodoAnterior));
-            }
-        }
+        //    var resumen = resumenes.FirstOrDefault(a => a.Periodo.Equals(periodoAnterior));
+        //    if (resumen != null)
+        //    {
+        //        var movimientos = this.GetMovimientos(resumen.FilePath, periodoAnterior);
+        //        return movimientos;
+        //    }
+        //    else
+        //    {
+        //        throw new ArgumentException(string.Format("No hay información del período {0}", periodoAnterior));
+        //    }
+        //}
 
         private BaseMovimiento GetPago(XElement xmlPago)
         {
@@ -167,12 +168,16 @@ namespace ampersand_pb.DataAccess
                     var resumen = ResumenModel.GetFromFile(file);
 
                     if (resumen != null)
+                    {
+                        var xdoc = XDocument.Load(file);
+                        resumen.XDoc = xdoc;
+                        resumen.Tipo = TipoMovimiento.Credito;
+                        resumen.Descripcion = GetValueFromXml<string>("Descripcion", xdoc.Root, "");
+                        resumen.Total = GetValueFromXml<decimal>("Total", xdoc.Root, 0M);
                         resultado.Add(resumen);
+                    }
                 }
             }
-
-            if (resultado.Any())
-                resultado.First().EsElUtimoMes = true;
 
             return resultado;
         }
@@ -217,9 +222,9 @@ namespace ampersand_pb.DataAccess
     public interface IMovimientosDataAccess
     {
         IEnumerable<ResumenModel> GetResumenes();
-        IEnumerable<BaseMovimiento> GetMovimientos(string file, string periodo);
+        IEnumerable<BaseMovimiento> GetMovimientos(ResumenAgrupadoModel resumenAgrupadoM);
 
-        IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(DateTime fechaCierreActual);
+        //IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(string periodoActual);
 
         void SaveMovimientos(ResumenModel resumenM, IEnumerable<BaseMovimiento> movimientos);
     }

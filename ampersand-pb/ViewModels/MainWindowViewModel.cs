@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ampersand.Core;
-using ampersand_pb.DataAccess;
-using ampersand_pb.Models;
-using System.Windows.Input;
+﻿using ampersand.Core;
 using ampersand.Core.Common;
+using ampersand_pb.DataAccess;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Input;
 
 namespace ampersand_pb.ViewModels
 {
@@ -30,17 +28,18 @@ namespace ampersand_pb.ViewModels
                 new ActionItem
                 {
                     Description = "Actual",
-                    Command = this.MostrarActualCommand
+                    Command = MostrarActualCommand
                 },
                 new ActionItem
                 {
                     Description = "Preferencias",
-                    Command = this.MostrarPreferenciasCommand
+                    Command = MostrarPreferenciasCommand
                 }
             };
         }
 
-        private string _filesPath = @"C:\Google Drive\Resumen y comprobantes\Apb\";
+        //private string _filesPath = @"C:\Google Drive\Resumen y comprobantes\Apb\";
+        private string _filesPath = @"C:\Users\fabricio\Google Drive\Resumen y comprobantes\Apb\";
 
         private IPreferenciasDataAccess _preferenciasDA;
 

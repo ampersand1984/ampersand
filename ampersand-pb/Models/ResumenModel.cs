@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ampersand.Core.Common;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ampersand.Core.Common;
-using System.Globalization;
+using System.Xml.Linq;
 
 namespace ampersand_pb.Models
 {
@@ -35,7 +31,13 @@ namespace ampersand_pb.Models
 
         public string FilePath { get; set; }
 
-        public bool EsElUtimoMes { get; set; }
+        public XDocument XDoc { get; internal set; }
+
+        public TipoMovimiento Tipo { get; set; }
+
+        public string Descripcion { get; set; }
+
+        public decimal Total { get; internal set; }
 
         internal static ResumenModel GetFromFile(string file)
         {
@@ -43,7 +45,7 @@ namespace ampersand_pb.Models
             {
                 var strFechaDeCierre = Path.GetFileNameWithoutExtension(file);
 
-                var fechaDeCierre = strFechaDeCierre.Substring(1).ToDateTime();
+                var fechaDeCierre = strFechaDeCierre.Substring(2).ToDateTime();
 
                 var resumen = new ResumenModel
                 {

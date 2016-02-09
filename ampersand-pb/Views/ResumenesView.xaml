@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <ItemsControl ItemsSource="{Binding Resumenes}">
+    <ItemsControl ItemsSource="{Binding ResumenesAgrupados}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
                 <WrapPanel/>
@@ -19,7 +19,22 @@
                     <Button.Content>
                         <StackPanel>
                             <TextBlock Text="{Binding TextoPeriodo}" FontSize="14" FontWeight="Bold" Margin="5"/>
-                            <TextBlock Text="{Binding FechaDeCierre, StringFormat='{}{0:dd/MM/yyyy}'}" FontSize="10" Margin="5"/>
+                            <!--<TextBlock Text="{Binding FechaDeCierre, StringFormat='{}{0:dd/MM/yyyy}'}" FontSize="10" Margin="5"/>-->
+                            <ItemsControl ItemsSource="{Binding Resumenes}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding Descripcion, StringFormat='{}{0} '}" FontWeight="Normal"/>
+                                            <TextBlock Text="{Binding Total}" FontWeight="Normal"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </Button.Content>
                 </Button>
