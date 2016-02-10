@@ -1,0 +1,6 @@
+corregir el guardar cambios
+corregir la proyección
+sacar los tags a un archivo aparte
+incluir el parseo al proyecto ppal
+agregar la vista de preferencias
+agregar el % o monto de "ajeno"
