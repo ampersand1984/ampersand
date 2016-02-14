@@ -56,6 +56,31 @@ namespace ampersand_pb.ViewModels
             get { return  Movimientos.Sum(a => a.Monto); }
         }
 
+        private IEnumerable<AgrupacionItem> _totales;
+        public IEnumerable<AgrupacionItem> Totales
+        {
+            get
+            {
+                if (_totales == null)
+                    _totales = GetTotales();
+                return _totales;
+            }
+        }
+
+        private AgrupacionItem _totalesSelectedItem;
+        public AgrupacionItem TotalesSelectedItem
+        {
+            get
+            {
+                return _totalesSelectedItem;
+            }
+            set
+            {
+                _totalesSelectedItem = value;
+                OnPropertyChanged("TotalesSelectedItem");
+            }
+        }
+
         public decimal TotalSeleccion
         {
             get { return Movimientos.Where(a => a.IsSelected).Sum(a => a.Monto); }
@@ -83,6 +108,20 @@ namespace ampersand_pb.ViewModels
         public IEnumerable<AgrupacionItem> Agrupaciones
         {
             get { return _agrupaciones; }
+        }
+
+        private AgrupacionItem _agrupacionesSelectedItem;
+        public AgrupacionItem AgrupacionesSelectedItem
+        {
+            get
+            {
+                return _agrupacionesSelectedItem;
+            }
+            set
+            {
+                _agrupacionesSelectedItem = value;
+                OnPropertyChanged("AgrupacionesSelectedItem");
+            }
         }
 
         private IEnumerable<AgrupacionItem> _agrupacionesSeleccion;
@@ -275,57 +314,90 @@ namespace ampersand_pb.ViewModels
 
             _agrupaciones = GetAgrupaciones(_movimientos);
 
-            foreach (var item in _movimientos)
-            {
-                item.IsSelectedChangedEvent += Item_IsSelectedChangedEvent;
-            }
+            //foreach (var item in _movimientos)
+            //{
+            //    item.IsSelectedChangedEvent += Item_IsSelectedChangedEvent;
+            //}
 
             OnPropertyChanged("TotalResumen");
         }
 
-        private void Item_IsSelectedChangedEvent(object sender, IsSelectedChangedEventHandler e)
+        //private void Item_IsSelectedChangedEvent(object sender, IsSelectedChangedEventHandler e)
+        //{
+        //    if (Movimientos.Count(a => a.IsSelected) > 1)
+        //    {
+        //        AgrupacionesSeleccion = GetAgrupaciones(Movimientos.Where(a => a.IsSelected));
+        //    }
+        //    else
+        //    {
+        //        AgrupacionesSeleccion = null;
+        //    }
+        //    OnPropertyChanged("TotalSeleccion");
+        //}
+
+        private IEnumerable<AgrupacionItem> GetTotales()
         {
-            if (Movimientos.Count(a => a.IsSelected) > 1)
-            {
-                AgrupacionesSeleccion = GetAgrupaciones(Movimientos.Where(a => a.IsSelected));                
-            }
-            else
-            {
-                AgrupacionesSeleccion = null;
-            }
-            OnPropertyChanged("TotalSeleccion");
+            var totales = new List<AgrupacionItem>();
+
+            foreach (var item in _resumenAgrupadoM.Resumenes)
+                totales.Add(new AgrupacionItem() { Descripcion = item.Descripcion, Monto = item.Total });
+
+            return totales;
         }
 
         private IEnumerable<AgrupacionItem> GetAgrupaciones(IEnumerable<BaseMovimiento> movimientos)
         {
             var tags = new List<AgrupacionItem>();
-            foreach (var mov in movimientos.Where(a => a.Tags.Any()))
+            foreach (var mov in movimientos.Where(a => a.Tags.Any()).OrderBy(b => b.Monto))
             {
-                foreach (var tag in mov.Tags)
-                {
-                    if (tags.Exists(a => a.Descripcion.Equals(tag)))
+                var tagItem = tags.FirstOrDefault(a => a.Descripcion == mov.Tags.First());
+                if (tagItem != null)
+                    tagItem.Monto += mov.Monto;
+                else
+                    tags.Add(new AgrupacionItem() { Descripcion = mov.Tags.First(), Monto = mov.Monto });
+            }
+
+            return tags;
+        }
+
+        protected override void OnPropertyChanged(string propertyName)
+        {
+            base.OnPropertyChanged(propertyName);
+            switch (propertyName)
+            {
+                case "TotalesSelectedItem":
+                    if (TotalesSelectedItem != null)
                     {
-                        tags.First(a => a.Descripcion.Equals(tag)).Monto += mov.Monto;
+                        var seleccion = TotalesSelectedItem.Descripcion;
+
+                        foreach (var mov in Movimientos)
+                            mov.IsSelected = mov.TipoDescripcion.Equals(seleccion);
                     }
                     else
                     {
-                        if (!tag.IsNullOrEmpty())
-                        {
-                            var newTag = new AgrupacionItem
-                            {
-                                Descripcion = tag,
-                                Monto = mov.Monto
-                            };
-                            tags.Add(newTag);
-                        }
-                        else
-                        {
-                            Debug.WriteLine("Tag vacío" + mov.IdMovimiento);
-                        }
+                        foreach (var mov in Movimientos)
+                            mov.IsSelected = false;
                     }
-                }
+                    break;
+
+                case "AgrupacionesSelectedItem":
+                    if (AgrupacionesSelectedItem != null)
+                    {
+                        var seleccion = AgrupacionesSelectedItem.Descripcion;
+
+                        foreach (var mov in Movimientos)
+                            mov.IsSelected = mov.Tags.Any(a => a.Equals(seleccion));
+                    }
+                    else
+                    {
+                        foreach (var mov in Movimientos)
+                            mov.IsSelected = false;
+                    }
+                    break;
+
+                default:
+                    break;
             }
-            return tags.OrderByDescending(a => a.Monto);
         }
 
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;

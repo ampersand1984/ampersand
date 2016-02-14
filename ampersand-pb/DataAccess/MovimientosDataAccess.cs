@@ -61,7 +61,10 @@ namespace ampersand_pb.DataAccess
                     {
                         var pago = GetPago(xmlPago);
                         if (pago != null)
+                        {
+                            pago.TipoDescripcion = resumen.Descripcion;
                             resultado.Add(pago);
+                        }
                     }
                 }
             }

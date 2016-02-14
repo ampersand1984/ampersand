@@ -18,6 +18,20 @@ namespace ampersand_pb.Models
 
         public TipoMovimiento Tipo { get; set; }
 
+        private string _tipoDescripcion;
+        public string TipoDescripcion
+        {
+            get
+            {
+                return _tipoDescripcion ?? string.Empty;
+            }
+
+            set
+            {
+                _tipoDescripcion = value;
+            }
+        }
+
         private int _idMovimiento;
         public int IdMovimiento
         {
@@ -91,8 +105,10 @@ namespace ampersand_pb.Models
                 var cuotasPendientes = -1;
                 if (!Cuota.IsNullOrEmpty())
                 {
-                    var cuotasPagas = int.Parse(Cuota.Substring(0, 2));
-                    var totalCuotas = int.Parse(Cuota.Substring(3, 2));
+                    var slashIndex = Cuota.IndexOf("/");
+
+                    var cuotasPagas = int.Parse(Cuota.Substring(0, slashIndex));
+                    var totalCuotas = int.Parse(Cuota.Substring(slashIndex + 1));
 
                     cuotasPendientes = totalCuotas - cuotasPagas;
                 }
@@ -105,18 +121,24 @@ namespace ampersand_pb.Models
         public bool IsSelected
         {
             get { return _isSelected; }
-            set { _isSelected = value; OnIsSelectedChangedEvent(); }
+            set
+            {
+                _isSelected = value;
+                OnPropertyChanged("IsSelected");
+                OnIsSelectedChangedEvent();
+            }
         }
-        
 
         public void IncrementarCuotasPendientes()
         {
             if (CoutasPendientes > 0)
             {
-                var cuotasPagas = int.Parse(Cuota.Substring(0, 2));
+                var slashIndex = Cuota.IndexOf("/");
+
+                var cuotasPagas = int.Parse(Cuota.Substring(0, slashIndex));
                 cuotasPagas++;
 
-                Cuota = cuotasPagas.ToString("00") + Cuota.Substring(2, 3);
+                Cuota = cuotasPagas.ToString("00") + Cuota.Substring(slashIndex);
             }
         }
 

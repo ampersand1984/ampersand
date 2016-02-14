@@ -5,13 +5,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
              xmlns:common="clr-namespace:ampersand_pb.Common"
              xmlns:views="clr-namespace:ampersand_pb.Views">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="5"/>            
+            <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         
         <Grid.Resources>
@@ -23,7 +25,7 @@
         <Controls:TransitioningContentControl x:Name="transitioning" Transition="LeftReplace"
                                               Content="{Binding EditVM}"
                                               Grid.Column="1"
-                                              Grid.ColumnSpan="2"
+                                              Grid.ColumnSpan="3"
                                               Panel.ZIndex="2"
                                               HorizontalAlignment="Stretch"
                                               HorizontalContentAlignment="Stretch"
@@ -48,7 +50,7 @@
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
                     <Setter Property="IsSelected" 
-                            Value="{Binding IsSelected, Mode=TwoWay}" />
+                            Value="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
                 </Style>
             </DataGrid.RowStyle>
             
@@ -95,6 +97,11 @@
                                     Width="auto" 
                                     CellStyle="{StaticResource leftTopAlignment}"/>
                 
+                <DataGridTextColumn Header="Pago" 
+                                    Binding="{Binding TipoDescripcion}" 
+                                    Width="auto" 
+                                    CellStyle="{StaticResource leftTopAlignment}"/>
+                
                 <DataGridTemplateColumn Header="Descripcion"
                                         Width="5*"
                                         CellStyle="{StaticResource leftTopAlignment}">
@@ -134,16 +141,6 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridCheckBoxColumn ElementStyle="{DynamicResource MetroDataGridCheckBox}"
-                                        EditingElementStyle="{DynamicResource MetroDataGridCheckBox}"
-                                        Header="Mensual"
-                                        Binding="{Binding EsMensual}"/>
-
-                <DataGridCheckBoxColumn ElementStyle="{DynamicResource MetroDataGridCheckBox}"
-                                        EditingElementStyle="{DynamicResource MetroDataGridCheckBox}"
-                                        Header="Ajeno"
-                                        Binding="{Binding EsAjeno}"/>
-
                 <DataGridTemplateColumn Header="Cuota" 
                                     Width="auto"
                                     CellStyle="{StaticResource leftTopAlignment}">
@@ -160,16 +157,43 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Monto" 
+                <DataGridTextColumn Header="Monto"
                                     Binding="{Binding Monto}" 
                                     FontSize="12" 
                                     FontWeight="Bold"
                                     Width="1*"
                                     CellStyle="{StaticResource rightTopAlignment}"/>
+
+                <DataGridTemplateColumn Header="Mensual">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <RadioButton IsChecked="{Binding EsMensual}"
+                                         IsEnabled="False"
+                                         HorizontalAlignment="Center"
+                                         FontWeight="ExtraBold"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Ajeno">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <RadioButton IsChecked="{Binding EsAjeno}" 
+                                         IsEnabled="False"
+                                         HorizontalAlignment="Center"
+                                         FontWeight="ExtraBold"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-
-        <Grid Grid.Column="2"
+        
+        <GridSplitter Grid.Column="2" 
+                      Width="5" 
+                      HorizontalAlignment="Stretch" 
+                      Visibility="{Binding EditVM, Converter={StaticResource nullToVis}, ConverterParameter=not}"/>
+        
+        <Grid Grid.Column="3"
               Margin="10"
               Visibility="{Binding EditVM, Converter={StaticResource nullToVis}, ConverterParameter=not}">
             <Grid.RowDefinitions>
@@ -179,39 +203,51 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Margin="0,0,0,10">
-                <TextBlock Text="Total resúmen"
-                           HorizontalAlignment="Right" />
-                <TextBlock Text="{Binding TotalResumen, Mode=OneWay}"
-                           FontWeight="Bold"
-                           HorizontalAlignment="Right" />
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Content="Totales"
+                             GroupName="totales"
+                             IsChecked="True"
+                             x:Name="rdbTotales"
+                             Focusable="False"/>
+                <RadioButton Content="Tags"
+                             GroupName="totales"
+                             IsChecked="False"
+                             x:Name="rdbTags"
+                             Margin="20,0"
+                             Focusable="False"/>
             </StackPanel>
 
-            <ItemsControl Grid.Row="1"
-                          ItemsSource="{Binding Agrupaciones}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="0,0,0,10">
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="{Binding Descripcion}"
-                                       Background="LightGreen" 
-                                       HorizontalAlignment="Right"/>
-                            <TextBlock Text="{Binding Monto}"
-                                       HorizontalAlignment="Right"
-                                       FontWeight="Bold"
-                                       Grid.Row="1"/>
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <chart:PieChart ChartTitle=""
+                            Margin="0,0,0,10" 
+                            Grid.Row="1"
+                            ChartSubTitle="Totales por tarjeta"
+                            SelectedItem="{Binding Path=TotalesSelectedItem, Mode=TwoWay}"
+                            Visibility="{Binding Path=IsChecked, ElementName=rdbTotales, Converter={StaticResource boolToVis}}"
+                            Focusable="False">
+                <chart:PieChart.Series>
+                    <chart:ChartSeries SeriesTitle="Totales"
+                                       DisplayMember="Descripcion"
+                                       ValueMember="Monto"
+                                       ItemsSource="{Binding Path=Totales}"
+                                       Focusable="False" />
+                </chart:PieChart.Series>
+            </chart:PieChart>
+
+            <chart:PieChart ChartTitle="" 
+                            Margin="0,0,0,10" 
+                            Grid.Row="1"
+                            ChartSubTitle="Totales por tags"
+                            SelectedItem="{Binding Path=AgrupacionesSelectedItem, Mode=TwoWay}"
+                            Visibility="{Binding Path=IsChecked, ElementName=rdbTags, Converter={StaticResource boolToVis}}"
+                            Focusable="False">
+                <chart:PieChart.Series>
+                    <chart:ChartSeries SeriesTitle="Tags"
+                                       DisplayMember="Descripcion"
+                                       ValueMember="Monto"
+                                       ItemsSource="{Binding Path=Agrupaciones}" 
+                                       Focusable="False"/>
+                </chart:PieChart.Series>
+            </chart:PieChart>
 
             <StackPanel Grid.Row="2" 
                         Margin="0,0,0,10"
