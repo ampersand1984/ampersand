@@ -1,6 +1,7 @@
 ﻿using ampersand.Core;
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
+using ampersand_pb.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,13 +23,18 @@ namespace ampersand_pb.ViewModels
             {
                 new ActionItem
                 {
+                    Description = "Actual",
+                    Command = MostrarActualCommand
+                },
+                new ActionItem
+                {
                     Description = "Resúmenes",
                     Command = this.MostrarResumenesCommand
                 },
                 new ActionItem
                 {
-                    Description = "Actual",
-                    Command = MostrarActualCommand
+                    Description = "Gráficos",
+                    Command = this.MostrarResumenesGraficosCommand
                 },
                 new ActionItem
                 {
@@ -68,6 +74,17 @@ namespace ampersand_pb.ViewModels
                 if (_mostrarResumenesCommand == null)
                     _mostrarResumenesCommand = new RelayCommand(param => MostrarResumenesCommandExecute());
                 return _mostrarResumenesCommand;
+            }
+        }
+
+        private ICommand _mostrarResumenesGraficosCommand;
+        public ICommand MostrarResumenesGraficosCommand
+        {
+            get
+            {
+                if (_mostrarResumenesGraficosCommand == null)
+                    _mostrarResumenesGraficosCommand = new RelayCommand(param => MostrarResumenesGraficosCommandExecute());
+                return _mostrarResumenesGraficosCommand;
             }
         }
 
@@ -136,7 +153,6 @@ namespace ampersand_pb.ViewModels
         private void MostrarResumenesCommandExecute()
         {
             var resumenesVM = MainWindowItems.OfType<ResumenesViewModel>().FirstOrDefault();
-
             if (resumenesVM != null)
             {
                 CurrentMainWindowItem = resumenesVM;
@@ -144,6 +160,21 @@ namespace ampersand_pb.ViewModels
             else
             {
                 resumenesVM = new ResumenesViewModel(MovimientosDA);
+
+                AgregarMainWindowItem(resumenesVM);
+            }
+        }
+
+        private void MostrarResumenesGraficosCommandExecute()
+        {
+            var resumenesVM = MainWindowItems.OfType<ResumenesGraficosViewModel>().FirstOrDefault();
+            if (resumenesVM != null)
+            {
+                CurrentMainWindowItem = resumenesVM;
+            }
+            else
+            {
+                resumenesVM = new ResumenesGraficosViewModel(MovimientosDA);
 
                 AgregarMainWindowItem(resumenesVM);
             }
@@ -183,7 +214,10 @@ namespace ampersand_pb.ViewModels
 
         private void MostrarActualCommandExecute()
         {
-            throw new NotImplementedException();
+            var resumenes = MovimientosDA.GetResumenes();
+            var resumenesAgrupados = resumenes.Agrupar();
+            var movimientosVM = new MovimientosViewModel(resumenesAgrupados.First(), MovimientosDA);
+            AgregarMainWindowItem(movimientosVM);
         }
 
         private object MostrarPreferenciasCommandExecute()

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Windows;
-using ampersand_pb.ViewModels;
+﻿using ampersand_pb.ViewModels;
 using ampersand_pb.Views;
+using System;
+using System.Windows;
 
 namespace ampersand_pb
 {

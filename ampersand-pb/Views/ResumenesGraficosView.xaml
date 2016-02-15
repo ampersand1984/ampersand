@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="ampersand_pb.Views.ResumenesGraficosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ampersand_pb.Views"
+             xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--<controls:RangeSlider
+            Minimum="{Binding Path=MinimoPeriodo, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            Maximum="{Binding Path=MaximoPeriodo, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            LowerValue="{Binding Path=MinimoPeriodoSeleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            UpperValue="{Binding Path=MaximoPeriodoSeleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="2" MoveWholeRange="True" Interval="1" TickFrequency="1"
+            IsSnapToTickEnabled="True" ExtendedMode="True"/>-->
+
+        <ItemsControl ItemsSource="{Binding ResumenesAgrupados}"
+                      Grid.Row="1">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <chart:ClusteredColumnChart ChartTitle="{Binding [0].Descripcion}"
+                                ChartSubTitle="ChartSubTitle"
+                                Focusable="False">
+                        <chart:ClusteredColumnChart.Series>
+                            <chart:ChartSeries SeriesTitle="SeriesTitle"
+                                           DisplayMember="TextoPeriodo"
+                                           ValueMember="Total"
+                                           ItemsSource="{Binding}"
+                                           Focusable="False" />
+                        </chart:ClusteredColumnChart.Series>
+                    </chart:ClusteredColumnChart>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

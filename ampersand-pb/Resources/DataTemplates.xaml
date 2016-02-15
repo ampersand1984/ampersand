@@ -15,6 +15,10 @@
         <V:ResumenesView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type VM:ResumenesGraficosViewModel}">
+        <V:ResumenesGraficosView/>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type VM:MovimientoABMViewModel}">
         <V:MovimientoABMView/>
     </DataTemplate>

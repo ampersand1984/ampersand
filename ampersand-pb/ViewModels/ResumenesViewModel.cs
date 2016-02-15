@@ -4,9 +4,6 @@ using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace ampersand_pb.ViewModels

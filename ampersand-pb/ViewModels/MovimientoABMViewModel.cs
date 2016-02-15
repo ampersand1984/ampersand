@@ -1,11 +1,10 @@
-﻿using System;
+﻿using ampersand.Core;
+using ampersand.Core.Common;
+using ampersand_pb.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using ampersand.Core;
-using ampersand_pb.Models;
 using System.Windows.Input;
-using ampersand.Core.Common;
 
 namespace ampersand_pb.ViewModels
 {

@@ -8,6 +8,8 @@
              xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
              xmlns:common="clr-namespace:ampersand_pb.Common"
              xmlns:views="clr-namespace:ampersand_pb.Views">
+    <!--http://mahapps.com/-->
+    <!--https://modernuicharts.codeplex.com/-->
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>

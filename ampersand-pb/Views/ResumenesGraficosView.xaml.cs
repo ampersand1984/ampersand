@@ -3,11 +3,11 @@
 namespace ampersand_pb.Views
 {
     /// <summary>
-    /// Interaction logic for MovimientoABMView.xaml
+    /// Interaction logic for ResumenesGraficosView.xaml
     /// </summary>
-    public partial class MovimientoABMView : UserControl
+    public partial class ResumenesGraficosView : UserControl
     {
-        public MovimientoABMView()
+        public ResumenesGraficosView()
         {
             InitializeComponent();
         }

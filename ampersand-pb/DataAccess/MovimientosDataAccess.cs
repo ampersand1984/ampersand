@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-using System.IO;
-using System.Windows;
+﻿using ampersand.Core.Common;
 using ampersand_pb.Models;
-using ampersand.Core.Common;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Xml.Linq;
 
 namespace ampersand_pb.DataAccess
 {

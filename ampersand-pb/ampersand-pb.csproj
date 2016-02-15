@@ -104,6 +104,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewModels\PublishViewModelEventArgs.cs" />
+    <Compile Include="ViewModels\ResumenesGraficosViewModel.cs" />
     <Compile Include="ViewModels\ResumenesViewModel.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -113,6 +114,9 @@
     </Compile>
     <Compile Include="Views\MovimientosView.xaml.cs">
       <DependentUpon>MovimientosView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ResumenesGraficosView.xaml.cs">
+      <DependentUpon>ResumenesGraficosView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ResumenesView.xaml.cs">
       <DependentUpon>ResumenesView.xaml</DependentUpon>
@@ -130,6 +134,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MovimientosView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ResumenesGraficosView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
