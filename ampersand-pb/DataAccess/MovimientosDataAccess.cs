@@ -53,23 +53,33 @@ namespace ampersand_pb.DataAccess
             {
                 foreach (var resumen in resumenAgrupadoM.Resumenes)
                 {
-                    var pagos = from XElement mov in resumen.XDoc.Root.Elements("Mov")
-                                select mov;
-
-                    foreach (var xmlPago in pagos)
-                    {
-                        var pago = GetPago(xmlPago);
-                        if (pago != null)
-                        {
-                            pago.TipoDescripcion = resumen.Descripcion;
-                            resultado.Add(pago);
-                        }
-                    }
+                    var pagos = GetMovimientos(resumen);
+                    resultado.AddRange(pagos);
                 }
             }
             catch (Exception)
             {
 
+            }
+
+            return resultado;
+        }
+
+        public IEnumerable<BaseMovimiento> GetMovimientos(ResumenModel resumen)
+        {
+            var resultado = new List<BaseMovimiento>();
+
+            var xmlPagos = from XElement mov in resumen.XDoc.Root.Elements("Mov")
+                        select mov;
+
+            foreach (var xmlPago in xmlPagos)
+            {
+                var pago = GetPago(xmlPago);
+                if (pago != null)
+                {
+                    pago.TipoDescripcion = resumen.Descripcion;
+                    resultado.Add(pago);
+                }
             }
 
             return resultado;
@@ -225,6 +235,7 @@ namespace ampersand_pb.DataAccess
     {
         IEnumerable<ResumenModel> GetResumenes();
         IEnumerable<BaseMovimiento> GetMovimientos(ResumenAgrupadoModel resumenAgrupadoM);
+        IEnumerable<BaseMovimiento> GetMovimientos(ResumenModel resumen);
 
         //IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(string periodoActual);
 

@@ -90,6 +90,7 @@
     <Compile Include="DataAccess\MovimientosDataAccess.cs" />
     <Compile Include="DataAccess\PreferenciasDataAccess.cs" />
     <Compile Include="Models\BaseMovimiento.cs" />
+    <Compile Include="Models\PeriodoModel.cs" />
     <Compile Include="Models\ResumenAgrupadoModel.cs" />
     <Compile Include="Models\ResumenModelExtension.cs" />
     <Compile Include="Models\ResumenModel.cs" />

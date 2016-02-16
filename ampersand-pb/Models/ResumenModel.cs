@@ -14,6 +14,7 @@ namespace ampersand_pb.Models
                 return FechaDeCierre.GetPeriodo();
             }
         }
+
         public string TextoPeriodo
         {
             get
@@ -65,6 +66,13 @@ namespace ampersand_pb.Models
         public object Clone()
         {
             return this.MemberwiseClone();
+        }
+
+        public override string ToString()
+        {
+            var str = string.Format("{0} {1}", Descripcion, Periodo);
+
+            return str;
         }
     }
 }

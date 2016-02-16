@@ -23,7 +23,7 @@ namespace ampersand_pb.ViewModels
         {
             _esProyeccion = true;
 
-            _movimientos = new ObservableCollection<BaseMovimiento>(movimientos);
+            _movimientos = movimientos;
 
             _agrupaciones = GetAgrupaciones(_movimientos);
         }
@@ -55,6 +55,20 @@ namespace ampersand_pb.ViewModels
             get { return  Movimientos.Sum(a => a.Monto); }
         }
 
+        private bool _filtrar;
+        public bool Filtrar
+        {
+            get
+            {
+                return _filtrar;
+            }
+            set
+            {
+                _filtrar = value;
+                OnPropertyChanged("Filtrar");
+            }
+        }
+
         private IEnumerable<AgrupacionItem> _totales;
         public IEnumerable<AgrupacionItem> Totales
         {
@@ -80,19 +94,23 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        public decimal TotalSeleccion
-        {
-            get { return Movimientos.Where(a => a.IsSelected).Sum(a => a.Monto); }
-        }        
-
-        private ObservableCollection<BaseMovimiento> _movimientos;
-        public ObservableCollection<BaseMovimiento> Movimientos
+        private IEnumerable<BaseMovimiento> _movimientos;
+        public IEnumerable<BaseMovimiento> Movimientos
         {
             get
             {
                 if (_movimientos == null)
-                    CargarMovimientos();
+                    _movimientos = GetMovimientos();
                 return _movimientos;
+            }
+        }
+
+        private IEnumerable<BaseMovimiento> _movimientosFiltrados;
+        public IEnumerable<BaseMovimiento> MovimientosFiltrados
+        {
+            get
+            {
+                return _movimientosFiltrados ?? Movimientos;
             }
         }
 
@@ -106,7 +124,7 @@ namespace ampersand_pb.ViewModels
         private IEnumerable<AgrupacionItem> _agrupaciones;
         public IEnumerable<AgrupacionItem> Agrupaciones
         {
-            get { return _agrupaciones; }
+            get { return _agrupaciones ?? (_agrupaciones = GetAgrupaciones(MovimientosFiltrados)); }
         }
 
         private AgrupacionItem _agrupacionesSelectedItem;
@@ -121,13 +139,6 @@ namespace ampersand_pb.ViewModels
                 _agrupacionesSelectedItem = value;
                 OnPropertyChanged("AgrupacionesSelectedItem");
             }
-        }
-
-        private IEnumerable<AgrupacionItem> _agrupacionesSeleccion;
-        public IEnumerable<AgrupacionItem> AgrupacionesSeleccion
-        {
-            get { return _agrupacionesSeleccion; }
-            set { _agrupacionesSeleccion = value; OnPropertyChanged("AgrupacionesSeleccion"); }
         }
 
         public bool EsElUtimoMes
@@ -305,34 +316,18 @@ namespace ampersand_pb.ViewModels
             //OnPublishViewModelEvent(movimientosVM);
         }
 
-        private void CargarMovimientos()
+        private IEnumerable<BaseMovimiento> GetMovimientos()
         {
             var movimientos = _movimientosDA.GetMovimientos(_resumenAgrupadoM);
 
-            _movimientos = new ObservableCollection<BaseMovimiento>(movimientos);
+            movimientos = new ObservableCollection<BaseMovimiento>(movimientos);
 
-            _agrupaciones = GetAgrupaciones(_movimientos);
-
-            //foreach (var item in _movimientos)
-            //{
-            //    item.IsSelectedChangedEvent += Item_IsSelectedChangedEvent;
-            //}
+            _agrupaciones = GetAgrupaciones(movimientos);
 
             OnPropertyChanged("TotalResumen");
-        }
 
-        //private void Item_IsSelectedChangedEvent(object sender, IsSelectedChangedEventHandler e)
-        //{
-        //    if (Movimientos.Count(a => a.IsSelected) > 1)
-        //    {
-        //        AgrupacionesSeleccion = GetAgrupaciones(Movimientos.Where(a => a.IsSelected));
-        //    }
-        //    else
-        //    {
-        //        AgrupacionesSeleccion = null;
-        //    }
-        //    OnPropertyChanged("TotalSeleccion");
-        //}
+            return movimientos;
+        }
 
         private IEnumerable<AgrupacionItem> GetTotales()
         {
@@ -355,9 +350,11 @@ namespace ampersand_pb.ViewModels
                 else
                     tags.Add(new AgrupacionItem() { Descripcion = mov.Tags.First(), Monto = mov.Monto });
             }
-
+            
             return tags;
         }
+
+        private string _ultimaOpcionDeGraficoSeleccionada = "TotalesSelectedItem";
 
         protected override void OnPropertyChanged(string propertyName)
         {
@@ -365,38 +362,77 @@ namespace ampersand_pb.ViewModels
             switch (propertyName)
             {
                 case "TotalesSelectedItem":
-                    if (TotalesSelectedItem != null)
                     {
-                        var seleccion = TotalesSelectedItem.Descripcion;
+                        if (TotalesSelectedItem != null)
+                        {
+                            var seleccion = TotalesSelectedItem.Descripcion;
 
-                        foreach (var mov in Movimientos)
-                            mov.IsSelected = mov.TipoDescripcion.Equals(seleccion);
-                    }
-                    else
-                    {
-                        foreach (var mov in Movimientos)
-                            mov.IsSelected = false;
+                            foreach (var mov in Movimientos)
+                                mov.IsSelected = mov.TipoDescripcion.Equals(seleccion);
+                        }
+                        else
+                        {
+                            foreach (var mov in Movimientos)
+                                mov.IsSelected = false;
+                        }
+                        _ultimaOpcionDeGraficoSeleccionada = propertyName;
+                        ActualizarMovimientosFiltrados();
                     }
                     break;
 
                 case "AgrupacionesSelectedItem":
-                    if (AgrupacionesSelectedItem != null)
                     {
-                        var seleccion = AgrupacionesSelectedItem.Descripcion;
+                        if (AgrupacionesSelectedItem != null)
+                        {
+                            var seleccion = AgrupacionesSelectedItem.Descripcion;
 
-                        foreach (var mov in Movimientos)
-                            mov.IsSelected = mov.Tags.Any(a => a.Equals(seleccion));
+                            foreach (var mov in Movimientos)
+                                mov.IsSelected = mov.Tags.Any(a => a.Equals(seleccion));
+                        }
+                        else
+                        {
+                            foreach (var mov in Movimientos)
+                                mov.IsSelected = false;
+                        }
+                        _ultimaOpcionDeGraficoSeleccionada = propertyName;
+                        ActualizarMovimientosFiltrados();
                     }
-                    else
-                    {
-                        foreach (var mov in Movimientos)
-                            mov.IsSelected = false;
-                    }
+                    break;
+
+                case "Filtrar":
+                    ActualizarMovimientosFiltrados();
                     break;
 
                 default:
                     break;
             }
+        }
+
+        private void ActualizarMovimientosFiltrados()
+        {
+            if (Filtrar)
+            {
+                switch (_ultimaOpcionDeGraficoSeleccionada)
+                {
+                    case "TotalesSelectedItem":
+                        if (TotalesSelectedItem != null)
+                            _movimientosFiltrados = Movimientos.Where(a => a.TipoDescripcion.Equals(TotalesSelectedItem.Descripcion));
+                        break;
+
+                    case "AgrupacionesSelectedItem":
+                        if (AgrupacionesSelectedItem != null)
+                            _movimientosFiltrados = Movimientos.Where(a => a.Tags.Any(b => b.Equals(AgrupacionesSelectedItem.Descripcion)));
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                _movimientosFiltrados = null;
+            }
+            OnPropertyChanged("MovimientosFiltrados");
         }
 
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;

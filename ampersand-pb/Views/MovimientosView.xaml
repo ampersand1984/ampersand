@@ -34,7 +34,7 @@
                                               VerticalContentAlignment="Stretch"
                                               VerticalAlignment="Stretch"/>
 
-        <DataGrid ItemsSource="{Binding Movimientos}"
+        <DataGrid ItemsSource="{Binding MovimientosFiltrados}"
                   SelectedIndex="{Binding SelectedIndex}"
                   Style="{StaticResource AzureDataGrid}"
                   HorizontalContentAlignment="Stretch"
@@ -132,9 +132,29 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}"
-                                                       Background="LightGreen"
-                                                       Margin="1"/>
+                                            <TextBlock Text="{Binding StringFormat='{}{0} '}"
+                                                       FontSize="10"
+                                                       Margin="1"
+                                                       Padding="2"
+                                                       Opacity="0.7">
+                                                <TextBlock.Background>
+                                                    <VisualBrush>
+                                                        <VisualBrush.Visual>
+                                                            <Polygon Fill="LightBlue"
+                                                                     Stroke="Black"
+                                                                     StrokeThickness="2">
+                                                                <Polygon.Points>
+                                                                    <Point X="0" Y="30" />
+                                                                    <Point X="55" Y="30" />
+                                                                    <Point X="70" Y="15" />
+                                                                    <Point X="55" Y="0" />
+                                                                    <Point X="0" Y="0" />
+                                                                </Polygon.Points>
+                                                            </Polygon>
+                                                        </VisualBrush.Visual>
+                                                    </VisualBrush>
+                                                </TextBlock.Background>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -205,19 +225,33 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal">
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <RadioButton Content="Totales"
                              GroupName="totales"
                              IsChecked="True"
                              x:Name="rdbTotales"
-                             Focusable="False"/>
+                             Focusable="False"
+                             Grid.Column="0"/>
                 <RadioButton Content="Tags"
                              GroupName="totales"
                              IsChecked="False"
                              x:Name="rdbTags"
                              Margin="20,0"
-                             Focusable="False"/>
-            </StackPanel>
+                             Focusable="False"
+                             Grid.Column="1"/>
+                
+                <CheckBox Content="Filtrar"
+                          IsChecked="{Binding Filtrar}"
+                          Margin="20,0"
+                          Focusable="False"
+                          HorizontalAlignment="Right"
+                          Grid.Column="2"/>
+            </Grid>
 
             <chart:PieChart ChartTitle=""
                             Margin="0,0,0,10" 
@@ -250,17 +284,7 @@
                                        Focusable="False"/>
                 </chart:PieChart.Series>
             </chart:PieChart>
-
-            <StackPanel Grid.Row="2" 
-                        Margin="0,0,0,10"
-                        Visibility="{Binding AgrupacionesSeleccion, Converter={StaticResource nullToVis}}">
-                <TextBlock Text="Total selección"
-                           HorizontalAlignment="Right" />
-                <TextBlock Text="{Binding TotalSeleccion, Mode=OneWay}"
-                           FontWeight="Bold"
-                           HorizontalAlignment="Right" />
-            </StackPanel>
-
+            
             <StackPanel Grid.Row="3" Margin="0,0,0,10">
                 <Button Content="Importar info del mes anterior"
                     Command="{Binding ImportarInfoDeResumenAnteriorCommand}"

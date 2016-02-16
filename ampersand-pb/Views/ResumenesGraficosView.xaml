@@ -8,42 +8,67 @@
              xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!--<controls:RangeSlider
-            Minimum="{Binding Path=MinimoPeriodo, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-            Maximum="{Binding Path=MaximoPeriodo, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-            LowerValue="{Binding Path=MinimoPeriodoSeleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            UpperValue="{Binding Path=MaximoPeriodoSeleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="2" MoveWholeRange="True" Interval="1" TickFrequency="1"
-            IsSnapToTickEnabled="True" ExtendedMode="True"/>-->
-
-        <ItemsControl ItemsSource="{Binding ResumenesAgrupados}"
-                      Grid.Row="1">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <chart:ClusteredColumnChart ChartTitle="{Binding [0].Descripcion}"
-                                ChartSubTitle="ChartSubTitle"
-                                Focusable="False">
-                        <chart:ClusteredColumnChart.Series>
-                            <chart:ChartSeries SeriesTitle="SeriesTitle"
-                                           DisplayMember="TextoPeriodo"
-                                           ValueMember="Total"
-                                           ItemsSource="{Binding}"
-                                           Focusable="False" />
-                        </chart:ClusteredColumnChart.Series>
-                    </chart:ClusteredColumnChart>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+            <TextBlock Text="Tipos de gráficos"
+                        VerticalAlignment="Center"
+                        Margin="10,0,10,0"/>
+            <ComboBox ItemsSource="{Binding TiposDeGraficos}" 
+                        IsEditable="False" 
+                        SelectedValue="{Binding GraficoSeleccionado}"
+                        Width="200"/>
+            
+            <TextBlock Text="Desde"
+                        VerticalAlignment="Center"
+                        Margin="30,0,10,0"/>
+            <ComboBox ItemsSource="{Binding Periodos}" 
+                        IsEditable="False" 
+                        DisplayMemberPath="TextoPeriodo"
+                        SelectedValuePath="Periodo"
+                        SelectedValue="{Binding MinimoPeriodo}"
+                        Width="180"/>
+            
+            <TextBlock Text="Hasta"
+                        VerticalAlignment="Center"
+                        Margin="20,0,10,0"/>
+            <ComboBox ItemsSource="{Binding Periodos}" 
+                        IsEditable="False" 
+                        DisplayMemberPath="TextoPeriodo"
+                        SelectedValuePath="Periodo"
+                        SelectedValue="{Binding MaximoPeriodo}"
+                        Width="180"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding ItemsDelGrafico}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <chart:ClusteredColumnChart ChartTitle="{Binding Descripcion}"
+                                                    ChartSubTitle="ChartSubTitle"
+                                                    ChartLegendVisibility="Hidden"
+                                                    Focusable="False">
+                            <chart:ClusteredColumnChart.Series>
+                                <chart:ChartSeries SeriesTitle="SeriesTitle"
+                                                    DisplayMember="Descripcion"
+                                                    ValueMember="Monto"
+                                                    ItemsSource="{Binding Items}"
+                                                    Focusable="False" />
+                            </chart:ClusteredColumnChart.Series>
+                        </chart:ClusteredColumnChart>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
     </Grid>
+    
 </UserControl>

@@ -33,7 +33,7 @@ namespace ampersand_pb.ViewModels
                 },
                 new ActionItem
                 {
-                    Description = "Gráficos",
+                    Description = "Gráficos por mes",
                     Command = this.MostrarResumenesGraficosCommand
                 },
                 new ActionItem
