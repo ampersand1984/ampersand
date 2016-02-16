@@ -23,7 +23,7 @@ namespace ampersand_pb.ViewModels
             {
                 new ActionItem
                 {
-                    Description = "Actual",
+                    Description = "Último",
                     Command = MostrarActualCommand
                 },
                 new ActionItem

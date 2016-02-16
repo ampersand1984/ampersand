@@ -37,7 +37,7 @@ namespace ResumenParser.Models
 
             var xdoc = new XDocument(
                 new XElement("Movimientos", 
-                    new XAttribute("Periodo", periodo), new XAttribute("FechaDeCierre", fechaDeCierre), new XAttribute("Total", total)));
+                    new XAttribute("Periodo", periodo), new XAttribute("FechaDeCierre", fechaDeCierre), new XAttribute("Total", total), new XAttribute("Tipo", "Credito"), new XAttribute("Descripcion", "Visa")));
 
             foreach (var mov in movimientos)
             {

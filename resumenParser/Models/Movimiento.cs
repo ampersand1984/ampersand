@@ -154,7 +154,7 @@ namespace ResumenParser.Models
             var start = line.Trim().LastIndexOf(" ") + 1;
             var strMonto = line.Trim().Substring(start);
             var monto = 0M;
-
+            strMonto = strMonto.Replace(",", ".");
             decimal.TryParse(strMonto, out monto);
             return monto;
         }

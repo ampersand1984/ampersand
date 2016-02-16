@@ -105,7 +105,7 @@
                                     CellStyle="{StaticResource leftTopAlignment}"/>
                 
                 <DataGridTemplateColumn Header="Descripcion"
-                                        Width="5*"
+                                        Width="4*"
                                         CellStyle="{StaticResource leftTopAlignment}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
