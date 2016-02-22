@@ -194,40 +194,44 @@ namespace ampersand_pb.DataAccess
             return resultado;
         }
 
-        public void SaveMovimientos(ResumenModel resumenM, IEnumerable<BaseMovimiento> movimientos)
+        public void SaveMovimientos(ResumenAgrupadoModel resumenAgrupadoM, IEnumerable<BaseMovimiento> movimientos)
         {
-            var total = movimientos.Sum(a => a.Monto);
-            var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
-                                                                 new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
-                                                                 new XAttribute("Total", total)));
-
-            foreach (var mov in movimientos)
+            foreach (var resumenM in resumenAgrupadoM.Resumenes)
             {
-                var xMov = new XElement("Mov", new XAttribute("Tipo", mov.Tipo),
-                                               new XAttribute("IdMovimiento", mov.IdMovimiento),
-                                               new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
-                                               new XAttribute("Descripcion", mov.Descripcion),
-                                               new XAttribute("Monto", mov.Monto));
+                var total = movimientos.Sum(a => a.Monto);
+                var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
+                                                                     new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
+                                                                     new XAttribute("Total", total),
+                                                                     new XAttribute("Tipo", TipoMovimiento.Credito),
+                                                                     new XAttribute("Descripcion", resumenM.Descripcion)));
 
-                if (mov.DescripcionAdicional.Length > 0)
-                    xMov.Add(new XAttribute("DescripcionAdicional", mov.DescripcionAdicional));
+                foreach (var mov in movimientos.Where(a => a.TipoDescripcion.Equals(resumenM.Descripcion)))
+                {
+                    var xMov = new XElement("Mov", new XAttribute("IdMovimiento", mov.IdMovimiento),
+                                                   new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
+                                                   new XAttribute("Descripcion", mov.Descripcion),
+                                                   new XAttribute("Monto", mov.Monto));
 
-                if (mov.Cuota.Length > 0)
-                    xMov.Add(new XAttribute("Cuota", mov.Cuota));
+                    if (mov.DescripcionAdicional.Length > 0)
+                        xMov.Add(new XAttribute("DescripcionAdicional", mov.DescripcionAdicional));
 
-                if (mov.Tags.Any())
-                    xMov.Add(new XAttribute("Tags", string.Join(";", mov.Tags)));
+                    if (mov.Cuota.Length > 0)
+                        xMov.Add(new XAttribute("Cuota", mov.Cuota));
 
-                if (mov.EsMensual)
-                    xMov.Add(new XAttribute("EsMensual", mov.EsMensual));
+                    if (mov.Tags.Any())
+                        xMov.Add(new XAttribute("Tags", string.Join(";", mov.Tags)));
 
-                if (mov.EsAjeno)
-                    xMov.Add(new XAttribute("EsAjeno", mov.EsAjeno));
+                    if (mov.EsMensual)
+                        xMov.Add(new XAttribute("EsMensual", mov.EsMensual));
 
-                xdoc.Root.Add(xMov);
+                    if (mov.EsAjeno)
+                        xMov.Add(new XAttribute("EsAjeno", mov.EsAjeno));
+
+                    xdoc.Root.Add(xMov);
+                }
+
+                xdoc.Save(resumenM.FilePath);
             }
-
-            xdoc.Save(resumenM.FilePath);
         }
     }
 
@@ -239,6 +243,6 @@ namespace ampersand_pb.DataAccess
 
         //IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(string periodoActual);
 
-        void SaveMovimientos(ResumenModel resumenM, IEnumerable<BaseMovimiento> movimientos);
+        void SaveMovimientos(ResumenAgrupadoModel resumenAgrupadoM, IEnumerable<BaseMovimiento> movimientos);
     }
 }

@@ -48,21 +48,22 @@
             <ItemsControl ItemsSource="{Binding ItemsDelGrafico}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel/>
+                        <StackPanel Margin="0,70,0,0"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <chart:ClusteredColumnChart ChartTitle="{Binding Descripcion}"
-                                                    ChartSubTitle="ChartSubTitle"
+                        <chart:ClusteredColumnChart ChartTitle="{Binding ChartTitle}"
+                                                    ChartSubTitle="{Binding ChartSubTitle}"
                                                     ChartLegendVisibility="Hidden"
-                                                    Focusable="False">
+                                                    Focusable="False"
+                                                    Margin="0,-40,0,0">
                             <chart:ClusteredColumnChart.Series>
-                                <chart:ChartSeries SeriesTitle="SeriesTitle"
-                                                    DisplayMember="Descripcion"
-                                                    ValueMember="Monto"
-                                                    ItemsSource="{Binding Items}"
-                                                    Focusable="False" />
+                                <chart:ChartSeries SeriesTitle="Meses"
+                                                   DisplayMember="Descripcion"
+                                                   ValueMember="Monto"
+                                                   ItemsSource="{Binding Items}"
+                                                   Focusable="False" />
                             </chart:ClusteredColumnChart.Series>
                         </chart:ClusteredColumnChart>
                     </DataTemplate>

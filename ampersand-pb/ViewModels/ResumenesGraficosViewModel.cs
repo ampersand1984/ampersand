@@ -10,6 +10,7 @@ namespace ampersand_pb.ViewModels
 {
     public class ResumenesGraficosViewModel : BaseViewModel, IMainWindowItem
     {
+        private const string TOTALES_MENSUAL = "Totales mensuales";
         private const string TOTALES_POR_TARJETA_MENSUAL = "Totales mensuales por tarjeta";
         private const string TOTALES_POR_TAGS_MENSUAL = "Totales mensuales por categoría";
 
@@ -17,6 +18,7 @@ namespace ampersand_pb.ViewModels
         {
             TiposDeGraficos = new List<string>()
             {
+                TOTALES_MENSUAL,
                 TOTALES_POR_TARJETA_MENSUAL,
                 TOTALES_POR_TAGS_MENSUAL
             };
@@ -118,13 +120,40 @@ namespace ampersand_pb.ViewModels
 
             switch (GraficoSeleccionado)
             {
+                case TOTALES_MENSUAL:
+                    {
+                        var items = new List<ItemGrafico>();
+                        foreach (var periodo in periodos)
+                        {
+                            items.Add(new ItemGrafico
+                            {
+                                Descripcion = resumenesPorFecha.FirstOrDefault(a => a.Periodo.Equals(periodo)).TextoPeriodo,
+                                Id = periodo,
+                                Monto = resumenesPorFecha.Where(a => a.Periodo.Equals(periodo)).Sum(a => a.Total)
+                            });
+                        }
+
+                        var datosDelGrafico = new DatosDelGrafico
+                        {
+                            ChartTitle = TOTALES_MENSUAL,
+                            ChartSubTitle = "",
+                            Items = items
+                        };
+                        resultado.Add(datosDelGrafico);
+                    }
+                    break;
+
                 case TOTALES_POR_TARJETA_MENSUAL:
                     {
                         var tipos = resumenesPorFecha.Select(a => a.Descripcion).Distinct();
 
                         foreach (var tipo in tipos)
                         {
-                            var datosDelGrafico = new DatosDelGrafico { Descripcion = tipo };
+                            var datosDelGrafico = new DatosDelGrafico
+                            {
+                                ChartTitle = tipo,
+                                ChartSubTitle = "",
+                            };
 
                             var resumenesPorTipo = resumenesPorFecha.Where(a => a.Descripcion.Equals(tipo))
                                                              .Where(a => periodos.Contains(a.Periodo))
@@ -198,7 +227,8 @@ namespace ampersand_pb.ViewModels
                             }
                             var datosDelGrafico = new DatosDelGrafico
                             {
-                                Descripcion = tag,
+                                ChartTitle = tag,
+                                ChartSubTitle = "",
                                 Items = items
                             };
 
@@ -242,8 +272,14 @@ namespace ampersand_pb.ViewModels
 
     public class DatosDelGrafico
     {
-        public string Descripcion { get; internal set; }
-        public IEnumerable<ItemGrafico> Items { get; internal set; }
+        public DatosDelGrafico()
+        {
+            ChartTitle = "ChartTitle";
+            ChartSubTitle = "ChartSubTitle";
+        }
+        public string ChartTitle { get; set; }
+        public string ChartSubTitle { get; set; }
+        public IEnumerable<ItemGrafico> Items { get; set; }
     }
 
     public class ItemGrafico

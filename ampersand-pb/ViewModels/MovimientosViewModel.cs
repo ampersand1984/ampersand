@@ -202,8 +202,8 @@ namespace ampersand_pb.ViewModels
 
         private void SaveCommandExecute()
         {
-            //_movimientosDA.SaveMovimientos(_resumenAgrupadoM, Movimientos);
-            //_huboCambios = false;
+            _movimientosDA.SaveMovimientos(_resumenAgrupadoM, Movimientos);
+            _huboCambios = false;
         }        
 
         private bool ImportarInfoDeResumenAnteriorCommandCanExecute()
@@ -246,7 +246,7 @@ namespace ampersand_pb.ViewModels
             //    }
             //}
 
-            //_huboCambios = true;
+            _huboCambios = true;
         }
 
         protected override void OnRequestCloseEvent()
