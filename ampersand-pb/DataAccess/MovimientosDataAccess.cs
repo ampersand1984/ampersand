@@ -196,16 +196,19 @@ namespace ampersand_pb.DataAccess
 
         public void SaveMovimientos(ResumenAgrupadoModel resumenAgrupadoM, IEnumerable<BaseMovimiento> movimientos)
         {
-            foreach (var resumenM in resumenAgrupadoM.Resumenes)
+            foreach (var resumenM in resumenAgrupadoM.Resumenes.Where(a => a.HuboCambios))
             {
-                var total = movimientos.Sum(a => a.Monto);
+                var movimientosDelResumen = movimientos.Where(a => a.TipoDescripcion.Equals(resumenM.Descripcion)).ToList();
+
+                var total = movimientosDelResumen.Sum(a => a.Monto);
+
                 var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
                                                                      new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
                                                                      new XAttribute("Total", total),
                                                                      new XAttribute("Tipo", TipoMovimiento.Credito),
                                                                      new XAttribute("Descripcion", resumenM.Descripcion)));
 
-                foreach (var mov in movimientos.Where(a => a.TipoDescripcion.Equals(resumenM.Descripcion)))
+                foreach (var mov in movimientosDelResumen)
                 {
                     var xMov = new XElement("Mov", new XAttribute("IdMovimiento", mov.IdMovimiento),
                                                    new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),

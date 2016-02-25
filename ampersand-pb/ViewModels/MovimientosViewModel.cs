@@ -18,18 +18,15 @@ namespace ampersand_pb.ViewModels
             _movimientosDA = movimientosDA;
         }
 
-        public MovimientosViewModel(ResumenAgrupadoModel resumenAgrupadoM, IMovimientosDataAccess movimientosDA, IEnumerable<BaseMovimiento> movimientos)
-            :this(resumenAgrupadoM, movimientosDA)
+        public MovimientosViewModel(ResumenAgrupadoModel resumenAgrupadoProyeccion, IMovimientosDataAccess movimientosDA, IEnumerable<BaseMovimiento> movimientosProyeccion)
+            :this(resumenAgrupadoProyeccion, movimientosDA)
         {
             _esProyeccion = true;
 
-            _movimientos = movimientos;
-
-            _agrupaciones = GetAgrupaciones(_movimientos);
+            _movimientos = movimientosProyeccion;
         }
 
         private bool _esProyeccion;
-        private bool _huboCambios;
 
         private IMovimientosDataAccess _movimientosDA;
         private ResumenAgrupadoModel _resumenAgrupadoM;
@@ -74,9 +71,7 @@ namespace ampersand_pb.ViewModels
         {
             get
             {
-                if (_totales == null)
-                    _totales = GetTotales();
-                return _totales;
+                return _totales ?? (_totales = GetTotales());
             }
         }
 
@@ -197,13 +192,15 @@ namespace ampersand_pb.ViewModels
 
         private bool SaveCommandCanExecute()
         {
-            return _huboCambios && _esProyeccion == false;
+            return _esProyeccion == false && _resumenAgrupadoM.Resumenes.Any(a => a.HuboCambios);
         }
 
         private void SaveCommandExecute()
         {
             _movimientosDA.SaveMovimientos(_resumenAgrupadoM, Movimientos);
-            _huboCambios = false;
+
+            foreach (var resumen in _resumenAgrupadoM.Resumenes)
+                resumen.HuboCambios = false;
         }        
 
         private bool ImportarInfoDeResumenAnteriorCommandCanExecute()
@@ -246,7 +243,8 @@ namespace ampersand_pb.ViewModels
             //    }
             //}
 
-            _huboCambios = true;
+            foreach (var resumen in _resumenAgrupadoM.Resumenes)
+                resumen.HuboCambios = true;
         }
 
         protected override void OnRequestCloseEvent()
@@ -259,35 +257,38 @@ namespace ampersand_pb.ViewModels
 
         private bool EditarMovimientoCommandCanExecute()
         {
-            return _esProyeccion == false;
+            return _esProyeccion == false && SelectedIndex != -1;
         }
 
         private void EditarMovimientoCommandExecute()
         {
-            if (SelectedIndex != -1)
-            {
-                var tags = Movimientos.SelectMany(a => a.Tags).Distinct().GetTags();
+            var tags = Movimientos.SelectMany(a => a.Tags).Distinct().GetTags();
 
-                var baseMovimiento = Movimientos.ElementAt(SelectedIndex);
-                var movimientoABMVM = new MovimientoABMViewModel(baseMovimiento, tags);
-                movimientoABMVM.CloseEvent += MovimientoABMVM_CloseEvent;
-                movimientoABMVM.SaveEvent += MovimientoABMVM_SaveEvent;
-                EditVM = movimientoABMVM;
-            }
+            var baseMovimiento = Movimientos.ElementAt(SelectedIndex);
+            var movimientoABMVM = new MovimientoABMViewModel(baseMovimiento, tags);
+            movimientoABMVM.CloseEvent += MovimientoABMVM_CloseEvent;
+            movimientoABMVM.SaveEvent += MovimientoABMVM_SaveEvent;
+            EditVM = movimientoABMVM;
         }
 
         private void MovimientoABMVM_SaveEvent(object sender, EventArgs e)
         {
             var movimientoABMVM = sender as MovimientoABMViewModel;
-            movimientoABMVM.CloseEvent -= MovimientoABMVM_CloseEvent;
-            movimientoABMVM.SaveEvent -= MovimientoABMVM_SaveEvent;
-            movimientoABMVM = null;
+            var resumen = _resumenAgrupadoM.Resumenes.First(a => a.Descripcion.Equals(movimientoABMVM.TipoDescripcion));
+            resumen.HuboCambios = true;
+
+            _totales = null;
+            _agrupaciones = null;
+            OnPropertyChanged("Totales");
+            OnPropertyChanged("Agrupaciones");
         }
 
         private void MovimientoABMVM_CloseEvent(object sender, EventArgs e)
         {
+            var movimientoABMVM = sender as MovimientoABMViewModel;
+            movimientoABMVM.CloseEvent -= MovimientoABMVM_CloseEvent;
+            movimientoABMVM.SaveEvent -= MovimientoABMVM_SaveEvent;
             EditVM = null;
-            _huboCambios = true;
         }
 
         private bool ProyectarCommandCanExecute()
@@ -297,23 +298,32 @@ namespace ampersand_pb.ViewModels
 
         private void ProyectarCommandExecute()
         {
-            //var movimientos = new List<BaseMovimiento>();
+            var movimientosProyeccion = new List<BaseMovimiento>();
 
-            //foreach (var mov in Movimientos.Where(a => a.CoutasPendientes > 0)
-            //                               .OrderByDescending(a => a.CoutasPendientes))
-            //{
-            //    var movProy = mov.Clone() as BaseMovimiento;
-            //    movProy.IncrementarCuotasPendientes();
-            //    movimientos.Add(movProy);
-            //}
+            foreach (var mov in Movimientos.Where(a => a.CoutasPendientes > 0)
+                                           .OrderByDescending(a => a.CoutasPendientes))
+            {
+                var movProy = mov.Clone() as BaseMovimiento;
+                movProy.IncrementarCuotasPendientes();
+                movimientosProyeccion.Add(movProy);
+            }
 
-            //movimientos.AddRange(Movimientos.Where(a => a.EsMensual).ToList());
+            foreach (var mov in Movimientos.Where(a => a.EsMensual))
+            {
+                var movProy = mov.Clone() as BaseMovimiento;
+                movProy.Fecha = movProy.Fecha.AddMonths(1);
+                movimientosProyeccion.Add(movProy);
+            }
 
-            //var resumenM = _resumenAgrupadoM.Clone() as ResumenModel;
-            //resumenM.FechaDeCierre = resumenM.FechaDeCierre.AddMonths(1);
+            var resumenAgrupadoProyeccion = _resumenAgrupadoM.Clone() as ResumenAgrupadoModel;
 
-            //var movimientosVM = new MovimientosViewModel(resumenM, _movimientosDA, movimientos);
-            //OnPublishViewModelEvent(movimientosVM);
+            foreach (var resumen in resumenAgrupadoProyeccion.Resumenes)
+            {
+                resumen.FechaDeCierre = resumen.FechaDeCierre.AddMonths(1);
+                resumen.Total = movimientosProyeccion.Where(a => a.TipoDescripcion.Equals(resumen.Descripcion)).Sum(a => a.Monto);
+            }
+            var movimientosVM = new MovimientosViewModel(resumenAgrupadoProyeccion, _movimientosDA, movimientosProyeccion);
+            OnPublishViewModelEvent(movimientosVM);
         }
 
         private IEnumerable<BaseMovimiento> GetMovimientos()

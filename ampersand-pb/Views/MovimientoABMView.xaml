@@ -18,6 +18,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -35,26 +36,29 @@
         <TextBlock Grid.Row="0" Text="Id movimiento"/>
         <TextBox Grid.Row="0" Text="{Binding IdMovimiento}" Grid.Column="1" IsEnabled="False"/>
 
-        <TextBlock Grid.Row="1" Text="Fecha"/>
-        <TextBox Grid.Row="1" Text="{Binding Fecha}" Grid.Column="1" IsEnabled="False" HorizontalContentAlignment="Left"/>
+        <TextBlock Grid.Row="1" Text="Tipo"/>
+        <TextBox Grid.Row="1" Text="{Binding TipoDescripcion}" Grid.Column="1" IsEnabled="False" HorizontalContentAlignment="Left"/>
 
-        <TextBlock Grid.Row="2" Text="Descripción"/>
-        <TextBox Grid.Row="2" Text="{Binding Descripcion}" Grid.Column="1" IsEnabled="False"/>
+        <TextBlock Grid.Row="2" Text="Fecha"/>
+        <TextBox Grid.Row="2" Text="{Binding Fecha}" Grid.Column="1" IsEnabled="False" HorizontalContentAlignment="Left"/>
 
-        <TextBlock Grid.Row="3" Text="Descripción adicional"/>
-        <TextBox Grid.Row="3" Text="{Binding DescripcionAdicional}" Grid.Column="1"/>
+        <TextBlock Grid.Row="3" Text="Descripción"/>
+        <TextBox Grid.Row="3" Text="{Binding Descripcion}" Grid.Column="1" IsEnabled="False"/>
 
-        <TextBlock Grid.Row="4" Text="Monto"/>
-        <TextBox Grid.Row="4" Text="{Binding Monto}" Grid.Column="1"/>
+        <TextBlock Grid.Row="4" Text="Descripción adicional"/>
+        <TextBox Grid.Row="4" Text="{Binding DescripcionAdicional}" Grid.Column="1"/>
 
-        <TextBlock Grid.Row="5" Text="Cuota"/>
-        <TextBox Grid.Row="5" Text="{Binding Cuota}" IsEnabled="False" Grid.Column="1"/>
+        <TextBlock Grid.Row="5" Text="Monto"/>
+        <TextBox Grid.Row="5" Text="{Binding Monto}" Grid.Column="1"/>
 
-        <CheckBox Grid.Row="6" HorizontalContentAlignment="Left" Content="Es mensual" IsChecked="{Binding EsMensual}"/>
+        <TextBlock Grid.Row="6" Text="Cuota"/>
+        <TextBox Grid.Row="6" Text="{Binding Cuota}" IsEnabled="False" Grid.Column="1"/>
 
-        <CheckBox Grid.Row="7" HorizontalContentAlignment="Left" Content="Es ajeno" IsChecked="{Binding EsAjeno}"/>
+        <CheckBox Grid.Row="7" HorizontalContentAlignment="Left" Content="Es mensual" IsChecked="{Binding EsMensual}"/>
 
-        <ItemsControl ItemsSource="{Binding Tags}" Grid.Row="8" Grid.ColumnSpan="2" Margin="10, 20, 10, 10">
+        <CheckBox Grid.Row="8" HorizontalContentAlignment="Left" Content="Es ajeno" IsChecked="{Binding EsAjeno}"/>
+
+        <ItemsControl ItemsSource="{Binding Tags}" Grid.Row="9" Grid.ColumnSpan="2" Margin="10, 20, 10, 10">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel  />
@@ -70,7 +74,7 @@
         <Button Content="Guardar" 
                 Command="{Binding SaveCommand}"
                 Grid.Column="1"
-                Grid.Row="9"
+                Grid.Row="10"
                 VerticalAlignment="Bottom"
                 HorizontalAlignment="Right"/>
     </Grid>

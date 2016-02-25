@@ -40,6 +40,8 @@ namespace ampersand_pb.Models
 
         public decimal Total { get; internal set; }
 
+        public bool HuboCambios { get; internal set; }
+
         internal static ResumenModel GetFromFile(string file)
         {
             try

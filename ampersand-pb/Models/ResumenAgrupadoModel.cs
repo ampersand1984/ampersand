@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ampersand_pb.Models
@@ -8,16 +9,38 @@ namespace ampersand_pb.Models
         public ResumenAgrupadoModel(IEnumerable<ResumenModel> resumenes)
         {
             Resumenes = resumenes;
-            Periodo = resumenes.First().Periodo;
-            TextoPeriodo = resumenes.First().TextoPeriodo;
         }
 
         public IEnumerable<ResumenModel> Resumenes { get; private set; }
 
-        public string Periodo { get; private set; }
+        public string Periodo
+        {
+            get
+            {
+                return Resumenes.First().Periodo;
+            }
+        }
 
-        public string TextoPeriodo { get; private set; }
+        public string TextoPeriodo
+        {
+            get
+            {
+                return Resumenes.First().TextoPeriodo;
+            }
+        }
 
-        public bool EsElUtimoMes { get; internal set; }
+        public bool EsElUtimoMes { get; set; }
+
+        public object Clone()
+        {
+            var clone = this.MemberwiseClone() as ResumenAgrupadoModel;
+            var resumenes = new List<ResumenModel>();
+            foreach (var resumen in clone.Resumenes)
+                resumenes.Add(resumen.Clone() as ResumenModel);
+
+            clone.Resumenes = resumenes;
+
+            return clone;
+        }
     }
 }

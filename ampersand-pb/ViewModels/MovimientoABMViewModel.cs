@@ -28,6 +28,12 @@ namespace ampersand_pb.ViewModels
             set { _model.IdMovimiento = value; }
         }
 
+        public string TipoDescripcion
+        {
+            get { return _model.TipoDescripcion; }
+            set { _model.TipoDescripcion = value; }
+        }
+
         public DateTime Fecha
         {
             get { return _model.Fecha; }
@@ -112,7 +118,8 @@ namespace ampersand_pb.ViewModels
             _modelOriginal.EsMensual = _model.EsMensual;
             _modelOriginal.EsAjeno = _model.EsAjeno;
             _modelOriginal.Tags = this.Tags.Where(a => a.Seleccionada).Select(a => a.Tag).ToList();
-            
+
+            OnSaveEvent();
             CloseCommand.Execute(null);
         }
 
