@@ -233,13 +233,13 @@
                 </Grid.ColumnDefinitions>
                 <RadioButton Content="Totales"
                              GroupName="totales"
-                             IsChecked="True"
+                             IsChecked="False"
                              x:Name="rdbTotales"
                              Focusable="False"
                              Grid.Column="0"/>
                 <RadioButton Content="Tags"
                              GroupName="totales"
-                             IsChecked="False"
+                             IsChecked="True"
                              x:Name="rdbTags"
                              Margin="20,0"
                              Focusable="False"

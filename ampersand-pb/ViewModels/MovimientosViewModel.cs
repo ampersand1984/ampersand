@@ -364,7 +364,7 @@ namespace ampersand_pb.ViewModels
             return tags;
         }
 
-        private string _ultimaOpcionDeGraficoSeleccionada = "TotalesSelectedItem";
+        private string _ultimaOpcionDeGraficoSeleccionada = "AgrupacionesSelectedItem";
 
         protected override void OnPropertyChanged(string propertyName)
         {
