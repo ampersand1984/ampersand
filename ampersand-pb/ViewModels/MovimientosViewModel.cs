@@ -361,7 +361,7 @@ namespace ampersand_pb.ViewModels
                     tags.Add(new AgrupacionItem() { Descripcion = mov.Tags.First(), Monto = mov.Monto });
             }
             
-            return tags;
+            return tags.OrderByDescending(a => a.Descripcion);
         }
 
         private string _ultimaOpcionDeGraficoSeleccionada = "AgrupacionesSelectedItem";

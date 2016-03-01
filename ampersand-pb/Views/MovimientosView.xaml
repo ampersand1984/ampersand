@@ -17,7 +17,7 @@
             <ColumnDefinition Width="5"/>            
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
-        
+
         <Grid.Resources>
             <common:BooleanToVisibilityConverter x:Key="boolToVis"/>
             <common:NullToVisibilityConverter x:Key="nullToVis"/>
@@ -288,13 +288,13 @@
             <StackPanel Grid.Row="3" Margin="0,0,0,10">
                 <Button Content="Importar info del mes anterior"
                     Command="{Binding ImportarInfoDeResumenAnteriorCommand}"
-                    Visibility="{Binding EsElUtimoMes, Converter={StaticResource boolToVis}}"
+                    IsEnabled="{Binding EsElUtimoMes}"
                     Grid.Row="2"
                     VerticalAlignment="Bottom"
                     Margin="10"/>
                 <Button Content="Proyectar"
                     Command="{Binding ProyectarCommand}"
-                    Visibility="{Binding EsElUtimoMes, Converter={StaticResource boolToVis}}"
+                    IsEnabled="{Binding EsElUtimoMes}"
                     Grid.Row="2"
                     VerticalAlignment="Bottom"
                     Margin="10"/>
