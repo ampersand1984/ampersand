@@ -13,6 +13,7 @@ namespace ampersand_pb.Models
         public BaseMovimiento()
         {
             Tipo = TipoMovimiento.Credito;
+            Fecha = DateTime.Today;
         }
 
         public TipoMovimiento Tipo { get; set; }
@@ -64,10 +65,17 @@ namespace ampersand_pb.Models
             set;
         }
 
+        private string _cuota;
         public string Cuota
         {
-            get;
-            set;
+            get
+            {
+                return _cuota ?? string.Empty;
+            }
+            set
+            {
+                _cuota = value;
+            }
         }
 
         private bool _esMensual;

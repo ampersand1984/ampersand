@@ -232,7 +232,7 @@ namespace ampersand_pb.DataAccess
 
                     xdoc.Root.Add(xMov);
                 }
-
+                
                 xdoc.Save(resumenM.FilePath);
             }
         }

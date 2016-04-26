@@ -23,7 +23,8 @@
                 <DataTemplate>
                     <Button Content="{Binding Description}"
                             Command="{Binding Command}"
-                            Margin="10"/>
+                            Margin="10"
+                            Foreground="{DynamicResource AccentColorBrush}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

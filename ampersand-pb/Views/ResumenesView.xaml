@@ -15,7 +15,8 @@
             <DataTemplate>
                 <Button Margin="10"
                         Command="{Binding Path=DataContext.SeleccionarResumenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        CommandParameter="{Binding}">
+                        CommandParameter="{Binding}"
+                        Foreground="{DynamicResource AccentColorBrush}">
                     <Button.Content>
                         <StackPanel>
                             <TextBlock Text="{Binding TextoPeriodo}" FontSize="14" FontWeight="Bold" Margin="5"/>

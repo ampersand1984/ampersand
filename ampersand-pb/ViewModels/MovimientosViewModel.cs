@@ -12,6 +12,8 @@ namespace ampersand_pb.ViewModels
 {
     public class MovimientosViewModel : BaseViewModel, IMainWindowItem
     {
+        #region Constructor
+
         public MovimientosViewModel(ResumenAgrupadoModel resumenAgrupadoM, IMovimientosDataAccess movimientosDA)
         {
             _resumenAgrupadoM = resumenAgrupadoM;
@@ -23,13 +25,23 @@ namespace ampersand_pb.ViewModels
         {
             _esProyeccion = true;
 
-            _movimientos = movimientosProyeccion;
+            _movimientos = new ObservableCollection<BaseMovimiento>(movimientosProyeccion);
         }
+
+        #endregion
+
+        #region Fields
 
         private bool _esProyeccion;
 
         private IMovimientosDataAccess _movimientosDA;
         private ResumenAgrupadoModel _resumenAgrupadoM;
+
+        private string _ultimaOpcionDeGraficoSeleccionada = "AgrupacionesSelectedItem";
+
+        #endregion
+
+        #region Properties
 
         public string DisplayName
         {
@@ -89,8 +101,8 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private IEnumerable<BaseMovimiento> _movimientos;
-        public IEnumerable<BaseMovimiento> Movimientos
+        private ObservableCollection<BaseMovimiento> _movimientos;
+        public ObservableCollection<BaseMovimiento> Movimientos
         {
             get
             {
@@ -150,7 +162,7 @@ namespace ampersand_pb.ViewModels
             get { return _editVM; }
             set { _editVM = value; OnPropertyChanged("EditVM"); }
         }
-        
+
         private ICommand _proyectarCommand;
         public ICommand ProyectarCommand
         {
@@ -161,7 +173,18 @@ namespace ampersand_pb.ViewModels
                 return _proyectarCommand;
             }
         }
-        
+
+        private ICommand _nuevoMovimientoCommand;
+        public ICommand NuevoMovimientoCommand
+        {
+            get
+            {
+                if (_nuevoMovimientoCommand == null)
+                    _nuevoMovimientoCommand = new RelayCommand(param => NuevoMovimientoCommandExecute(), param => NuevoMovimientoCommandCanExecute());
+                return _nuevoMovimientoCommand;
+            }
+        }
+
         private ICommand _editarMovimientoCommand;
         public ICommand EditarMovimientoCommand
         {
@@ -190,13 +213,43 @@ namespace ampersand_pb.ViewModels
             }
         }
 
+        #endregion
+
+        #region Methods
+
         private bool SaveCommandCanExecute()
         {
-            return _esProyeccion == false && _resumenAgrupadoM.Resumenes.Any(a => a.HuboCambios);
+            return _esProyeccion || _resumenAgrupadoM.Resumenes.Any(a => a.HuboCambios);
         }
 
         private void SaveCommandExecute()
         {
+            if (_esProyeccion)
+            {
+                foreach (var resumen in _resumenAgrupadoM.Resumenes.Where(a => a.FilePath.IsNullOrEmpty()))
+                {
+                    var descri = string.Empty;
+                    switch (resumen.Descripcion)
+                    {
+                        case "Visa":
+                            descri = "1";
+                            break;
+                        case "Master Card":
+                            descri = "2";
+                            break;
+                        default:
+                            break;
+                    }
+
+                    var fileName = string.Format("r{0}{1}{2}", descri, resumen.FechaDeCierre.GetPeriodo(), resumen.FechaDeCierre.Day);
+                    resumen.FilePath = Win32Helper.ShowFileDialog(fileName, string.Format("Nombre para el resúmen de {0}", resumen.Descripcion));
+                    if (resumen.FilePath.IsNullOrEmpty())
+                        return;
+
+                    resumen.HuboCambios = true;
+                }
+            }
+
             _movimientosDA.SaveMovimientos(_resumenAgrupadoM, Movimientos);
 
             foreach (var resumen in _resumenAgrupadoM.Resumenes)
@@ -257,28 +310,33 @@ namespace ampersand_pb.ViewModels
 
         private bool EditarMovimientoCommandCanExecute()
         {
-            return _esProyeccion == false && SelectedIndex != -1;
+            return SelectedIndex != -1;
         }
 
         private void EditarMovimientoCommandExecute()
         {
-            var tags = Movimientos.SelectMany(a => a.Tags).Distinct().GetTags();
-
             var baseMovimiento = Movimientos.ElementAt(SelectedIndex);
-            var movimientoABMVM = new MovimientoABMViewModel(baseMovimiento, tags);
+            var movimientoABMVM = new MovimientoABMViewModel(baseMovimiento);
             movimientoABMVM.CloseEvent += MovimientoABMVM_CloseEvent;
             movimientoABMVM.SaveEvent += MovimientoABMVM_SaveEvent;
             EditVM = movimientoABMVM;
         }
 
-        private void MovimientoABMVM_SaveEvent(object sender, EventArgs e)
+        private void MovimientoABMVM_SaveEvent(object sender, MovimientoABMSaveEventArgs e)
         {
             var movimientoABMVM = sender as MovimientoABMViewModel;
             var resumen = _resumenAgrupadoM.Resumenes.First(a => a.Descripcion.Equals(movimientoABMVM.TipoDescripcion));
             resumen.HuboCambios = true;
 
+            if (_movimientos.IndexOf(e.Model) == -1)
+            {
+                _movimientos.Add(e.Model);
+                OnPropertyChanged("Movimientos");
+                SelectedIndex = _movimientos.IndexOf(_movimientos.Last());
+            }
             _totales = null;
             _agrupaciones = null;
+
             OnPropertyChanged("Totales");
             OnPropertyChanged("Agrupaciones");
         }
@@ -320,13 +378,27 @@ namespace ampersand_pb.ViewModels
             foreach (var resumen in resumenAgrupadoProyeccion.Resumenes)
             {
                 resumen.FechaDeCierre = resumen.FechaDeCierre.AddMonths(1);
+                resumen.FilePath = string.Empty;
                 resumen.Total = movimientosProyeccion.Where(a => a.TipoDescripcion.Equals(resumen.Descripcion)).Sum(a => a.Monto);
             }
             var movimientosVM = new MovimientosViewModel(resumenAgrupadoProyeccion, _movimientosDA, movimientosProyeccion);
             OnPublishViewModelEvent(movimientosVM);
         }
 
-        private IEnumerable<BaseMovimiento> GetMovimientos()
+        private bool NuevoMovimientoCommandCanExecute()
+        {
+            return EsElUtimoMes;
+        }
+
+        private void NuevoMovimientoCommandExecute()
+        {
+            var movimientoABMVM = new MovimientoABMViewModel();
+            movimientoABMVM.CloseEvent += MovimientoABMVM_CloseEvent;
+            movimientoABMVM.SaveEvent += MovimientoABMVM_SaveEvent;
+            EditVM = movimientoABMVM;
+        }
+
+        private ObservableCollection<BaseMovimiento> GetMovimientos()
         {
             var movimientos = _movimientosDA.GetMovimientos(_resumenAgrupadoM);
 
@@ -336,7 +408,7 @@ namespace ampersand_pb.ViewModels
 
             OnPropertyChanged("TotalResumen");
 
-            return movimientos;
+            return new ObservableCollection<BaseMovimiento>(movimientos);
         }
 
         private IEnumerable<AgrupacionItem> GetTotales()
@@ -363,8 +435,6 @@ namespace ampersand_pb.ViewModels
             
             return tags.OrderByDescending(a => a.Descripcion);
         }
-
-        private string _ultimaOpcionDeGraficoSeleccionada = "AgrupacionesSelectedItem";
 
         protected override void OnPropertyChanged(string propertyName)
         {
@@ -445,6 +515,10 @@ namespace ampersand_pb.ViewModels
             OnPropertyChanged("MovimientosFiltrados");
         }
 
+        #endregion
+
+        #region Events
+
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;
         private void OnPublishViewModelEvent(BaseViewModel viewModel)
         {
@@ -452,6 +526,8 @@ namespace ampersand_pb.ViewModels
             if (handler != null)
                 handler(this, new PublishViewModelEventArgs(viewModel));
         }
+
+        #endregion
     }
 
     public class AgrupacionItem
