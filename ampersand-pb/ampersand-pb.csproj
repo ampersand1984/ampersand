@@ -88,7 +88,7 @@
     <Compile Include="Common\EqualToVisibilityConverter.cs" />
     <Compile Include="Common\NullToVisibilityConverter.cs" />
     <Compile Include="DataAccess\MovimientosDataAccess.cs" />
-    <Compile Include="DataAccess\PreferenciasDataAccess.cs" />
+    <Compile Include="DataAccess\ConfiguracionDataAccess.cs" />
     <Compile Include="Models\BaseMovimiento.cs" />
     <Compile Include="Models\PeriodoModel.cs" />
     <Compile Include="Models\ResumenAgrupadoModel.cs" />

@@ -30,6 +30,8 @@ namespace ampersand_pb.Models
 
         public DateTime FechaDeCierre { get; set; }
 
+        public DateTime ProximoCierre { get; set; }
+
         public string FilePath { get; set; }
 
         public XDocument XDoc { get; internal set; }

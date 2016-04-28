@@ -107,21 +107,18 @@ namespace ampersand_pb.ViewModels
         {
             get
             {
-                if (EdicionCompleta)
-                    return new List<string>()
+                return new List<string>()
                     {
                         "",
-                        "1/2",
-                        "1/3",
-                        "1/6",
-                        "1/12",
-                        "1/18",
-                        "1/24",
-                        "1/50"
-                    };
-                else
-                    return new List<string>() { _model.Cuota };
-
+                        "01/02",
+                        "01/03",
+                        "01/06",
+                        "01/12",
+                        "01/18",
+                        "01/24",
+                        "01/50",
+                        _model.Cuota
+                    }.Distinct();
             }
         }
 

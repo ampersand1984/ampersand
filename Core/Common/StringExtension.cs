@@ -65,7 +65,7 @@ namespace ampersand.Core.Common
 
         public static DateTime ToDateTime(this String strDateTime)
         {
-            var result = DateTime.Today;
+            var result = DateTime.MinValue;
 
             try
             {

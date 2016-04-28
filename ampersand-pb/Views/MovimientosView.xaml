@@ -106,7 +106,8 @@
                 
                 <DataGridTemplateColumn Header="Descripcion"
                                         Width="4*"
-                                        CellStyle="{StaticResource leftTopAlignment}">
+                                        CellStyle="{StaticResource leftTopAlignment}"
+                                        SortMemberPath="Descripcion">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>
@@ -165,7 +166,8 @@
 
                 <DataGridTemplateColumn Header="Cuota" 
                                     Width="auto"
-                                    CellStyle="{StaticResource leftTopAlignment}">
+                                    CellStyle="{StaticResource leftTopAlignment}"
+                                        SortMemberPath="CoutasPendientes">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">

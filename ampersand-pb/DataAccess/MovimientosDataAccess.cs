@@ -186,6 +186,12 @@ namespace ampersand_pb.DataAccess
                         resumen.Tipo = TipoMovimiento.Credito;
                         resumen.Descripcion = GetValueFromXml<string>("Descripcion", xdoc.Root, "");
                         resumen.Total = GetValueFromXml<decimal>("Total", xdoc.Root, 0M);
+
+                        var strFechaDeCierre = GetValueFromXml<string>("FechaDeCierre", xdoc.Root, "");
+                        var strProximoCierre = GetValueFromXml<string>("ProximoCierre", xdoc.Root, "");
+
+                        resumen.FechaDeCierre = strFechaDeCierre.ToDateTime();
+                        resumen.ProximoCierre = strProximoCierre.ToDateTime();
                         resultado.Add(resumen);
                     }
                 }

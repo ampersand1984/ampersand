@@ -28,14 +28,16 @@ namespace ampersand_pb.ViewModels
             _movimientosDA = movimientosDA;
 
             _resumenes = _movimientosDA.GetResumenes();
+            if (_resumenes.Any())
+            {
+                Periodos = _resumenes.GroupBy(a => a.Periodo)
+                    .Select(grp => new PeriodoModel { Periodo = grp.First().Periodo, TextoPeriodo = grp.First().TextoPeriodo });
 
-            Periodos = _resumenes.GroupBy(a => a.Periodo)
-                .Select(grp => new PeriodoModel { Periodo = grp.First().Periodo, TextoPeriodo = grp.First().TextoPeriodo });
+                _minimoPeriodo = (DateTime.Today.Year - 1) + "01";//Enero del año pasado
+                if (int.Parse(_minimoPeriodo) < int.Parse(_resumenes.Min(a => a.Periodo)))
+                    _minimoPeriodo = _resumenes.Min(a => a.Periodo);//a menos que no exista
 
-            _minimoPeriodo = (DateTime.Today.Year - 1) + "01";//Enero del año pasado
-            if (int.Parse(_minimoPeriodo) < int.Parse(_resumenes.Min(a => a.Periodo)))
-                _minimoPeriodo = _resumenes.Min(a => a.Periodo);//a menos que no exista
-
+            }
             _maximoPeriodo = _resumenes.Max(a => a.Periodo);
         }
 

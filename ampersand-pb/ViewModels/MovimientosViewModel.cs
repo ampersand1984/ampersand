@@ -61,7 +61,7 @@ namespace ampersand_pb.ViewModels
 
         public decimal TotalResumen
         {
-            get { return  Movimientos.Sum(a => a.Monto); }
+            get { return MovimientosFiltrados.Sum(a => a.Monto); }
         }
 
         private bool _filtrar;
@@ -513,6 +513,8 @@ namespace ampersand_pb.ViewModels
                 _movimientosFiltrados = null;
             }
             OnPropertyChanged("MovimientosFiltrados");
+            OnPropertyChanged("TotalResumen");
+
         }
 
         #endregion

@@ -13,11 +13,13 @@ namespace ampersand_pb.ViewModels
     public class MainWindowViewModel : BaseViewModel
     {
         public MainWindowViewModel()
-            :this(new PreferenciasDataAccess()) { }
+            :this(new ConfiguracionDataAccess()) { }
 
-        public MainWindowViewModel(IPreferenciasDataAccess preferenciasDA)
+        public MainWindowViewModel(IConfiguracionDataAccess configuracionDA)
         {
-            _preferenciasDA = preferenciasDA;
+            _configuracionDA = configuracionDA;
+
+            _filesPath = _configuracionDA.GetFilesPath();
 
             ActionList = new List<ActionItem>()
             {
@@ -38,16 +40,16 @@ namespace ampersand_pb.ViewModels
                 },
                 new ActionItem
                 {
-                    Description = "Preferencias",
-                    Command = MostrarPreferenciasCommand
+                    Description = "Configuraciones",
+                    Command = MostrarConfiguracionesCommand
                 }
             };
         }
 
         //private string _filesPath = @"C:\Google Drive\Resumen y comprobantes\Apb\";
-        private string _filesPath = @"C:\Users\fabricio\Google Drive\Resumen y comprobantes\Apb\";
+        private string _filesPath = "";//@"C:\Users\fabricio\Google Drive\Resumen y comprobantes\Apb\";
 
-        private IPreferenciasDataAccess _preferenciasDA;
+        private IConfiguracionDataAccess _configuracionDA;
 
         private IMovimientosDataAccess _movimientosDA;
         public IMovimientosDataAccess MovimientosDA
@@ -100,12 +102,12 @@ namespace ampersand_pb.ViewModels
         }
 
         private ICommand _mostrarConfiguracionesCommand;
-        public ICommand MostrarPreferenciasCommand
+        public ICommand MostrarConfiguracionesCommand
         {
             get
             {
                 if (_mostrarConfiguracionesCommand == null)
-                    _mostrarConfiguracionesCommand = new RelayCommand(param => MostrarPreferenciasCommandExecute());
+                    _mostrarConfiguracionesCommand = new RelayCommand(param => MostrarConfiguracionesCommandExecute());
                 return _mostrarConfiguracionesCommand;
             }
         }
@@ -215,12 +217,15 @@ namespace ampersand_pb.ViewModels
         private void MostrarActualCommandExecute()
         {
             var resumenes = MovimientosDA.GetResumenes();
-            var resumenesAgrupados = resumenes.Agrupar();
-            var movimientosVM = new MovimientosViewModel(resumenesAgrupados.First(), MovimientosDA);
-            AgregarMainWindowItem(movimientosVM);
+            if (resumenes.Any())
+            {
+                var resumenesAgrupados = resumenes.Agrupar();
+                var movimientosVM = new MovimientosViewModel(resumenesAgrupados.First(), MovimientosDA);
+                AgregarMainWindowItem(movimientosVM);
+            }
         }
 
-        private object MostrarPreferenciasCommandExecute()
+        private object MostrarConfiguracionesCommandExecute()
         {
             throw new NotImplementedException();
         }
