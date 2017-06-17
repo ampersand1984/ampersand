@@ -38,13 +38,6 @@ namespace ampersand_pb.DataAccess
             return xdoc;
         }
 
-        //private XDocument GetNewDocument(string fecha)
-        //{
-        //    var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", fecha)));
-        //    xdoc.Save(Path.GetDirectoryName(App.ResourceAssembly.Location) + @"\" + fecha + ".xml");
-        //    return xdoc;
-        //}
-
         public IEnumerable<BaseMovimiento> GetMovimientos(ResumenAgrupadoModel resumenAgrupadoM)
         {
             var resultado = new List<BaseMovimiento>();
@@ -84,24 +77,6 @@ namespace ampersand_pb.DataAccess
 
             return resultado;
         }
-
-        //public IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(string periodoActual)
-        //{
-        //    var resumenes = this.GetResumenes();
-
-        //    var periodoAnterior = (periodoActual + "01").ToDateTime().AddMonths(-1).GetPeriodo();
-
-        //    var resumen = resumenes.FirstOrDefault(a => a.Periodo.Equals(periodoAnterior));
-        //    if (resumen != null)
-        //    {
-        //        var movimientos = this.GetMovimientos(resumen.FilePath, periodoAnterior);
-        //        return movimientos;
-        //    }
-        //    else
-        //    {
-        //        throw new ArgumentException(string.Format("No hay información del período {0}", periodoAnterior));
-        //    }
-        //}
 
         private BaseMovimiento GetPago(XElement xmlPago)
         {
@@ -208,11 +183,16 @@ namespace ampersand_pb.DataAccess
 
                 var total = movimientosDelResumen.Sum(a => a.Monto);
 
+                var strProximoCierre = resumenM.ProximoCierre != DateTime.MinValue ?
+                    resumenM.ProximoCierre.ToString("yyyyMMdd") :
+                    string.Empty;
+
                 var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
                                                                      new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
                                                                      new XAttribute("Total", total),
                                                                      new XAttribute("Tipo", TipoMovimiento.Credito),
-                                                                     new XAttribute("Descripcion", resumenM.Descripcion)));
+                                                                     new XAttribute("Descripcion", resumenM.Descripcion),
+                                                                     new XAttribute("ProximoCierre", strProximoCierre)));
 
                 foreach (var mov in movimientosDelResumen)
                 {

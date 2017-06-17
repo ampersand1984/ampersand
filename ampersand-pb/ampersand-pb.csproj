@@ -96,6 +96,7 @@
     <Compile Include="Models\ResumenModel.cs" />
     <Compile Include="Models\TagModel.cs" />
     <Compile Include="ViewModels\EditViewModelEventArgs.cs" />
+    <Compile Include="ViewModels\FiltroItemsViewModel.cs" />
     <Compile Include="ViewModels\IMainWindowItem.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\MovimientosViewModel.cs" />
@@ -107,6 +108,9 @@
     <Compile Include="ViewModels\PublishViewModelEventArgs.cs" />
     <Compile Include="ViewModels\ResumenesGraficosViewModel.cs" />
     <Compile Include="ViewModels\ResumenesViewModel.cs" />
+    <Compile Include="Views\FiltroItemsView.xaml.cs">
+      <DependentUpon>FiltroItemsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -123,6 +127,10 @@
       <DependentUpon>ResumenesView.xaml</DependentUpon>
     </Compile>
     <Page Include="Resources\DataTemplates.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FiltroItemsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

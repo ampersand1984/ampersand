@@ -34,6 +34,10 @@ namespace ampersand_pb.ViewModels
                     .Select(grp => new PeriodoModel { Periodo = grp.First().Periodo, TextoPeriodo = grp.First().TextoPeriodo });
 
                 _minimoPeriodo = (DateTime.Today.Year - 1) + "01";//Enero del año pasado
+                //o junio si ya estamos mes 6
+                if (DateTime.Today.Month > 5)
+                    _minimoPeriodo = (DateTime.Today.Year - 1) + "06";//Junio del año pasado
+
                 if (int.Parse(_minimoPeriodo) < int.Parse(_resumenes.Min(a => a.Periodo)))
                     _minimoPeriodo = _resumenes.Min(a => a.Periodo);//a menos que no exista
 

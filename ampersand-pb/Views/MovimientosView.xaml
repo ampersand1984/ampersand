@@ -14,7 +14,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="5"/>            
+            <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
 
@@ -33,6 +33,18 @@
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Stretch"
                                               VerticalAlignment="Stretch"/>
+
+        <Grid Grid.ColumnSpan="4" Panel.ZIndex="1" Visibility="{Binding ModalVM, Converter={StaticResource nullToVis}}"
+              VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid.Effect>
+                <BlurEffect Radius="3.5"/>
+            </Grid.Effect>            
+        </Grid>
+
+        <ContentControl Content="{Binding ModalVM}"
+                        Grid.ColumnSpan="3"
+                        Panel.ZIndex="2" 
+                        Background="Green"/>
 
         <DataGrid ItemsSource="{Binding MovimientosFiltrados}"
                   SelectedIndex="{Binding SelectedIndex}"
@@ -92,18 +104,34 @@
                     <Setter Property="HorizontalAlignment" Value="Right"/>
                     <Setter Property="OverridesDefaultStyle" Value="False"/>
                 </Style>-->
+                <Style x:Key="columnHeaderMenu" TargetType="MenuItem">
+                    <Setter Property="Header" Value="{Binding}"/>
+                </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Fecha" 
                                     Binding="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}    '}" 
                                     Width="auto" 
                                     CellStyle="{StaticResource leftTopAlignment}"/>
-                
-                <DataGridTextColumn Header="Pago" 
-                                    Binding="{Binding TipoDescripcion}" 
+
+                <DataGridTextColumn Header="Pagos" Binding="{Binding TipoDescripcion}" x:Name="clmPagos"
                                     Width="auto" 
-                                    CellStyle="{StaticResource leftTopAlignment}"/>
-                
+                                    CellStyle="{StaticResource leftTopAlignment}">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding}"
+                                           VerticalAlignment="Center"/>
+                                <RadioButton Command="{Binding DataContext.FiltroCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             CommandParameter="Pagos"
+                                             IsChecked="{Binding DataContext.Filtros[Pagos].Aplicado, Mode=OneWay, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             VerticalAlignment="Center"
+                                             Margin="10,0,0,0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
+
                 <DataGridTemplateColumn Header="Descripcion"
                                         Width="4*"
                                         CellStyle="{StaticResource leftTopAlignment}"
@@ -252,20 +280,12 @@
                              Margin="20,0"
                              Focusable="False"
                              Grid.Column="1"/>
-                
-                <CheckBox Content="Filtrar"
-                          IsChecked="{Binding Filtrar}"
-                          Margin="20,0"
-                          Focusable="False"
-                          HorizontalAlignment="Right"
-                          Grid.Column="2"/>
             </Grid>
 
             <chart:PieChart ChartTitle=""
                             Margin="0,0,0,10" 
                             Grid.Row="2"
                             ChartSubTitle="Totales por tarjeta"
-                            SelectedItem="{Binding Path=TotalesSelectedItem, Mode=TwoWay}"
                             Visibility="{Binding Path=IsChecked, ElementName=rdbTotales, Converter={StaticResource boolToVis}}"
                             Focusable="False">
                 <chart:PieChart.Series>
@@ -281,7 +301,6 @@
                             Margin="0,0,0,10" 
                             Grid.Row="2"
                             ChartSubTitle="Totales por tags"
-                            SelectedItem="{Binding Path=AgrupacionesSelectedItem, Mode=TwoWay}"
                             Visibility="{Binding Path=IsChecked, ElementName=rdbTags, Converter={StaticResource boolToVis}}"
                             Focusable="False">
                 <chart:PieChart.Series>
@@ -323,5 +342,6 @@
                         Foreground="{DynamicResource AccentColorBrush}"/>
             </StackPanel>
         </Grid>
+    
     </Grid>
 </UserControl>

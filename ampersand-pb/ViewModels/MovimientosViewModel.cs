@@ -37,8 +37,6 @@ namespace ampersand_pb.ViewModels
         private IMovimientosDataAccess _movimientosDA;
         private ResumenAgrupadoModel _resumenAgrupadoM;
 
-        private string _ultimaOpcionDeGraficoSeleccionada = "AgrupacionesSelectedItem";
-
         #endregion
 
         #region Properties
@@ -62,20 +60,6 @@ namespace ampersand_pb.ViewModels
         public decimal TotalResumen
         {
             get { return MovimientosFiltrados.Sum(a => a.Monto); }
-        }
-
-        private bool _filtrar;
-        public bool Filtrar
-        {
-            get
-            {
-                return _filtrar;
-            }
-            set
-            {
-                _filtrar = value;
-                OnPropertyChanged("Filtrar");
-            }
         }
 
         private IEnumerable<AgrupacionItem> _totales;
@@ -156,11 +140,18 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private MovimientoABMViewModel _editVM;
-        public MovimientoABMViewModel EditVM
+        private BaseViewModel _editVM;
+        public BaseViewModel EditVM
         {
             get { return _editVM; }
             set { _editVM = value; OnPropertyChanged("EditVM"); }
+        }
+
+        private BaseViewModel _modalVM;
+        public BaseViewModel ModalVM
+        {
+            get { return _modalVM; }
+            set { _modalVM = value; OnPropertyChanged("ModalVM"); }
         }
 
         private ICommand _proyectarCommand;
@@ -211,6 +202,71 @@ namespace ampersand_pb.ViewModels
                     _saveCommand = new RelayCommand(param => SaveCommandExecute(), param => SaveCommandCanExecute());
                 return _saveCommand;
             }
+        }
+
+        private IDictionary<string, Filtro> _filtros;
+        public IDictionary<string, Filtro> Filtros
+        {
+            get
+            {
+                if (_filtros == null)
+                {
+                    _filtros = new Dictionary<string, Filtro>();
+                    _filtros["Pagos"] = new Filtro();
+                }
+
+                return _filtros;
+            }
+        }
+
+        private ICommand _filtroCommand;
+        public ICommand FiltroCommand
+        {
+            get
+            {
+                return _filtroCommand ?? (_filtroCommand = new RelayCommand(param => FiltroCommandExecute(param), param => FiltroCommandCanExecute(param)));
+            }
+        }
+
+        private bool FiltroCommandCanExecute(object param)
+        {
+            var strParam = param as string;
+
+            return Filtros.Keys.Any(a => a.Equals(strParam));
+        }
+
+        private void FiltroCommandExecute(object param)
+        {
+            var strParam = param as string;
+
+            var filtro = Filtros[strParam];
+
+            switch (strParam)
+            {
+                case "Pagos":
+                    {
+                        var filtroItemsVM = new FiltroItemsViewModel(filtro, Movimientos.Select(a => a.TipoDescripcion).Distinct().ToList());
+                        filtroItemsVM.SaveEvent += FiltroItemsVM_SaveEvent;
+                        filtroItemsVM.CloseEvent += FiltroItemsVM_CloseEvent;
+                        ModalVM = filtroItemsVM;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void FiltroItemsVM_CloseEvent(object sender, EventArgs e)
+        {
+            var filtroItemsVM = sender as FiltroItemsViewModel;
+            filtroItemsVM.SaveEvent -= FiltroItemsVM_SaveEvent;
+            filtroItemsVM.CloseEvent -= FiltroItemsVM_CloseEvent;
+            ModalVM = null;
+        }
+
+        private void FiltroItemsVM_SaveEvent(object sender, FiltroViewModelSaveEventArgs e)
+        {
+            ActualizarMovimientosFiltrados();
         }
 
         #endregion
@@ -377,7 +433,11 @@ namespace ampersand_pb.ViewModels
 
             foreach (var resumen in resumenAgrupadoProyeccion.Resumenes)
             {
-                resumen.FechaDeCierre = resumen.FechaDeCierre.AddMonths(1);
+                resumen.FechaDeCierre = resumen.ProximoCierre != DateTime.MinValue ? 
+                    resumen.ProximoCierre : 
+                    resumen.FechaDeCierre.AddMonths(1);
+
+                resumen.ProximoCierre = DateTime.MinValue;
                 resumen.FilePath = string.Empty;
                 resumen.Total = movimientosProyeccion.Where(a => a.TipoDescripcion.Equals(resumen.Descripcion)).Sum(a => a.Monto);
             }
@@ -436,82 +496,27 @@ namespace ampersand_pb.ViewModels
             return tags.OrderByDescending(a => a.Descripcion);
         }
 
-        protected override void OnPropertyChanged(string propertyName)
-        {
-            base.OnPropertyChanged(propertyName);
-            switch (propertyName)
-            {
-                case "TotalesSelectedItem":
-                    {
-                        if (TotalesSelectedItem != null)
-                        {
-                            var seleccion = TotalesSelectedItem.Descripcion;
-
-                            foreach (var mov in Movimientos)
-                                mov.IsSelected = mov.TipoDescripcion.Equals(seleccion);
-                        }
-                        else
-                        {
-                            foreach (var mov in Movimientos)
-                                mov.IsSelected = false;
-                        }
-                        _ultimaOpcionDeGraficoSeleccionada = propertyName;
-                        ActualizarMovimientosFiltrados();
-                    }
-                    break;
-
-                case "AgrupacionesSelectedItem":
-                    {
-                        if (AgrupacionesSelectedItem != null)
-                        {
-                            var seleccion = AgrupacionesSelectedItem.Descripcion;
-
-                            foreach (var mov in Movimientos)
-                                mov.IsSelected = mov.Tags.Any(a => a.Equals(seleccion));
-                        }
-                        else
-                        {
-                            foreach (var mov in Movimientos)
-                                mov.IsSelected = false;
-                        }
-                        _ultimaOpcionDeGraficoSeleccionada = propertyName;
-                        ActualizarMovimientosFiltrados();
-                    }
-                    break;
-
-                case "Filtrar":
-                    ActualizarMovimientosFiltrados();
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
         private void ActualizarMovimientosFiltrados()
         {
-            if (Filtrar)
+            foreach (var filtro in Filtros)
             {
-                switch (_ultimaOpcionDeGraficoSeleccionada)
+                _movimientosFiltrados = null;
+
+                switch (filtro.Key)
                 {
-                    case "TotalesSelectedItem":
-                        if (TotalesSelectedItem != null)
-                            _movimientosFiltrados = Movimientos.Where(a => a.TipoDescripcion.Equals(TotalesSelectedItem.Descripcion));
+                    case "Pagos":
+                        {
+                            if (filtro.Value.Aplicado)
+                                _movimientosFiltrados = Movimientos.Where(a => filtro.Value.Valores.Contains(a.TipoDescripcion));
+                            else
+                                _movimientosFiltrados = null;
+                        }
                         break;
-
-                    case "AgrupacionesSelectedItem":
-                        if (AgrupacionesSelectedItem != null)
-                            _movimientosFiltrados = Movimientos.Where(a => a.Tags.Any(b => b.Equals(AgrupacionesSelectedItem.Descripcion)));
-                        break;
-
                     default:
                         break;
                 }
             }
-            else
-            {
-                _movimientosFiltrados = null;
-            }
+
             OnPropertyChanged("MovimientosFiltrados");
             OnPropertyChanged("TotalResumen");
 
@@ -536,5 +541,43 @@ namespace ampersand_pb.ViewModels
     {
         public string Descripcion { get; set; }
         public decimal Monto { get; set; }
+    }
+
+    public class Filtro: NotifyObject, ICloneable
+    {
+        private bool _aplicado;
+        public bool Aplicado
+        {
+            get
+            {
+                return _aplicado;
+            }
+
+            set
+            {
+                _aplicado = value;
+                OnPropertyChanged("Aplicado");
+            }
+        }
+
+        private IEnumerable<string> _valores;
+        public IEnumerable<string> Valores
+        {
+            get
+            {
+                return _valores ?? (_valores = Enumerable.Empty<string>());
+            }
+
+            set
+            {
+                _valores = value;
+            }
+        }
+
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 }

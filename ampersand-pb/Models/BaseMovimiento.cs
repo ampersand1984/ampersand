@@ -57,12 +57,20 @@ namespace ampersand_pb.Models
         {
             get { return _descripcionAdicional ?? string.Empty; }
             set { _descripcionAdicional = value; OnPropertyChanged("DescripcionAdicional"); }
-        }        
+        }
 
+        private decimal _monto;
         public decimal Monto
         {
-            get;
-            set;
+            get
+            {
+                return _monto;
+            }
+            set
+            {
+                _monto = value;
+                OnPropertyChanged("Monto");
+            }
         }
 
         private string _cuota;
@@ -75,6 +83,7 @@ namespace ampersand_pb.Models
             set
             {
                 _cuota = value;
+                OnPropertyChanged("Cuota");
             }
         }
 
