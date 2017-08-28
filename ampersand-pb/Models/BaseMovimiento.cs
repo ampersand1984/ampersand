@@ -178,6 +178,20 @@ namespace ampersand_pb.Models
             if (handler != null)
                 handler(this, new IsSelectedChangedEventHandler(this.IsSelected));
         }
+
+        public void RefrescarPropiedades()
+        {
+            OnPropertyChanged("Descripcion");
+            OnPropertyChanged("DescripcionAdicional");
+            OnPropertyChanged("Fecha");
+            OnPropertyChanged("Tipo");
+            OnPropertyChanged("TipoDescripcion");
+            OnPropertyChanged("Cuota");
+            OnPropertyChanged("Monto");
+            OnPropertyChanged("EsMensual");
+            OnPropertyChanged("EsAjeno");
+            OnPropertyChanged("Tags");
+        }
     }
 
     public class IsSelectedChangedEventHandler: EventArgs

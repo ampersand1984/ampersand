@@ -33,7 +33,7 @@
                         SelectedValuePath="Periodo"
                         SelectedValue="{Binding MinimoPeriodo}"
                         Width="180"/>
-            
+
             <TextBlock Text="Hasta"
                         VerticalAlignment="Center"
                         Margin="20,0,10,0"/>

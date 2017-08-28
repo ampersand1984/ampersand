@@ -5,6 +5,7 @@ using ampersand_pb.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Windows.Input;
 
@@ -20,6 +21,7 @@ namespace ampersand_pb.ViewModels
             _configuracionDA = configuracionDA;
 
             _filesPath = _configuracionDA.GetFilesPath();
+            _filesPathValido = Directory.Exists(_filesPath);
 
             ActionList = new List<ActionItem>()
             {
@@ -30,13 +32,13 @@ namespace ampersand_pb.ViewModels
                 },
                 new ActionItem
                 {
-                    Description = "Resúmenes",
-                    Command = this.MostrarResumenesCommand
+                    Description = "Gráficos por mes",
+                    Command = this.MostrarResumenesGraficosCommand
                 },
                 new ActionItem
                 {
-                    Description = "Gráficos por mes",
-                    Command = this.MostrarResumenesGraficosCommand
+                    Description = "Resúmenes",
+                    Command = this.MostrarResumenesCommand
                 },
                 new ActionItem
                 {
@@ -45,9 +47,9 @@ namespace ampersand_pb.ViewModels
                 }
             };
         }
-
-        //private string _filesPath = @"C:\Google Drive\Resumen y comprobantes\Apb\";
-        private string _filesPath = "";//@"C:\Users\fabricio\Google Drive\Resumen y comprobantes\Apb\";
+        
+        private string _filesPath = "";
+        private bool _filesPathValido;
 
         private IConfiguracionDataAccess _configuracionDA;
 
@@ -74,7 +76,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_mostrarResumenesCommand == null)
-                    _mostrarResumenesCommand = new RelayCommand(param => MostrarResumenesCommandExecute());
+                    _mostrarResumenesCommand = new RelayCommand(param => MostrarResumenesCommandExecute(), param => _filesPathValido);
                 return _mostrarResumenesCommand;
             }
         }
@@ -85,7 +87,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_mostrarResumenesGraficosCommand == null)
-                    _mostrarResumenesGraficosCommand = new RelayCommand(param => MostrarResumenesGraficosCommandExecute());
+                    _mostrarResumenesGraficosCommand = new RelayCommand(param => MostrarResumenesGraficosCommandExecute(), param => _filesPathValido);
                 return _mostrarResumenesGraficosCommand;
             }
         }
@@ -96,7 +98,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_mostrarActualCommand == null)
-                    _mostrarActualCommand = new RelayCommand(param => MostrarActualCommandExecute());
+                    _mostrarActualCommand = new RelayCommand(param => MostrarActualCommandExecute(), param => _filesPathValido);
                 return _mostrarActualCommand;
             }
         }
@@ -225,9 +227,26 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private object MostrarConfiguracionesCommandExecute()
+        private void MostrarConfiguracionesCommandExecute()
         {
-            throw new NotImplementedException();
+            var configuracionesVM = new ConfiguracionesViewModel(_configuracionDA);
+            configuracionesVM.SaveEvent += ConfiguracionesVM_SaveEvent;
+            configuracionesVM.CloseEvent += ConfiguracionesVM_CloseEvent;
+
+            AgregarMainWindowItem(configuracionesVM);
+        }
+
+        private void ConfiguracionesVM_SaveEvent(object sender, ConfiguracionesViewModelSaveEventArgs e)
+        {
+            _filesPath = e.FilesPath;
+            _filesPathValido = Directory.Exists(_filesPath);
+        }
+
+        private void ConfiguracionesVM_CloseEvent(object sender, EventArgs e)
+        {
+            var configuracionesVM = sender as ConfiguracionesViewModel;
+            configuracionesVM.SaveEvent -= ConfiguracionesVM_SaveEvent;
+            configuracionesVM.CloseEvent -= ConfiguracionesVM_CloseEvent;
         }
 
         private void CloseCurrentMainWindowItemCommandExecute()

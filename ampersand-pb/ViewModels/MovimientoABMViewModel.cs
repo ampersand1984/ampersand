@@ -30,7 +30,10 @@ namespace ampersand_pb.ViewModels
                 new TagModel() { Tag = "nafta" },
                 new TagModel() { Tag = "ropa" },
                 new TagModel() { Tag = "donado" },
-                new TagModel() { Tag = "auto" }
+                new TagModel() { Tag = "auto" },
+                new TagModel() { Tag = "delivery" },
+                new TagModel() { Tag = "salida" },
+                new TagModel() { Tag = "farmacia" }
             };
         }
 
@@ -186,6 +189,7 @@ namespace ampersand_pb.ViewModels
             _modelOriginal.EsMensual = _model.EsMensual;
             _modelOriginal.EsAjeno = _model.EsAjeno;
             _modelOriginal.Tags = this.Tags.Where(a => a.Seleccionada).Select(a => a.Tag).ToList();
+            _modelOriginal.RefrescarPropiedades();
 
             OnSaveEvent();
             CloseCommand.Execute(null);

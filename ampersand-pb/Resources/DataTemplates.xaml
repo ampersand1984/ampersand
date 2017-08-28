@@ -23,8 +23,8 @@
         <V:MovimientoABMView/>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type VM:FiltroItemsViewModel}">
-        <V:FiltroItemsView/>
+    <DataTemplate DataType="{x:Type VM:ConfiguracionesViewModel}">
+        <V:ConfiguracionesView/>
     </DataTemplate>
 
 </ResourceDictionary>

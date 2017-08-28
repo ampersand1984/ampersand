@@ -6,12 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 
 namespace ampersand_pb.ViewModels
 {
     public class MovimientosViewModel : BaseViewModel, IMainWindowItem
     {
+        public const string SIN_CATEGORIA = "Sin categoría";
+
         #region Constructor
 
         public MovimientosViewModel(ResumenAgrupadoModel resumenAgrupadoM, IMovimientosDataAccess movimientosDA)
@@ -81,7 +84,16 @@ namespace ampersand_pb.ViewModels
             set
             {
                 _totalesSelectedItem = value;
+                if (_totalesSelectedItem == null)
+                {
+                    _movimientosFiltrados = null;
+                }
+                else
+                {
+                    _movimientosFiltrados = Movimientos.Where(a => a.TipoDescripcion.Contains(_totalesSelectedItem.Descripcion)).OrderBy(a => a.Fecha);
+                }
                 OnPropertyChanged("TotalesSelectedItem");
+                OnPropertyChanged("MovimientosFiltrados");
             }
         }
 
@@ -128,7 +140,19 @@ namespace ampersand_pb.ViewModels
             set
             {
                 _agrupacionesSelectedItem = value;
+                if (_agrupacionesSelectedItem == null)
+                {
+                    _movimientosFiltrados = null;
+                }
+                else
+                {
+                    if (_agrupacionesSelectedItem.Descripcion.Equals(SIN_CATEGORIA))
+                        _movimientosFiltrados = Movimientos.Where(a => !a.Tags.Any()).OrderBy(a => a.Fecha);
+                    else
+                        _movimientosFiltrados = Movimientos.Where(a => a.Tags.Contains(_agrupacionesSelectedItem.Descripcion)).OrderBy(a => a.Fecha);
+                }
                 OnPropertyChanged("AgrupacionesSelectedItem");
+                OnPropertyChanged("MovimientosFiltrados");
             }
         }
 
@@ -137,6 +161,14 @@ namespace ampersand_pb.ViewModels
             get
             {
                 return _resumenAgrupadoM.EsElUtimoMes;
+            }
+        }
+
+        public bool HuboCambios
+        {
+            get
+            {
+                return _resumenAgrupadoM.Resumenes.Any(a => a.HuboCambios);
             }
         }
 
@@ -204,78 +236,13 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private IDictionary<string, Filtro> _filtros;
-        public IDictionary<string, Filtro> Filtros
-        {
-            get
-            {
-                if (_filtros == null)
-                {
-                    _filtros = new Dictionary<string, Filtro>();
-                    _filtros["Pagos"] = new Filtro();
-                }
-
-                return _filtros;
-            }
-        }
-
-        private ICommand _filtroCommand;
-        public ICommand FiltroCommand
-        {
-            get
-            {
-                return _filtroCommand ?? (_filtroCommand = new RelayCommand(param => FiltroCommandExecute(param), param => FiltroCommandCanExecute(param)));
-            }
-        }
-
-        private bool FiltroCommandCanExecute(object param)
-        {
-            var strParam = param as string;
-
-            return Filtros.Keys.Any(a => a.Equals(strParam));
-        }
-
-        private void FiltroCommandExecute(object param)
-        {
-            var strParam = param as string;
-
-            var filtro = Filtros[strParam];
-
-            switch (strParam)
-            {
-                case "Pagos":
-                    {
-                        var filtroItemsVM = new FiltroItemsViewModel(filtro, Movimientos.Select(a => a.TipoDescripcion).Distinct().ToList());
-                        filtroItemsVM.SaveEvent += FiltroItemsVM_SaveEvent;
-                        filtroItemsVM.CloseEvent += FiltroItemsVM_CloseEvent;
-                        ModalVM = filtroItemsVM;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void FiltroItemsVM_CloseEvent(object sender, EventArgs e)
-        {
-            var filtroItemsVM = sender as FiltroItemsViewModel;
-            filtroItemsVM.SaveEvent -= FiltroItemsVM_SaveEvent;
-            filtroItemsVM.CloseEvent -= FiltroItemsVM_CloseEvent;
-            ModalVM = null;
-        }
-
-        private void FiltroItemsVM_SaveEvent(object sender, FiltroViewModelSaveEventArgs e)
-        {
-            ActualizarMovimientosFiltrados();
-        }
-
         #endregion
 
         #region Methods
 
         private bool SaveCommandCanExecute()
         {
-            return _esProyeccion || _resumenAgrupadoM.Resumenes.Any(a => a.HuboCambios);
+            return _esProyeccion || HuboCambios;
         }
 
         private void SaveCommandExecute()
@@ -361,7 +328,16 @@ namespace ampersand_pb.ViewModels
             if (EditVM != null)
                 EditVM.CloseCommand.Execute(null);
             else
-                base.OnRequestCloseEvent();
+            {
+                if (HuboCambios)
+                {
+                    var messageBoxResult = MessageBox.Show("Cerrar sin gurdar cambios?", "Cerrar", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
+                    if (messageBoxResult == MessageBoxResult.Yes)
+                        base.OnRequestCloseEvent();
+                }
+                else
+                    base.OnRequestCloseEvent();
+            }
         }
 
         private bool EditarMovimientoCommandCanExecute()
@@ -388,6 +364,7 @@ namespace ampersand_pb.ViewModels
             {
                 _movimientos.Add(e.Model);
                 OnPropertyChanged("Movimientos");
+                OnPropertyChanged("MovimientosFiltrados");
                 SelectedIndex = _movimientos.IndexOf(_movimientos.Last());
             }
             _totales = null;
@@ -492,34 +469,12 @@ namespace ampersand_pb.ViewModels
                 else
                     tags.Add(new AgrupacionItem() { Descripcion = mov.Tags.First(), Monto = mov.Monto });
             }
-            
+
+            var sinTags = movimientos.Where(a => !a.Tags.Any()).Sum(b => b.Monto);
+            if (sinTags > 0.00M)
+                tags.Add(new AgrupacionItem() { Descripcion = SIN_CATEGORIA, Monto = sinTags });
+
             return tags.OrderByDescending(a => a.Descripcion);
-        }
-
-        private void ActualizarMovimientosFiltrados()
-        {
-            foreach (var filtro in Filtros)
-            {
-                _movimientosFiltrados = null;
-
-                switch (filtro.Key)
-                {
-                    case "Pagos":
-                        {
-                            if (filtro.Value.Aplicado)
-                                _movimientosFiltrados = Movimientos.Where(a => filtro.Value.Valores.Contains(a.TipoDescripcion));
-                            else
-                                _movimientosFiltrados = null;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            OnPropertyChanged("MovimientosFiltrados");
-            OnPropertyChanged("TotalResumen");
-
         }
 
         #endregion
@@ -541,43 +496,5 @@ namespace ampersand_pb.ViewModels
     {
         public string Descripcion { get; set; }
         public decimal Monto { get; set; }
-    }
-
-    public class Filtro: NotifyObject, ICloneable
-    {
-        private bool _aplicado;
-        public bool Aplicado
-        {
-            get
-            {
-                return _aplicado;
-            }
-
-            set
-            {
-                _aplicado = value;
-                OnPropertyChanged("Aplicado");
-            }
-        }
-
-        private IEnumerable<string> _valores;
-        public IEnumerable<string> Valores
-        {
-            get
-            {
-                return _valores ?? (_valores = Enumerable.Empty<string>());
-            }
-
-            set
-            {
-                _valores = value;
-            }
-        }
-
-
-        public object Clone()
-        {
-            return this.MemberwiseClone();
-        }
     }
 }

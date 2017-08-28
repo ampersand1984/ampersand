@@ -2,7 +2,13 @@
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-                      Title="&amp;pb" MinWidth="800" MinHeight="600" WindowState="Maximized">
+                      Title="&amp;personal budget" MinWidth="800" MinHeight="600" WindowState="Maximized"
+                      Icon="/ampersand-pb;component/pb.ico">
+    <Controls:MetroWindow.RightWindowCommands>        
+        <Controls:WindowCommands>
+            <Button Content="Configuraciones" Command="{Binding MostrarConfiguracionesCommand}"/>
+        </Controls:WindowCommands>
+    </Controls:MetroWindow.RightWindowCommands>
 
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding CloseCurrentMainWindowItemCommand}" />
@@ -28,7 +34,10 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        
+        <Image HorizontalAlignment="Left" 
+               VerticalAlignment="Bottom" 
+               Margin="15"
+               Source="/ampersand-pb;component/Resources/pb.png"/>
         <TabControl Grid.Column="1"
                     ItemsSource="{Binding MainWindowItems}"
                     SelectedItem="{Binding CurrentMainWindowItem}">

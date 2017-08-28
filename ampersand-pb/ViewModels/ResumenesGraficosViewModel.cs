@@ -31,7 +31,11 @@ namespace ampersand_pb.ViewModels
             if (_resumenes.Any())
             {
                 Periodos = _resumenes.GroupBy(a => a.Periodo)
-                    .Select(grp => new PeriodoModel { Periodo = grp.First().Periodo, TextoPeriodo = grp.First().TextoPeriodo });
+                    .Select(grp => new PeriodoModel
+                    {
+                        Periodo = grp.First().Periodo,
+                        TextoPeriodo = grp.First().TextoPeriodo
+                    });
 
                 _minimoPeriodo = (DateTime.Today.Year - 1) + "01";//Enero del año pasado
                 //o junio si ya estamos mes 6
@@ -240,6 +244,37 @@ namespace ampersand_pb.ViewModels
 
                             resultado.Add(datosDelGrafico);
                         }
+
+                        //sin tags
+                        var itemsSinTags = new List<ItemGrafico>();
+                        foreach (var periodo in periodos)
+                        {
+                            var movimientosSinTagDelPeriodo = movimientos.Where(a => a.Key.Equals(periodo))
+                                                                         .SelectMany(a => a.Value)
+                                                                         .Where(a => !a.Tags.Any())
+                                                                         .ToList();
+
+                            var month = int.Parse(periodo.Substring(4));
+                            var year = int.Parse(periodo.Substring(0, 4));
+                            var descripcion = new DateTime(year, month, 20).ToString("MMMM");
+                            descripcion = descripcion.Substring(0, 1).ToUpper() + descripcion.Substring(1);
+                            descripcion += " " + year;
+
+                            itemsSinTags.Add(new ItemGrafico()
+                            {
+                                Id = periodo,
+                                Descripcion = descripcion,
+                                Monto = movimientosSinTagDelPeriodo.Sum(a => a.Monto)
+                            });
+                        }
+                        var datosDelGraficoSinCategoria = new DatosDelGrafico
+                        {
+                            ChartTitle = "Sin categoría",
+                            ChartSubTitle = "",
+                            Items = itemsSinTags
+                        };
+
+                        resultado.Add(datosDelGraficoSinCategoria);
                     }
                     break;
 
