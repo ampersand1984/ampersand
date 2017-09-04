@@ -16,33 +16,48 @@ namespace ampersand_pb.ViewModels
 {
     public class ConfiguracionesViewModel : BaseViewModel, IMainWindowItem, IDataErrorInfo
     {
-        public ConfiguracionesViewModel(IConfiguracionDataAccess configuracionDA)
+        public ConfiguracionesViewModel(ConfiguracionModel configuracionM, IConfiguracionDataAccess configuracionDA)
         {
             DisplayName = "Configuraciones";
+            _configuracionOriginal = configuracionM;
+            _configuracionM = configuracionM.Clone();
             _configuracionDA = configuracionDA;
-            _carpetaDeResumenes = _configuracionDA.GetFilesPath();            
-
-            if (Directory.Exists(CarpetaDeResumenes))
-                CargarConfiguracion();
-        }
-
-        private void CargarConfiguracion()
-        {
-
-            _configuracionModel = _configuracionDA.GetConfiguracion(CarpetaDeResumenes);
         }
 
         private IConfiguracionDataAccess _configuracionDA;
-        private ConfiguracionModel _configuracionModel;
-        private bool _huboCambios;
+        private ConfiguracionModel _configuracionOriginal;
+        private ConfiguracionModel _configuracionM;
 
         public string DisplayName { get; private set; }
-
-        private string _carpetaDeResumenes;
+        
         public string CarpetaDeResumenes
         {
-            get { return _carpetaDeResumenes; }
-            set { _carpetaDeResumenes = value; OnPropertyChanged("CarpetaDeResumenes"); }
+            get { return _configuracionM.CarpetaDeResumenes; }
+            set { _configuracionM.CarpetaDeResumenes = value; OnPropertyChanged("CarpetaDeResumenes"); }
+        }
+
+        public bool MostrarMediosDePago
+        {
+            get
+            {
+                return _configuracionM.CarpetaDeResumenesValida;
+            }
+        }
+
+        public IEnumerable<PagoModel> MediosDePagos
+        {
+            get
+            {
+                return _configuracionM.MediosDePago;
+            }
+        }
+
+        public bool HuboCambios
+        {
+            get
+            {
+                return !_configuracionM.Equals(_configuracionOriginal);
+            }
         }
 
         private ICommand _buscarCarpetaCommand;
@@ -102,13 +117,6 @@ namespace ampersand_pb.ViewModels
             return error;
         }
 
-        protected override void OnPropertyChanged(string propertyName)
-        {
-            base.OnPropertyChanged(propertyName);
-            if (propertyName.Equals("CarpetaDeResumenes"))
-                _huboCambios = true;
-        }
-
         private void BuscarCarpetaCommandExecute()
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
@@ -126,12 +134,14 @@ namespace ampersand_pb.ViewModels
 
         private bool SaveCommandCanExecute()
         {
-            return _huboCambios && !CarpetaDeResumenes.IsNullOrEmpty();
+            return HuboCambios && _configuracionM.CarpetaDeResumenesValida;
         }
 
         private void SaveCommandExecute()
         {
-            _configuracionDA.SaveFilesPath(CarpetaDeResumenes);
+            _configuracionDA.GuardarConfiguracion(_configuracionM);
+
+            _configuracionOriginal.CopyValues(_configuracionM);
 
             OnSaveEvent();
             CloseCommand.Execute(null);
@@ -142,23 +152,21 @@ namespace ampersand_pb.ViewModels
         public event EventHandler<ConfiguracionesViewModelSaveEventArgs> SaveEvent;
         private void OnSaveEvent()
         {
-            var handler = this.SaveEvent;
-            if (handler != null)
-                handler(this, new ConfiguracionesViewModelSaveEventArgs(CarpetaDeResumenes));
+            this.SaveEvent?.Invoke(this, new ConfiguracionesViewModelSaveEventArgs(_configuracionOriginal));
         }
 
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;
-
+        
         #endregion
     }
 
     public class ConfiguracionesViewModelSaveEventArgs: EventArgs
     {
-        public ConfiguracionesViewModelSaveEventArgs(string filesPath)
+        public ConfiguracionesViewModelSaveEventArgs(ConfiguracionModel configuracionM)
         {
-            FilesPath = filesPath;
+            ConfiguracionM = configuracionM;
         }
 
-        public string FilesPath { get; private set; }
+        private ConfiguracionModel ConfiguracionM { get; }
     }
 }

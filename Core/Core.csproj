@@ -47,6 +47,7 @@
     <Compile Include="BaseModel.cs" />
     <Compile Include="BaseViewModel.cs" />
     <Compile Include="Common\Container.cs" />
+    <Compile Include="Common\EnumerableExtension.cs" />
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Common\StringExtension.cs" />
     <Compile Include="Common\Win32Helper.cs" />

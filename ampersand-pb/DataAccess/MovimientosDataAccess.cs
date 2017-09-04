@@ -12,12 +12,12 @@ namespace ampersand_pb.DataAccess
 {
     public class MovimientosDataAccess : IMovimientosDataAccess
     {
-        public MovimientosDataAccess(string path)
+        public MovimientosDataAccess(ConfiguracionModel configuracion)
         {
-            _path = path;
+            _configuracion = configuracion;
         }
 
-        private string _path = string.Empty;
+        private ConfiguracionModel _configuracion;
 
         private XDocument GetXDocument(string file, string periodo)
         {
@@ -147,9 +147,9 @@ namespace ampersand_pb.DataAccess
         {
             var resultado = new List<ResumenModel>();
 
-            if (Directory.Exists(_path))
+            if (Directory.Exists(_configuracion.CarpetaDeResumenes))
             {
-                var files = Directory.GetFiles(_path, "r*.xml");
+                var files = Directory.GetFiles(_configuracion.CarpetaDeResumenes, "r*.xml");
                 foreach (var file in files.OrderByDescending(a => a))
                 {
                     var resumen = ResumenModel.GetFromFile(file);

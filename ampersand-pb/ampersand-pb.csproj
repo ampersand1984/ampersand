@@ -95,6 +95,7 @@
     <Compile Include="DataAccess\ConfiguracionDataAccess.cs" />
     <Compile Include="Models\BaseMovimiento.cs" />
     <Compile Include="Models\ConfiguracionModel.cs" />
+    <Compile Include="Models\PagoModel.cs" />
     <Compile Include="Models\PeriodoModel.cs" />
     <Compile Include="Models\ResumenAgrupadoModel.cs" />
     <Compile Include="Models\ResumenModelExtension.cs" />

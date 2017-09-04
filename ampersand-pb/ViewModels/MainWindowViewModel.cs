@@ -20,8 +20,7 @@ namespace ampersand_pb.ViewModels
         {
             _configuracionDA = configuracionDA;
 
-            _filesPath = _configuracionDA.GetFilesPath();
-            _filesPathValido = Directory.Exists(_filesPath);
+            _configuracionM = _configuracionDA.GetConfiguracion();
 
             ActionList = new List<ActionItem>()
             {
@@ -48,8 +47,7 @@ namespace ampersand_pb.ViewModels
             };
         }
         
-        private string _filesPath = "";
-        private bool _filesPathValido;
+        private ConfiguracionModel _configuracionM;
 
         private IConfiguracionDataAccess _configuracionDA;
 
@@ -59,7 +57,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_movimientosDA == null)
-                    _movimientosDA = new MovimientosDataAccess(_filesPath);
+                    _movimientosDA = new MovimientosDataAccess(_configuracionM);
                 return _movimientosDA;
             }
             set
@@ -76,7 +74,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_mostrarResumenesCommand == null)
-                    _mostrarResumenesCommand = new RelayCommand(param => MostrarResumenesCommandExecute(), param => _filesPathValido);
+                    _mostrarResumenesCommand = new RelayCommand(param => MostrarResumenesCommandExecute(), param => _configuracionM.CarpetaDeResumenesValida);
                 return _mostrarResumenesCommand;
             }
         }
@@ -87,7 +85,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_mostrarResumenesGraficosCommand == null)
-                    _mostrarResumenesGraficosCommand = new RelayCommand(param => MostrarResumenesGraficosCommandExecute(), param => _filesPathValido);
+                    _mostrarResumenesGraficosCommand = new RelayCommand(param => MostrarResumenesGraficosCommandExecute(), param => _configuracionM.CarpetaDeResumenesValida);
                 return _mostrarResumenesGraficosCommand;
             }
         }
@@ -98,7 +96,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_mostrarActualCommand == null)
-                    _mostrarActualCommand = new RelayCommand(param => MostrarActualCommandExecute(), param => _filesPathValido);
+                    _mostrarActualCommand = new RelayCommand(param => MostrarActualCommandExecute(), param => _configuracionM.CarpetaDeResumenesValida);
                 return _mostrarActualCommand;
             }
         }
@@ -229,7 +227,7 @@ namespace ampersand_pb.ViewModels
 
         private void MostrarConfiguracionesCommandExecute()
         {
-            var configuracionesVM = new ConfiguracionesViewModel(_configuracionDA);
+            var configuracionesVM = new ConfiguracionesViewModel(_configuracionM, _configuracionDA);
             configuracionesVM.SaveEvent += ConfiguracionesVM_SaveEvent;
             configuracionesVM.CloseEvent += ConfiguracionesVM_CloseEvent;
 
@@ -238,8 +236,8 @@ namespace ampersand_pb.ViewModels
 
         private void ConfiguracionesVM_SaveEvent(object sender, ConfiguracionesViewModelSaveEventArgs e)
         {
-            _filesPath = e.FilesPath;
-            _filesPathValido = Directory.Exists(_filesPath);
+            //_filesPath = e.FilesPath;
+            //_filesPathValido = Directory.Exists(_filesPath);
         }
 
         private void ConfiguracionesVM_CloseEvent(object sender, EventArgs e)

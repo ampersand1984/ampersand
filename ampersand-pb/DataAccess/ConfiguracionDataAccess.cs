@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using ampersand_pb.Models;
+using System.Collections.Generic;
 
 namespace ampersand_pb.DataAccess
 {
@@ -14,16 +15,17 @@ namespace ampersand_pb.DataAccess
         }
 
         private string _machineName;
-        private const string CONFIG_FILE_NAME = "config.xml";
+        private const string CONFIGIGURACION_FILE_NAME = "config.xml";
+        private const string CONFIGIGURACION_DE_PAGOS_FILE_NAME = "configuracionDePagos.xml";
 
         private string GetConfigFilePath()
         {
             var appDirectory = Path.GetDirectoryName(App.ResourceAssembly.Location);
-            var filePath = string.Format("{0}\\{1}", appDirectory, CONFIG_FILE_NAME);
+            var filePath = string.Format("{0}\\{1}", appDirectory, CONFIGIGURACION_FILE_NAME);
             return filePath;
         }
 
-        private XDocument GetConfig()
+        private XDocument GetConfiguracionXml()
         {
             XDocument xdoc = new XDocument(new XElement("Configuraciones",
                     new XElement("PC", new XAttribute("Nombre", _machineName), new XElement("FilesPath", "")))); ;
@@ -45,13 +47,63 @@ namespace ampersand_pb.DataAccess
             return xdoc;
         }
 
-        public string GetFilesPath()
+        private XDocument GetConfiguracionDePagosXml(string carpetaDeResumenes)
+        {
+            XDocument xdoc = new XDocument(new XElement("ConfiguracionDePagos"));
+
+            var filePath = string.Format("{0}\\{1}", carpetaDeResumenes, CONFIGIGURACION_DE_PAGOS_FILE_NAME);
+            
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    xdoc = XDocument.Load(filePath);
+                }
+                catch (Exception) { }
+            }
+            else
+            {
+                xdoc.Save(filePath);
+            }
+
+            return xdoc;
+        }
+
+        private IEnumerable<PagoModel> GetConfiguracionDePagos(string carpetaDeResumenes)
+        {
+            var result = new List<PagoModel>();
+
+            var xdoc = GetConfiguracionDePagosXml(carpetaDeResumenes);
+
+            foreach (var xelement in xdoc.Root.Elements("MedioDePago"))
+            {
+                result.Add(new PagoModel()
+                {
+                    Id = xelement.Attribute("Id").Value,
+                    Descripcion = xelement.Attribute("Descripcion").Value
+                });
+            }
+
+            return result;
+        }
+
+        private void GuardarConfiguracionDePagos(string carpetaDeResumenes, IEnumerable<PagoModel> mediosDePagos)
+        {
+            XDocument xdoc = new XDocument(new XElement("ConfiguracionDePagos"));
+            foreach (var item in mediosDePagos)
+                xdoc.Root.Add(new XElement("MedioDePago", new XAttribute("Id", item.Id), new XAttribute("Descripcion", item.Descripcion)));
+
+            var filePath = string.Format("{0}\\{1}", carpetaDeResumenes, CONFIGIGURACION_DE_PAGOS_FILE_NAME);
+            xdoc.Save(filePath);
+        }
+
+        private string GetCarpetaDeResumenes()
         {
             var filesPath = string.Empty;
 
             try
             {
-                var xdoc = GetConfig();
+                var xdoc = GetConfiguracionXml();
                 foreach (var xelement in xdoc.Root.Elements("PC"))
                 {
                     if (xelement.Attribute("Nombre").Value.Equals(_machineName))
@@ -66,16 +118,16 @@ namespace ampersand_pb.DataAccess
             return filesPath;
         }
 
-        public void SaveFilesPath(string filesPath)
+        public void GuardarConfiguracion(ConfiguracionModel configuracionM)
         {
             try
             {
-                var xdoc = GetConfig();
+                var xdoc = GetConfiguracionXml();
                 foreach (var xelement in xdoc.Root.Elements("PC"))
                 {
                     if (xelement.Attribute("Nombre").Value.Equals(_machineName))
                     {
-                        xelement.Element("FilesPath").Value = filesPath;
+                        xelement.Element("FilesPath").Value = configuracionM.CarpetaDeResumenes;
 
                         string configFilePath = GetConfigFilePath();
                         xdoc.Save(configFilePath);
@@ -83,6 +135,8 @@ namespace ampersand_pb.DataAccess
                         break;
                     }
                 }
+
+                GuardarConfiguracionDePagos(configuracionM.CarpetaDeResumenes, configuracionM.MediosDePago);
             }
             catch (Exception)
             {
@@ -90,36 +144,48 @@ namespace ampersand_pb.DataAccess
             }
         }
 
-        public ConfiguracionModel GetConfiguracion(string carpetaDeResumenes)
+        public ConfiguracionModel GetConfiguracion()
         {
             var result = new ConfiguracionModel()
             {
-                CarpetaDeResumenes = carpetaDeResumenes
+                CarpetaDeResumenes = GetCarpetaDeResumenes()
             };
-            //try
-            //{
-            //    var searchPattern = "r*.xml";
-            //    var files = Directory.GetFiles(carpetaDeResumenes, searchPattern);
-            //    var resumenesEnDisco = files.Select(a => a.Substring(0, 2)).Distinct().OrderBy(a => a);
 
-            //    foreach (var item in resumenesEnDisco)
-            //    {
-            //        result.Resumenes.Add(new ResumenConfiguracionModel())
-            //    }
-            //}
-            //catch (Exception)
-            //{
-            //    throw;
-            //}
-            
+            if (result.CarpetaDeResumenesValida)
+            {
+                try
+                {
+                    var configuracionDePagos = GetConfiguracionDePagos(result.CarpetaDeResumenes);
+
+                    var searchPattern = "r*.xml";
+                    var files = Directory.GetFiles(result.CarpetaDeResumenes, searchPattern);
+                    var resumenesEnDisco = files.Select(a => Path.GetFileName(a).Substring(0, 2)).Distinct().OrderBy(a => a);
+
+                    var mediosDePago = new List<PagoModel>();
+                    foreach (var id in resumenesEnDisco)
+                    {
+                        var config = configuracionDePagos.FirstOrDefault(a => a.Id == id);
+
+                        var medioDePago = new PagoModel() { Id = id, Descripcion = config?.Descripcion };
+
+                        mediosDePago.Add(medioDePago);
+                    }
+
+                    result.MediosDePago = mediosDePago;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+
             return result;
         }
     }
 
     public interface IConfiguracionDataAccess
     {
-        ConfiguracionModel GetConfiguracion(string carpetaDeResumenes);
-        string GetFilesPath();
-        void SaveFilesPath(string filesPath);
+        ConfiguracionModel GetConfiguracion();
+        void GuardarConfiguracion(ConfiguracionModel configuracionM);
     }
 }
