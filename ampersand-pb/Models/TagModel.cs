@@ -1,9 +1,10 @@
 ﻿using ampersand.Core;
+using System;
 using System.Collections.Generic;
 
 namespace ampersand_pb.Models
 {
-    public class TagModel: BaseModel
+    public class TagModel: BaseModel, ICloneable
     {
         private string _tag;
         public string Tag
@@ -23,6 +24,11 @@ namespace ampersand_pb.Models
         {
             var str = Tag;
             return str;
+        }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
         }
     }
 

@@ -4,6 +4,7 @@ using ampersand_pb.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 
 namespace ampersand_pb.ViewModels
@@ -12,29 +13,22 @@ namespace ampersand_pb.ViewModels
     {
         #region Constructor
 
-        public MovimientoABMViewModel()
-            :this(new BaseMovimiento())
+        public MovimientoABMViewModel(ConfiguracionModel configuracionM)
+            :this(new BaseMovimiento(), configuracionM)
         {
+            _modelOriginal.IdResumen = configuracionM.MediosDePago.First().Id;
+            _modelOriginal.DescripcionResumen = configuracionM.MediosDePago.First().Descripcion;
         }
 
-        public MovimientoABMViewModel(BaseMovimiento baseMovimiento)
+        public MovimientoABMViewModel(BaseMovimiento baseMovimiento, ConfiguracionModel configuracionM)
         {
             EdicionCompleta = true;
             _modelOriginal = baseMovimiento;
             _model = baseMovimiento.Clone() as BaseMovimiento;
 
-            _tagsPosibles = new List<TagModel>()
-            {
-                new TagModel() { Tag = "super" },
-                new TagModel() { Tag = "chinos" },
-                new TagModel() { Tag = "nafta" },
-                new TagModel() { Tag = "ropa" },
-                new TagModel() { Tag = "donado" },
-                new TagModel() { Tag = "auto" },
-                new TagModel() { Tag = "delivery" },
-                new TagModel() { Tag = "salida" },
-                new TagModel() { Tag = "farmacia" }
-            };
+            _configuracionM = configuracionM;
+
+            _tagsPosibles = _configuracionM.Tags.Clone();
         }
 
         #endregion
@@ -44,10 +38,22 @@ namespace ampersand_pb.ViewModels
         private BaseMovimiento _modelOriginal;
         private BaseMovimiento _model;
         private IEnumerable<TagModel> _tagsPosibles;
+        ConfiguracionModel _configuracionM;
+        private bool _guardado;
 
         #endregion
 
         #region Properties
+
+        public string Header
+        {
+            get
+            {
+                return Descripcion.IsNullOrEmpty() ?
+                    "Nuevo" :
+                    Descripcion;
+            }
+        }
 
         public bool EdicionCompleta { get; private set; }
 
@@ -57,22 +63,33 @@ namespace ampersand_pb.ViewModels
             set { _model.IdMovimiento = value; OnPropertyChanged("IdMovimiento"); }
         }
 
-        public string TipoDescripcion
+        public PagoModel MedioDePago
         {
             get
             {
-                if (_model.TipoDescripcion.IsNullOrEmpty())
-                    _model.TipoDescripcion = TipoDescripciones.First();
-                return _model.TipoDescripcion;
+                if (_model.IdResumen.IsNullOrEmpty())
+                {
+                    _model.IdResumen = MediosDePago.First().Id;
+                    _model.DescripcionResumen = MediosDePago.First().Descripcion;
+                }
+                return MediosDePago.FirstOrDefault(a => a.Id == _model.IdResumen);
             }
-            set { _model.TipoDescripcion = value; OnPropertyChanged("TipoDescripcion"); }
+            set
+            {
+                if (value != null)
+                {
+                    _model.IdResumen = value.Id;
+                    _model.DescripcionResumen = value.Descripcion;
+                }
+                OnPropertyChanged("MedioDePago");
+            }
         }
 
-        public IEnumerable<string> TipoDescripciones
+        public IEnumerable<PagoModel> MediosDePago
         {
             get
             {
-                return new List<string>() { "Visa", "Master Card" };
+                return _configuracionM.MediosDePago;
             }
         }
 
@@ -140,7 +157,10 @@ namespace ampersand_pb.ViewModels
         private IEnumerable<TagModel> _tags;
         public IEnumerable<TagModel> Tags
         {
-            get { return _tags ?? (_tags = GetTags()); }
+            get
+            {
+                return _tags ?? (_tags = GetTags());
+            }
         }
 
         private ICommand _saveCommand;
@@ -178,21 +198,31 @@ namespace ampersand_pb.ViewModels
 
         private void SaveCommandExecute()
         {
-            _modelOriginal.Descripcion = _model.Descripcion;
-            _modelOriginal.DescripcionAdicional = _model.DescripcionAdicional;
-            _modelOriginal.Fecha = _model.Fecha;
-            _modelOriginal.IdMovimiento = _model.IdMovimiento;
-            _modelOriginal.Tipo = _model.Tipo;
-            _modelOriginal.TipoDescripcion = _model.TipoDescripcion;
-            _modelOriginal.Cuota = _model.Cuota;
-            _modelOriginal.Monto = _model.Monto;
-            _modelOriginal.EsMensual = _model.EsMensual;
-            _modelOriginal.EsAjeno = _model.EsAjeno;
+            var idResumenOriginal = _modelOriginal.IdResumen;
+            _modelOriginal.CopyValues(_model);
+
             _modelOriginal.Tags = this.Tags.Where(a => a.Seleccionada).Select(a => a.Tag).ToList();
             _modelOriginal.RefrescarPropiedades();
 
-            OnSaveEvent();
+            OnSaveEvent(idResumenOriginal);
+            _guardado = true;
             CloseCommand.Execute(null);
+        }
+
+        protected override void OnRequestCloseEvent()
+        {
+            if (!_guardado)
+            {
+                var huboCambios = !_model.Equals(_modelOriginal);
+                if (huboCambios)
+                {
+                    var result = MessageBox.Show("Salir sin guardar?", "Salir", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+                    if (result == MessageBoxResult.No)
+                        return;
+                }
+            }
+
+            base.OnRequestCloseEvent();
         }
 
         #endregion
@@ -200,11 +230,11 @@ namespace ampersand_pb.ViewModels
         #region Events
 
         public event EventHandler<MovimientoABMSaveEventArgs> SaveEvent;
-        private void OnSaveEvent()
+        private void OnSaveEvent(string idResumenOriginal)
         {
             var handler = this.SaveEvent;
             if (handler != null)
-                handler(this, new MovimientoABMSaveEventArgs(_modelOriginal));
+                handler(this, new MovimientoABMSaveEventArgs(_modelOriginal, idResumenOriginal));
         }
 
         #endregion
@@ -212,11 +242,14 @@ namespace ampersand_pb.ViewModels
 
     public class MovimientoABMSaveEventArgs : EventArgs
     {
-        public MovimientoABMSaveEventArgs(BaseMovimiento model)
+        public MovimientoABMSaveEventArgs(BaseMovimiento model, string idResumenOriginal)
         {
             this.Model = model;
+            IdResumenOriginal = idResumenOriginal;
         }
 
         public BaseMovimiento Model { get; private set; }
+
+        public string IdResumenOriginal { get; private set; }
     }
 }

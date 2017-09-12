@@ -1,13 +1,10 @@
 ﻿<UserControl x:Class="ampersand_pb.Views.MovimientosView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
              xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
              xmlns:common="clr-namespace:ampersand_pb.Common"
-             xmlns:views="clr-namespace:ampersand_pb.Views">
+             Dialog:DialogParticipation.Register="{Binding}">
     <!--http://mahapps.com/-->
     <!--https://modernuicharts.codeplex.com/-->
     <Grid>
@@ -21,6 +18,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        
         <Grid.Resources>
             <common:BooleanToVisibilityConverter x:Key="boolToVis"/>
             <common:NullToVisibilityConverter x:Key="nullToVis"/>
@@ -48,18 +46,42 @@
                 </Style.Triggers>
             </Style>
 
-        </Grid.Resources>
+            <Image x:Key="refresh" 
+                   Source="/ampersand-pb;component/Resources/filter-remove_b.png"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="20"
+                   MaxWidth="20"/>
 
-        <Controls:TransitioningContentControl x:Name="transitioning" Transition="LeftReplace"
-                                              Content="{Binding EditVM}"
-                                              Grid.Column="1"
-                                              Grid.ColumnSpan="3"
-                                              Grid.RowSpan="2"
-                                              Panel.ZIndex="2"
-                                              HorizontalAlignment="Stretch"
-                                              HorizontalContentAlignment="Stretch"
-                                              VerticalContentAlignment="Stretch"
-                                              VerticalAlignment="Stretch"/>
+            <Image x:Key="save" 
+                   Source="/ampersand-pb;component/Resources/content-save_b.png"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="20"
+                   MaxWidth="20"/>
+
+            <Image x:Key="nuevo" 
+                   Source="/ampersand-pb;component/Resources/plus_b.png"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="20"
+                   MaxWidth="20"/>
+
+            <Image x:Key="eliminar" 
+                   Source="/ampersand-pb;component/Resources/delete_b.png"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="20"
+                   MaxWidth="20"/>
+
+            <Image x:Key="proximo" 
+                   Source="/ampersand-pb;component/Resources/calendar-plus_b.png"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="20"
+                   MaxWidth="20"/>
+
+        </Grid.Resources>
 
         <Grid Grid.ColumnSpan="4" 
               Panel.ZIndex="1" 
@@ -72,12 +94,6 @@
             </Grid.Effect>            
         </Grid>
 
-        <ContentControl Content="{Binding ModalVM}"
-                        Grid.ColumnSpan="3"
-                        Grid.RowSpan="2"
-                        Panel.ZIndex="2" 
-                        Background="Green"/>
-
         <DataGrid ItemsSource="{Binding MovimientosFiltrados}"
                   SelectedIndex="{Binding SelectedIndex}"
                   Style="{StaticResource AzureDataGrid}"
@@ -86,8 +102,7 @@
                   Grid.ColumnSpan="2"
                   Margin="10"
                   IsReadOnly="True"
-                  AutoGenerateColumns="False" 
-                  Visibility="{Binding EditVM, Converter={StaticResource nullToVis}, ConverterParameter=not}">
+                  AutoGenerateColumns="False" >
             
             <DataGrid.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick"
@@ -146,7 +161,7 @@
                                     Width="auto" 
                                     CellStyle="{StaticResource leftTopAlignment}"/>
 
-                <DataGridTextColumn Header="Pagos" Binding="{Binding TipoDescripcion}" x:Name="clmPagos"
+                <DataGridTextColumn Header="Pagos" Binding="{Binding DescripcionResumen}" x:Name="clmPagos"
                                     Width="auto" 
                                     CellStyle="{StaticResource leftTopAlignment}"/>
 
@@ -180,29 +195,47 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding StringFormat='{}{0} '}"
-                                                       FontSize="10"
-                                                       Margin="1"
-                                                       Padding="2"
-                                                       Opacity="0.7">
-                                                <TextBlock.Background>
-                                                    <VisualBrush>
-                                                        <VisualBrush.Visual>
-                                                            <Polygon Fill="LightBlue"
-                                                                     Stroke="Black"
-                                                                     StrokeThickness="2">
-                                                                <Polygon.Points>
-                                                                    <Point X="0" Y="30" />
-                                                                    <Point X="55" Y="30" />
-                                                                    <Point X="70" Y="15" />
-                                                                    <Point X="55" Y="0" />
-                                                                    <Point X="0" Y="0" />
-                                                                </Polygon.Points>
-                                                            </Polygon>
-                                                        </VisualBrush.Visual>
-                                                    </VisualBrush>
-                                                </TextBlock.Background>
-                                            </TextBlock>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Image Margin="0 0 5 0"
+                                                       MaxHeight="{Binding ElementName=txbTag, Path=ActualHeight}">
+                                                    <Image.Style>
+                                                        <Style TargetType="Image">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="false">
+                                                                    <Setter Property="Source" Value="/ampersand-pb;component/Resources/tag_b.png"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="true">
+                                                                    <Setter Property="Source" Value="/ampersand-pb;component/Resources/tag.png"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Image.Style>
+                                                </Image>
+                                                <TextBlock Text="{Binding StringFormat='{}{0} '}"
+                                                           x:Name="txbTag"
+                                                           FontSize="10"
+                                                           Margin="1"
+                                                           Padding="2"
+                                                           Opacity="0.7">
+                                                    <!--<TextBlock.Background>
+                                                        <VisualBrush>
+                                                            <VisualBrush.Visual>
+                                                                <Polygon Fill="LightBlue"
+                                                                         Stroke="Black"
+                                                                         StrokeThickness="2">
+                                                                    <Polygon.Points>
+                                                                        <Point X="0" Y="30" />
+                                                                        <Point X="55" Y="30" />
+                                                                        <Point X="70" Y="15" />
+                                                                        <Point X="55" Y="0" />
+                                                                        <Point X="0" Y="0" />
+                                                                    </Polygon.Points>
+                                                                </Polygon>
+                                                            </VisualBrush.Visual>
+                                                        </VisualBrush>
+                                                    </TextBlock.Background>-->
+                                                </TextBlock>
+                                            </StackPanel>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -262,13 +295,11 @@
         <GridSplitter Grid.Column="2" 
                       Grid.RowSpan="2"
                       Width="5" 
-                      HorizontalAlignment="Stretch" 
-                      Visibility="{Binding EditVM, Converter={StaticResource nullToVis}, ConverterParameter=not}"/>
+                      HorizontalAlignment="Stretch" />
         
         <Grid Grid.Column="3"
               Grid.RowSpan="2"
-              Margin="10"
-              Visibility="{Binding EditVM, Converter={StaticResource nullToVis}, ConverterParameter=not}">
+              Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -277,7 +308,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="{Binding TotalResumen, StringFormat='Total resumen: ${0}'}"
+            <TextBlock Text="{Binding TotalResumen, StringFormat='Total: ${0}'}"
                        FontSize="20"
                        Foreground="{DynamicResource AccentColorBrush}"
                        Margin="0,-10,0,15"
@@ -304,12 +335,25 @@
                              Focusable="False"
                              Grid.Column="1"
                              Panel.ZIndex="2"/>
+
             </Grid>
+
+            <Button Content="{StaticResource refresh}" 
+                    Command="{Binding LimpiarSeleccionCommand}"
+                    Visibility="{Binding PermiteLimpiarSeleccion, Converter={StaticResource boolToVis}}"
+                    Grid.Row="2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Panel.ZIndex="4"
+                    Focusable="False"
+                    Foreground="{DynamicResource AccentColorBrush}"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                    Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"/>
 
             <chart:PieChart ChartTitle=""
                             Margin="0,0,0,10" 
                             Grid.Row="2"
-                            ChartSubTitle=""
+                            ChartTitleVisibility="Collapsed"
                             Visibility="{Binding Path=IsChecked, ElementName=rdbTotales, Converter={StaticResource boolToVis}}"
                             Focusable="False"
                             SelectedItem="{Binding Path=TotalesSelectedItem, Mode=TwoWay}">
@@ -325,37 +369,81 @@
             <chart:PieChart ChartTitle="" 
                             Margin="0,0,0,10" 
                             Grid.Row="2"
-                            ChartSubTitle=""
+                            ChartTitleVisibility="Collapsed"
                             Visibility="{Binding Path=IsChecked, ElementName=rdbTags, Converter={StaticResource boolToVis}}"
                             Focusable="False"
                             SelectedItem="{Binding Path=AgrupacionesSelectedItem, Mode=TwoWay}">
                 <chart:PieChart.Series>
                     <chart:ChartSeries SeriesTitle="Tags"
                                        DisplayMember="Descripcion"
-                                       ValueMember="Monto"
+                                       ValueMember="Monto" 
                                        ItemsSource="{Binding Path=Agrupaciones}" 
                                        Focusable="False"/>
                 </chart:PieChart.Series>
             </chart:PieChart>
 
-            <StackPanel Grid.Row="4" Margin="0,0,0,10">
-
-                <Button Content="Guardar cambios"
+            <Grid Grid.Row="4" 
+                       Margin="0,0,0,10"
+                       HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Content="{StaticResource nuevo}" 
+                        Command="{Binding NuevoMovimientoCommand}"
+                        ToolTip="Agregar nuevo"
+                        Grid.Column="0"
+                        IsEnabled="{Binding EsElUtimoMes}"
+                        Focusable="False"
+                        Foreground="{DynamicResource AccentColorBrush}"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
+                        Margin="5"/>
+                
+                <Button Content="{StaticResource save}" 
                         Command="{Binding SaveCommand}"
-                        VerticalAlignment="Bottom"
-                        Margin="10"
-                        Foreground="{DynamicResource AccentColorBrush}"/>
-            </StackPanel>
+                        ToolTip="Guardar cambios"
+                        Grid.Column="1"
+                        Focusable="False"
+                        Foreground="{DynamicResource AccentColorBrush}"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
+                        Margin="5"/>
+
+                <Button Content="{StaticResource eliminar}" 
+                        Command="{Binding EliminarSeleccionadoCommand}"
+                        ToolTip="Eliminar seleccionado"
+                        Grid.Column="2"
+                        IsEnabled="{Binding EsElUtimoMes}"
+                        Focusable="False"
+                        Foreground="{DynamicResource AccentColorBrush}"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
+                        Margin="5"/>
+
+                <Button Content="{StaticResource proximo}" 
+                        Command="{Binding ProyectarCommand}"
+                        ToolTip="Ver mes que viene"
+                        Grid.Column="3"
+                        IsEnabled="{Binding EsElUtimoMes}"
+                        Focusable="False"
+                        Foreground="{DynamicResource AccentColorBrush}"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
+                        Margin="5"/>
+            </Grid>
         </Grid>
 
-        <Grid Grid.Row="1"
+        <!--<Grid Grid.Row="1"
               Grid.Column="0"
               Grid.ColumnSpan="2"
               Height="40">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <Button Content="Nuevo movimiento" 
@@ -365,20 +453,21 @@
                     VerticalAlignment="Bottom"
                     Margin="10"
                     Style="{StaticResource LinkButton}"/>
-            <Button Content="Proyectar"
-                    Command="{Binding ProyectarCommand}"
+            <Button Content="Eliminar seleccionado"
+                    Command="{Binding EliminarSeleccionadoCommand}"
                     IsEnabled="{Binding EsElUtimoMes}"
                     Grid.Column="1"
                     VerticalAlignment="Bottom"
                     Margin="10"
                     Style="{StaticResource LinkButton}"/>
-            <Button Content="Importar info del mes anterior"
-                    Command="{Binding ImportarInfoDeResumenAnteriorCommand}"
+            <Button Content="Proyectar"
+                    Command="{Binding ProyectarCommand}"
                     IsEnabled="{Binding EsElUtimoMes}"
                     Grid.Column="2"
                     VerticalAlignment="Bottom"
+                    HorizontalAlignment="Right"
                     Margin="10"
                     Style="{StaticResource LinkButton}"/>
-        </Grid>
+        </Grid>-->
     </Grid>
 </UserControl>

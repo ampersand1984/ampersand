@@ -7,13 +7,9 @@ namespace ampersand_pb.Models
 {
     public class ResumenModel: ICloneable
     {
-        public string Periodo
-        {
-            get
-            {
-                return FechaDeCierre.GetPeriodo();
-            }
-        }
+        public string Id { get; internal set; }
+
+        public string Periodo { get; internal set; }
 
         public string TextoPeriodo
         {
@@ -48,13 +44,12 @@ namespace ampersand_pb.Models
         {
             try
             {
-                var strFechaDeCierre = Path.GetFileNameWithoutExtension(file);
-
-                var fechaDeCierre = strFechaDeCierre.Substring(2).ToDateTime();
+                var fileName = Path.GetFileName(file);
 
                 var resumen = new ResumenModel
                 {
-                    FechaDeCierre = fechaDeCierre,
+                    Id = fileName.Substring(0, 2),
+                    Periodo = fileName.Substring(2, 6),
                     FilePath = file
                 };
 
@@ -74,7 +69,7 @@ namespace ampersand_pb.Models
 
         public override string ToString()
         {
-            var str = string.Format("{0} {1}", Descripcion, Periodo);
+            var str = string.Format("{0} {1} {2}", Id, Descripcion, Periodo);
 
             return str;
         }

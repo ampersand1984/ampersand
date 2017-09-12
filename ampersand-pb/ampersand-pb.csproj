@@ -60,16 +60,16 @@
     <ApplicationIcon>pb.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="De.TorstenMandelkow.MetroChart">
-      <HintPath>..\Bin\De.TorstenMandelkow.MetroChart.dll</HintPath>
+    <Reference Include="De.TorstenMandelkow.MetroChart, Version=0.9.5818.20693, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ModernUICharts.WPF.Beta.0.9.1\lib\De.TorstenMandelkow.MetroChart.dll</HintPath>
     </Reference>
-    <Reference Include="MahApps.Metro">
-      <HintPath>..\packages\MahApps.Metro.1.1.2.0\lib\net45\MahApps.Metro.dll</HintPath>
+    <Reference Include="MahApps.Metro, Version=1.5.0.23, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.1.2.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -90,11 +90,13 @@
     </ApplicationDefinition>
     <Compile Include="Common\BooleanToVisibilityConverter.cs" />
     <Compile Include="Common\EqualToVisibilityConverter.cs" />
+    <Compile Include="Common\NullToBooleanConverter.cs" />
     <Compile Include="Common\NullToVisibilityConverter.cs" />
     <Compile Include="DataAccess\MovimientosDataAccess.cs" />
     <Compile Include="DataAccess\ConfiguracionDataAccess.cs" />
     <Compile Include="Models\BaseMovimiento.cs" />
     <Compile Include="Models\ConfiguracionModel.cs" />
+    <Compile Include="Models\MessageParam.cs" />
     <Compile Include="Models\PagoModel.cs" />
     <Compile Include="Models\PeriodoModel.cs" />
     <Compile Include="Models\ResumenAgrupadoModel.cs" />
@@ -111,6 +113,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ViewModels\PublishMessageEventArgs.cs" />
     <Compile Include="ViewModels\PublishViewModelEventArgs.cs" />
     <Compile Include="ViewModels\ResumenesGraficosViewModel.cs" />
     <Compile Include="ViewModels\ResumenesViewModel.cs" />
@@ -215,6 +218,40 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\pb.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\autorenew.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\chart-areaspline.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\calendar-check.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\calendar-clock.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\settings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\autorenew_b.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\calendar-plus.png" />
+    <Resource Include="Resources\calendar-plus_b.png" />
+    <Resource Include="Resources\content-save_b.png" />
+    <Resource Include="Resources\delete.png" />
+    <Resource Include="Resources\delete_b.png" />
+    <Resource Include="Resources\plus.png" />
+    <Resource Include="Resources\plus_b.png" />
+    <Resource Include="Resources\tag_b.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\tag.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\filter-remove_b.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

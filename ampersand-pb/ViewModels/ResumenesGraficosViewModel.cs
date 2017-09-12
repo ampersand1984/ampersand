@@ -2,6 +2,7 @@
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
+using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -116,6 +117,8 @@ namespace ampersand_pb.ViewModels
                 return _itemsDelGrafico;
             }
         }
+
+        public IDialogCoordinator DialogCoordinator { get; set; }
 
         private IEnumerable<DatosDelGrafico> GetDatosDelGrafico()
         {

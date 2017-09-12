@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using ampersand_pb.Models;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace ampersand_pb.ViewModels
 {
@@ -59,6 +60,8 @@ namespace ampersand_pb.ViewModels
                 return !_configuracionM.Equals(_configuracionOriginal);
             }
         }
+
+        public IDialogCoordinator DialogCoordinator { get; set; }
 
         private ICommand _buscarCarpetaCommand;
         public ICommand BuscarCarpetaCommand

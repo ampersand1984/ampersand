@@ -1,5 +1,6 @@
 ﻿using ampersand.Core.Common;
 using System;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace ampersand_pb.ViewModels
 {
@@ -7,6 +8,7 @@ namespace ampersand_pb.ViewModels
     {
         string DisplayName { get; }
         RelayCommand CloseCommand { get; }
+        IDialogCoordinator DialogCoordinator { get; set; }
 
         event EventHandler CloseEvent;
 

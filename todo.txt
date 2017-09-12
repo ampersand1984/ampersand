@@ -1,6 +1,16 @@
-corregir el guardar cambios
-corregir la proyección
-sacar los tags a un archivo aparte
-incluir el parseo al proyecto ppal
-agregar la vista de preferencias
-agregar el % o monto de "ajeno"
+ok corregir el guardar cambios
+ok corregir la proyección
+   sacar los tags a un archivo aparte
+no incluir el parseo al proyecto ppal
+ok agregar la vista de preferencias
+   agregar el % o monto de "ajeno"
+ok hamburguer menu
+ok flyout view
+   agregar colores
+ok cambiar como se ven los tags
+   agregar tag de servicios
+   ABM de tags
+   buscar
+   themes
+   vista ppal
+   mensajes

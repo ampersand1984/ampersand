@@ -18,26 +18,23 @@ namespace ampersand_pb.Models
 
         public TipoMovimiento Tipo { get; set; }
 
-        private string _tipoDescripcion;
-        public string TipoDescripcion
+        private string _descripcionResumen;
+        public string DescripcionResumen
         {
             get
             {
-                return _tipoDescripcion ?? string.Empty;
+                return _descripcionResumen ?? string.Empty;
             }
 
             set
             {
-                _tipoDescripcion = value;
+                _descripcionResumen = value;
             }
         }
 
-        private int _idMovimiento;
-        public int IdMovimiento
-        {
-            get { return _idMovimiento; }
-            set { _idMovimiento = value; }
-        }
+        public string IdResumen { get; set; }
+        
+        public int IdMovimiento { get; set; }
 
         public DateTime Fecha
         {
@@ -161,13 +158,13 @@ namespace ampersand_pb.Models
         public object Clone()
         {
             var clone = this.MemberwiseClone() as BaseMovimiento;
-            clone.Tags = new List<string>(this.Tags);
+            clone.Tags = Tags.Clone();
             return clone;
         }
 
         public override string ToString()
         {
-            var str = string.Format("{0}, {1}", Descripcion, Monto);
+            var str = string.Format("{0}, {1}, {2}, {3}", IdResumen, Fecha.ToString("dd/MM/yyyy"), Descripcion, Monto);
             return str;
         }
 
@@ -185,12 +182,55 @@ namespace ampersand_pb.Models
             OnPropertyChanged("DescripcionAdicional");
             OnPropertyChanged("Fecha");
             OnPropertyChanged("Tipo");
-            OnPropertyChanged("TipoDescripcion");
+            OnPropertyChanged("DescripcionResumen");
             OnPropertyChanged("Cuota");
             OnPropertyChanged("Monto");
             OnPropertyChanged("EsMensual");
             OnPropertyChanged("EsAjeno");
             OnPropertyChanged("Tags");
+        }
+
+        internal void CopyValues(BaseMovimiento model)
+        {
+            IdResumen = model.IdResumen;
+            DescripcionResumen = model.DescripcionResumen;
+
+            IdMovimiento = model.IdMovimiento;
+            Descripcion = model.Descripcion;
+            DescripcionAdicional = model.DescripcionAdicional;
+
+            Fecha = model.Fecha;
+            Tipo = model.Tipo;
+            DescripcionResumen = model.DescripcionResumen;
+            Cuota = model.Cuota;
+            Monto = model.Monto;
+            EsMensual = model.EsMensual;
+            EsAjeno = model.EsAjeno;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var model = obj as BaseMovimiento;
+
+            var equal = true;
+
+            if (model != null)
+            {
+                equal &= Tipo == model.Tipo;
+                equal &= IdResumen == model.IdResumen;
+                equal &= DescripcionResumen == model.DescripcionResumen;
+                equal &= IdMovimiento == model.IdMovimiento;
+                equal &= Fecha == model.Fecha;
+                equal &= Descripcion == model.Descripcion;
+                equal &= DescripcionAdicional == model.DescripcionAdicional;
+                equal &= Monto == model.Monto;
+                equal &= Cuota == model.Cuota;
+                equal &= EsMensual == model.EsMensual;
+                equal &= EsAjeno == model.EsAjeno;
+                equal &= string.Join(";", Tags) == string.Join(";", model.Tags);
+            }
+
+            return equal;
         }
     }
 

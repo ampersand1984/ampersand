@@ -39,6 +39,31 @@ namespace ampersand_pb.Models
             }
         }
 
+        private IEnumerable<TagModel> _tags;
+        public IEnumerable<TagModel> Tags
+        {
+            get
+            {
+                if (_tags == null)
+                {
+                    _tags = new List<TagModel>()
+                    {
+                        new TagModel() { Tag = "super" },
+                        new TagModel() { Tag = "chinos" },
+                        new TagModel() { Tag = "nafta" },
+                        new TagModel() { Tag = "ropa" },
+                        new TagModel() { Tag = "donado" },
+                        new TagModel() { Tag = "auto" },
+                        new TagModel() { Tag = "delivery" },
+                        new TagModel() { Tag = "salida" },
+                        new TagModel() { Tag = "farmacia" }
+                    };
+                }
+
+                return _tags;
+            }
+        }
+
         public override bool Equals(object obj)
         {
             var configuracionM = obj as ConfiguracionModel;

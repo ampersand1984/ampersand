@@ -67,18 +67,15 @@ namespace ampersand_pb.DataAccess
 
             foreach (var xmlPago in xmlPagos)
             {
-                var pago = GetPago(xmlPago);
+                var pago = GetPago(xmlPago, resumen.Id, resumen.Descripcion);
                 if (pago != null)
-                {
-                    pago.TipoDescripcion = resumen.Descripcion;
                     resultado.Add(pago);
-                }
             }
 
             return resultado;
         }
 
-        private BaseMovimiento GetPago(XElement xmlPago)
+        private BaseMovimiento GetPago(XElement xmlPago, string idResumen, string descriResumen)
         {
             var idMovimiento = GetValueFromXml<int>("IdMovimiento", xmlPago, 0);
             var strFecha = GetValueFromXml<string>("Fecha", xmlPago, DateTime.MinValue.ToString("dd/MM/yyyy"));
@@ -105,6 +102,8 @@ namespace ampersand_pb.DataAccess
 	        {
                 var pago = new BaseMovimiento
                 {
+                    IdResumen = idResumen,
+                    DescripcionResumen = descriResumen,
                     IdMovimiento = idMovimiento,
                     Fecha = strFecha.ToDateTime(),
                     Descripcion = descri,
@@ -153,20 +152,9 @@ namespace ampersand_pb.DataAccess
                 foreach (var file in files.OrderByDescending(a => a))
                 {
                     var resumen = ResumenModel.GetFromFile(file);
-
                     if (resumen != null)
                     {
-                        var xdoc = XDocument.Load(file);
-                        resumen.XDoc = xdoc;
-                        resumen.Tipo = TipoMovimiento.Credito;
-                        resumen.Descripcion = GetValueFromXml<string>("Descripcion", xdoc.Root, "");
-                        resumen.Total = GetValueFromXml<decimal>("Total", xdoc.Root, 0M);
-
-                        var strFechaDeCierre = GetValueFromXml<string>("FechaDeCierre", xdoc.Root, "");
-                        var strProximoCierre = GetValueFromXml<string>("ProximoCierre", xdoc.Root, "");
-
-                        resumen.FechaDeCierre = strFechaDeCierre.ToDateTime();
-                        resumen.ProximoCierre = strProximoCierre.ToDateTime();
+                        CargarResumen(resumen);
                         resultado.Add(resumen);
                     }
                 }
@@ -175,11 +163,72 @@ namespace ampersand_pb.DataAccess
             return resultado;
         }
 
+        private void CargarResumen(ResumenModel resumen)
+        {
+            var xdoc = XDocument.Load(resumen.FilePath);
+            resumen.XDoc = xdoc;
+            resumen.Tipo = GetTipo(GetValueFromXml<string>("Tipo", xdoc.Root, ""));
+
+            resumen.Descripcion = GetValueFromXml<string>("Descripcion", xdoc.Root, "");
+            resumen.Descripcion = _configuracion.MediosDePago.FirstOrDefault(a => a.Id == resumen.Id)?.Descripcion;
+
+            resumen.Total = GetValueFromXml<decimal>("Total", xdoc.Root, 0M);
+
+            var strFechaDeCierre = GetValueFromXml<string>("FechaDeCierre", xdoc.Root, "");
+            var strProximoCierre = GetValueFromXml<string>("ProximoCierre", xdoc.Root, "");
+
+            resumen.FechaDeCierre = strFechaDeCierre.ToDateTime();
+            resumen.ProximoCierre = strProximoCierre.ToDateTime();
+        }
+
+        private TipoMovimiento GetTipo(string strTipo)
+        {
+            switch (strTipo)
+            {
+                case "Credito":
+                    return TipoMovimiento.Credito;
+                case "Debito":
+                    return TipoMovimiento.Debito;
+                default:
+                    return TipoMovimiento.Efectivo;
+            }
+        }
+
+        public ResumenAgrupadoModel GetUltimoResumen()
+        {
+            ResumenAgrupadoModel resultado = null;
+            if (Directory.Exists(_configuracion.CarpetaDeResumenes))
+            {
+                var files = Directory.GetFiles(_configuracion.CarpetaDeResumenes, "r*.xml");
+                var ultPeriodo = files.Select(a => Path.GetFileName(a).Substring(2, 6)).OrderBy(a => a).LastOrDefault();
+                if (!ultPeriodo.IsNullOrEmpty())
+                {
+                    var resumenes = new List<ResumenModel>();
+
+                    var archivosDelUltPeriodo = files.Where(a => Path.GetFileName(a).Substring(2, 6).Equals(ultPeriodo)).ToList();
+                    foreach (var file in archivosDelUltPeriodo)
+                    {
+                        var resumen = ResumenModel.GetFromFile(file);
+                        if (resumen != null)
+                        {
+                            CargarResumen(resumen);
+                            resumenes.Add(resumen);
+                        }
+                    }
+
+                    resultado = resumenes.Agrupar().FirstOrDefault();
+                }
+            }
+
+            return resultado;
+        }
+
+
         public void SaveMovimientos(ResumenAgrupadoModel resumenAgrupadoM, IEnumerable<BaseMovimiento> movimientos)
         {
             foreach (var resumenM in resumenAgrupadoM.Resumenes.Where(a => a.HuboCambios))
             {
-                var movimientosDelResumen = movimientos.Where(a => a.TipoDescripcion.Equals(resumenM.Descripcion)).ToList();
+                var movimientosDelResumen = movimientos.Where(a => a.IdResumen.Equals(resumenM.Id)).ToList();
 
                 var total = movimientosDelResumen.Sum(a => a.Monto);
 
@@ -227,6 +276,7 @@ namespace ampersand_pb.DataAccess
     public interface IMovimientosDataAccess
     {
         IEnumerable<ResumenModel> GetResumenes();
+        ResumenAgrupadoModel GetUltimoResumen();
         IEnumerable<BaseMovimiento> GetMovimientos(ResumenAgrupadoModel resumenAgrupadoM);
         IEnumerable<BaseMovimiento> GetMovimientos(ResumenModel resumen);
 

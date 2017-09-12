@@ -32,5 +32,17 @@ namespace ampersand.Core.Common
 
             return equals;
         }
+
+        public static IEnumerable<T> Clone<T>(this IEnumerable<T> original) where T : ICloneable
+        {
+            var cloneList = new List<T>();
+            foreach (var item in original)
+            {
+                var cloneItem = (T)item.Clone();
+                cloneList.Add(cloneItem);
+            }
+
+            return cloneList;
+        }
     }
 }

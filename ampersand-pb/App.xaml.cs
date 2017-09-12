@@ -1,5 +1,6 @@
 ﻿using ampersand_pb.ViewModels;
 using ampersand_pb.Views;
+using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Windows;
 
@@ -27,7 +28,7 @@ namespace ampersand_pb
                 WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen
             };
 
-            _mainWindowVM = new MainWindowViewModel();
+            _mainWindowVM = new MainWindowViewModel(DialogCoordinator.Instance);
 
             _mainWindowVM.CloseEvent += _eventHandler;
 

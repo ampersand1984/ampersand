@@ -2,51 +2,33 @@
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
+using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace ampersand_pb.ViewModels
 {
     public class MainWindowViewModel : BaseViewModel
     {
-        public MainWindowViewModel()
-            :this(new ConfiguracionDataAccess()) { }
+        public MainWindowViewModel(IDialogCoordinator dialogCoordinator)
+            :this(new ConfiguracionDataAccess(), dialogCoordinator) { }
 
-        public MainWindowViewModel(IConfiguracionDataAccess configuracionDA)
+        public MainWindowViewModel(IConfiguracionDataAccess configuracionDA, IDialogCoordinator dialogCoordinator)
         {
+            _dialogCoordinator = dialogCoordinator;
+
             _configuracionDA = configuracionDA;
 
             _configuracionM = _configuracionDA.GetConfiguracion();
-
-            ActionList = new List<ActionItem>()
-            {
-                new ActionItem
-                {
-                    Description = "Último",
-                    Command = MostrarActualCommand
-                },
-                new ActionItem
-                {
-                    Description = "Gráficos por mes",
-                    Command = this.MostrarResumenesGraficosCommand
-                },
-                new ActionItem
-                {
-                    Description = "Resúmenes",
-                    Command = this.MostrarResumenesCommand
-                },
-                new ActionItem
-                {
-                    Description = "Configuraciones",
-                    Command = MostrarConfiguracionesCommand
-                }
-            };
         }
-        
+
+        private IDialogCoordinator _dialogCoordinator;
+
         private ConfiguracionModel _configuracionM;
 
         private IConfiguracionDataAccess _configuracionDA;
@@ -65,8 +47,6 @@ namespace ampersand_pb.ViewModels
                 _movimientosDA = value;
             }
         }
-
-        public IEnumerable<ActionItem> ActionList { get; private set; }
 
         private ICommand _mostrarResumenesCommand;
         public ICommand MostrarResumenesCommand
@@ -96,7 +76,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_mostrarActualCommand == null)
-                    _mostrarActualCommand = new RelayCommand(param => MostrarActualCommandExecute(), param => _configuracionM.CarpetaDeResumenesValida);
+                    _mostrarActualCommand = new RelayCommand(param => MostrarActualCommandExecuteAsync(), param => _configuracionM.CarpetaDeResumenesValida);
                 return _mostrarActualCommand;
             }
         }
@@ -161,7 +141,7 @@ namespace ampersand_pb.ViewModels
             }
             else
             {
-                resumenesVM = new ResumenesViewModel(MovimientosDA);
+                resumenesVM = new ResumenesViewModel(MovimientosDA, _configuracionM);
 
                 AgregarMainWindowItem(resumenesVM);
             }
@@ -185,8 +165,8 @@ namespace ampersand_pb.ViewModels
         private void ViewModelCloseEvent(object sender, EventArgs e)
         {
             var mainWindowItem = sender as IMainWindowItem;
-            mainWindowItem.PublishViewModelEvent -= PublishViewModelEvent;
             mainWindowItem.CloseEvent -= ViewModelCloseEvent;
+            mainWindowItem.PublishViewModelEvent -= PublishViewModelEvent;
             MainWindowItems.Remove(mainWindowItem);
             OnPropertyChanged("CurrentMainWindowItem");            
         }
@@ -196,6 +176,8 @@ namespace ampersand_pb.ViewModels
             var mainWindowItem = e.ViewModel as IMainWindowItem;
             if (mainWindowItem != null)
                 AgregarMainWindowItem(mainWindowItem);
+            else
+                EditViewModel = e.ViewModel;
         }
 
         private void AgregarMainWindowItem(IMainWindowItem mainWindowItem)
@@ -209,18 +191,25 @@ namespace ampersand_pb.ViewModels
             {
                 mainWindowItem.PublishViewModelEvent += PublishViewModelEvent;
                 mainWindowItem.CloseEvent += ViewModelCloseEvent;
+
+                mainWindowItem.DialogCoordinator = _dialogCoordinator;
+
                 MainWindowItems.Add(mainWindowItem);
                 CurrentMainWindowItem = _mainWindowItems.LastOrDefault();
             }
         }
 
-        private void MostrarActualCommandExecute()
+        private async Task ShowMessage(MessageParam messageParam)
         {
-            var resumenes = MovimientosDA.GetResumenes();
-            if (resumenes.Any())
+            await _dialogCoordinator.ShowMessageAsync(this, messageParam.Title, messageParam.Message, messageParam.Style, messageParam.Settings);
+        }
+
+        private void MostrarActualCommandExecuteAsync()
+        {
+            var resumenAgrupado = MovimientosDA.GetUltimoResumen();
+            if (resumenAgrupado != null)
             {
-                var resumenesAgrupados = resumenes.Agrupar();
-                var movimientosVM = new MovimientosViewModel(resumenesAgrupados.First(), MovimientosDA);
+                var movimientosVM = new MovimientosViewModel(resumenAgrupado, MovimientosDA, _configuracionM);
                 AgregarMainWindowItem(movimientosVM);
             }
         }
@@ -250,7 +239,12 @@ namespace ampersand_pb.ViewModels
         private void CloseCurrentMainWindowItemCommandExecute()
         {
             if (CurrentMainWindowItem != null)
-                CurrentMainWindowItem.CloseCommand.Execute(null);
+            {
+                if (EditViewModel != null)
+                    EditViewModel.CloseCommand.Execute(null);
+                else
+                    CurrentMainWindowItem.CloseCommand.Execute(null);
+            }
         }
 
         private void EditViewModel_CloseEvent(object sender, EventArgs e)
