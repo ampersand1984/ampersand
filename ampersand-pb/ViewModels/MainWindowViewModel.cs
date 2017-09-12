@@ -4,9 +4,7 @@ using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -27,11 +25,11 @@ namespace ampersand_pb.ViewModels
             _configuracionM = _configuracionDA.GetConfiguracion();
         }
 
-        private IDialogCoordinator _dialogCoordinator;
+        private readonly IDialogCoordinator _dialogCoordinator;
 
-        private ConfiguracionModel _configuracionM;
+        private readonly ConfiguracionModel _configuracionM;
 
-        private IConfiguracionDataAccess _configuracionDA;
+        private readonly IConfiguracionDataAccess _configuracionDA;
 
         private IMovimientosDataAccess _movimientosDA;
         public IMovimientosDataAccess MovimientosDA
@@ -47,6 +45,8 @@ namespace ampersand_pb.ViewModels
                 _movimientosDA = value;
             }
         }
+
+        #region Commands
 
         private ICommand _mostrarResumenesCommand;
         public ICommand MostrarResumenesCommand
@@ -103,6 +103,8 @@ namespace ampersand_pb.ViewModels
             }
         }
 
+        #endregion
+
         private BaseViewModel _editViewModel;
         public BaseViewModel EditViewModel
         {
@@ -119,7 +121,19 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private ObservableCollection<IMainWindowItem> _mainWindowItems = new ObservableCollection<IMainWindowItem>();
+        private BienvenidaViewModel _bienvenidaVM;
+        public BienvenidaViewModel BienvenidaVM
+        {
+            get
+            {
+                if (_bienvenidaVM == null)
+                    _bienvenidaVM = new BienvenidaViewModel(MovimientosDA, _configuracionM);
+
+                return _bienvenidaVM;
+            }
+        }
+
+        private readonly ObservableCollection<IMainWindowItem> _mainWindowItems = new ObservableCollection<IMainWindowItem>();
         public ObservableCollection<IMainWindowItem> MainWindowItems
         {
             get { return _mainWindowItems; }

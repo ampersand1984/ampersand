@@ -103,6 +103,7 @@
     <Compile Include="Models\ResumenModelExtension.cs" />
     <Compile Include="Models\ResumenModel.cs" />
     <Compile Include="Models\TagModel.cs" />
+    <Compile Include="ViewModels\BienvenidaViewModel.cs" />
     <Compile Include="ViewModels\ConfiguracionesViewModel.cs" />
     <Compile Include="ViewModels\EditViewModelEventArgs.cs" />
     <Compile Include="ViewModels\IMainWindowItem.cs" />

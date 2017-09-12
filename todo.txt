@@ -1,4 +1,4 @@
-ok corregir el guardar cambios
+﻿ok corregir el guardar cambios
 ok corregir la proyección
    sacar los tags a un archivo aparte
 no incluir el parseo al proyecto ppal
@@ -13,4 +13,7 @@ ok cambiar como se ven los tags
    buscar
    themes
    vista ppal
+      últimas 10 compras
+      últimas cuotas de este mes
+      proyección totales mes que viene
    mensajes
