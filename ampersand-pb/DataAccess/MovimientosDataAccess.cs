@@ -194,6 +194,26 @@ namespace ampersand_pb.DataAccess
             }
         }
 
+        private IEnumerable<ResumenModel> GetResumenes(string periodo)
+        {
+            var files = Directory.GetFiles(_configuracion.CarpetaDeResumenes, "r*.xml");
+
+            var resumenes = new List<ResumenModel>();
+
+            var archivosDelPeriodo = files.Where(a => Path.GetFileName(a).Substring(2, 6).Equals(periodo)).ToList();
+            foreach (var file in archivosDelPeriodo)
+            {
+                var resumen = ResumenModel.GetFromFile(file);
+                if (resumen != null)
+                {
+                    CargarResumen(resumen);
+                    resumenes.Add(resumen);
+                }
+            }
+
+            return resumenes;
+        }
+
         public ResumenAgrupadoModel GetUltimoResumen()
         {
             ResumenAgrupadoModel resultado = null;
@@ -203,18 +223,7 @@ namespace ampersand_pb.DataAccess
                 var ultPeriodo = files.Select(a => Path.GetFileName(a).Substring(2, 6)).OrderBy(a => a).LastOrDefault();
                 if (!ultPeriodo.IsNullOrEmpty())
                 {
-                    var resumenes = new List<ResumenModel>();
-
-                    var archivosDelUltPeriodo = files.Where(a => Path.GetFileName(a).Substring(2, 6).Equals(ultPeriodo)).ToList();
-                    foreach (var file in archivosDelUltPeriodo)
-                    {
-                        var resumen = ResumenModel.GetFromFile(file);
-                        if (resumen != null)
-                        {
-                            CargarResumen(resumen);
-                            resumenes.Add(resumen);
-                        }
-                    }
+                    var resumenes = GetResumenes(ultPeriodo);
 
                     resultado = resumenes.Agrupar().FirstOrDefault();
                 }
@@ -223,6 +232,18 @@ namespace ampersand_pb.DataAccess
             return resultado;
         }
 
+        public ResumenAgrupadoModel GetResumen(string periodo)
+        {
+            ResumenAgrupadoModel resultado = null;
+            if (Directory.Exists(_configuracion.CarpetaDeResumenes))
+            {
+                var resumenes = GetResumenes(periodo);
+
+                resultado = resumenes.Agrupar().FirstOrDefault();
+            }
+
+            return resultado;
+        }
 
         public void SaveMovimientos(ResumenAgrupadoModel resumenAgrupadoM, IEnumerable<BaseMovimiento> movimientos)
         {
@@ -279,9 +300,7 @@ namespace ampersand_pb.DataAccess
         ResumenAgrupadoModel GetUltimoResumen();
         IEnumerable<BaseMovimiento> GetMovimientos(ResumenAgrupadoModel resumenAgrupadoM);
         IEnumerable<BaseMovimiento> GetMovimientos(ResumenModel resumen);
-
-        //IEnumerable<BaseMovimiento> GetMovimientosDeResumenAnterior(string periodoActual);
-
         void SaveMovimientos(ResumenAgrupadoModel resumenAgrupadoM, IEnumerable<BaseMovimiento> movimientos);
+        ResumenAgrupadoModel GetResumen(string periodo);
     }
 }

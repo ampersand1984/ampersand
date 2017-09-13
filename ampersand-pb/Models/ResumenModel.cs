@@ -15,8 +15,7 @@ namespace ampersand_pb.Models
         {
             get
             {
-                var str = FechaDeCierre.ToString("MMMM");
-                str = str.Substring(0, 1).ToUpper() + str.Substring(1);
+                var str = FechaDeCierre.ToString("MMMM").ToTitle();
 
                 str += " " + FechaDeCierre.Year;
 

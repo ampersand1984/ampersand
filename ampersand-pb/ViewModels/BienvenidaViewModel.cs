@@ -1,7 +1,10 @@
 ﻿using ampersand.Core;
+using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace ampersand_pb.ViewModels
@@ -31,6 +34,15 @@ namespace ampersand_pb.ViewModels
             get => _ultimas_Cuotas ?? (_ultimas_Cuotas = GetUltimasCuotas());
         }
 
+        private IEnumerable<AgrupacionItem> _totales;
+        public IEnumerable<AgrupacionItem> Totales
+        {
+            get
+            {
+                return _totales ?? (_totales = GetTotales());
+            }
+        }
+
         private IEnumerable<BaseModel> GetUltimosGastos()
         {
             var resumenAgrupado = _movimientosDA.GetUltimoResumen();
@@ -53,6 +65,33 @@ namespace ampersand_pb.ViewModels
                 .Take(ULTIMOS_GASTOS_CANTIDAD);
 
             return result;
+        }
+
+        private IEnumerable<AgrupacionItem> GetTotales()
+        {
+            var resumenActual = _movimientosDA.GetUltimoResumen();
+
+            var periodoAnterior = DateTime.ParseExact(resumenActual.Periodo + "01", "yyyyMMdd", CultureInfo.InvariantCulture)
+                .AddMonths(-1)
+                .GetPeriodo();
+
+            var resumenAnterior = _movimientosDA.GetResumen(periodoAnterior);
+
+            var movimientosActuales = _movimientosDA.GetMovimientos(resumenActual);
+
+            var movimientosMesProximo = MovimientosViewModel.GetProyeccion(movimientosActuales);
+
+            var textoPeriodoMesProximo = DateTime.ParseExact(resumenActual.Periodo + "01", "yyyyMMdd", CultureInfo.InvariantCulture)
+                .AddMonths(1)
+                .ToString("MMMM yyyy")
+                .ToTitle();
+
+            return new List<AgrupacionItem>()
+            {
+                new AgrupacionItem() { Descripcion = resumenAnterior.TextoPeriodo, Monto = resumenAnterior.Resumenes.Sum(a => a.Total) },
+                new AgrupacionItem() { Descripcion = resumenActual.TextoPeriodo, Monto = resumenActual.Resumenes.Sum(a => a.Total) },
+                new AgrupacionItem() { Descripcion = textoPeriodoMesProximo, Monto = movimientosMesProximo.Sum(a => a.Monto) }
+            };
         }
     }
 }

@@ -2,14 +2,14 @@
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
+using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using MahApps.Metro.Controls.Dialogs;
-using System.Threading.Tasks;
 
 namespace ampersand_pb.ViewModels
 {
@@ -392,23 +392,8 @@ namespace ampersand_pb.ViewModels
 
         private void ProyectarCommandExecute()
         {
-            var movimientosProyeccion = new List<BaseMovimiento>();
-
-            foreach (var mov in Movimientos.Where(a => a.CoutasPendientes > 0)
-                                           .OrderByDescending(a => a.CoutasPendientes))
-            {
-                var movProy = mov.Clone() as BaseMovimiento;
-                movProy.IncrementarCuotasPendientes();
-                movimientosProyeccion.Add(movProy);
-            }
-
-            foreach (var mov in Movimientos.Where(a => a.EsMensual))
-            {
-                var movProy = mov.Clone() as BaseMovimiento;
-                movProy.Fecha = movProy.Fecha.AddMonths(1);
-                movimientosProyeccion.Add(movProy);
-            }
-
+            var movimientosProyeccion = GetProyeccion(Movimientos);
+            
             var resumenAgrupadoProyeccion = _resumenAgrupadoM.Clone() as ResumenAgrupadoModel;
 
             foreach (var resumen in resumenAgrupadoProyeccion.Resumenes)
@@ -424,6 +409,28 @@ namespace ampersand_pb.ViewModels
             }
             var movimientosVM = new MovimientosViewModel(resumenAgrupadoProyeccion, _movimientosDA, _configuracionM, movimientosProyeccion);
             OnPublishViewModelEvent(movimientosVM);
+        }
+
+        public static IEnumerable<BaseMovimiento> GetProyeccion(IEnumerable<BaseMovimiento> movimientos)
+        {
+            var movimientosProyeccion = new List<BaseMovimiento>();
+
+            foreach (var mov in movimientos.Where(a => a.CoutasPendientes > 0)
+                                           .OrderByDescending(a => a.CoutasPendientes))
+            {
+                var movProy = mov.Clone() as BaseMovimiento;
+                movProy.IncrementarCuotasPendientes();
+                movimientosProyeccion.Add(movProy);
+            }
+
+            foreach (var mov in movimientos.Where(a => a.EsMensual))
+            {
+                var movProy = mov.Clone() as BaseMovimiento;
+                movProy.Fecha = movProy.Fecha.AddMonths(1);
+                movimientosProyeccion.Add(movProy);
+            }
+
+            return movimientosProyeccion;
         }
 
         private bool NuevoMovimientoCommandCanExecute()

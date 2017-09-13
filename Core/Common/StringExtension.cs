@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace ampersand.Core.Common
 {
@@ -29,6 +30,11 @@ namespace ampersand.Core.Common
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strFecha">en formato yyyyMMdd</param>
+        /// <returns></returns>
         public static string GetPeriodo(string strFecha)
         {
             var strYear = strFecha.Substring(0, 4);
@@ -80,6 +86,19 @@ namespace ampersand.Core.Common
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/a/1206029
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string ToTitle(this string str)
+        {
+            var textInfo = new CultureInfo("en-US", false).TextInfo;
+            var title = textInfo.ToTitleCase(str);
+
+            return title;
         }
     }
 }
