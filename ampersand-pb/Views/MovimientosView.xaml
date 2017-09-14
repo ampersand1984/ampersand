@@ -5,8 +5,6 @@
              xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
              xmlns:common="clr-namespace:ampersand_pb.Common"
              Dialog:DialogParticipation.Register="{Binding}">
-    <!--http://mahapps.com/-->
-    <!--https://modernuicharts.codeplex.com/-->
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -18,7 +16,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
         <Grid.Resources>
             <common:BooleanToVisibilityConverter x:Key="boolToVis"/>
             <common:NullToVisibilityConverter x:Key="nullToVis"/>

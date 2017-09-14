@@ -14,7 +14,7 @@ namespace ampersand_pb.ViewModels
     public class MainWindowViewModel : BaseViewModel
     {
         public MainWindowViewModel(IDialogCoordinator dialogCoordinator)
-            :this(new ConfiguracionDataAccess(), dialogCoordinator) { }
+            : this(new ConfiguracionDataAccess(), dialogCoordinator) { }
 
         public MainWindowViewModel(IConfiguracionDataAccess configuracionDA, IDialogCoordinator dialogCoordinator)
         {
@@ -115,8 +115,6 @@ namespace ampersand_pb.ViewModels
             set
             {
                 _editViewModel = value;
-                if (_editViewModel != null)
-                    _editViewModel.CloseEvent += new EventHandler(EditViewModel_CloseEvent);
                 OnPropertyChanged("EditViewModel");
             }
         }
@@ -182,7 +180,7 @@ namespace ampersand_pb.ViewModels
             mainWindowItem.CloseEvent -= ViewModelCloseEvent;
             mainWindowItem.PublishViewModelEvent -= PublishViewModelEvent;
             MainWindowItems.Remove(mainWindowItem);
-            OnPropertyChanged("CurrentMainWindowItem");            
+            OnPropertyChanged("CurrentMainWindowItem");
         }
 
         private void PublishViewModelEvent(object sender, PublishViewModelEventArgs e)
@@ -271,6 +269,7 @@ namespace ampersand_pb.ViewModels
         private void EditViewModelEvent(object sender, EditViewModelEventArgs e)
         {
             EditViewModel = e.ViewModel;
+            EditViewModel.CloseEvent += new EventHandler(EditViewModel_CloseEvent);
         }
     }
 

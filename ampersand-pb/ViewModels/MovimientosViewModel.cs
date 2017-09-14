@@ -27,7 +27,7 @@ namespace ampersand_pb.ViewModels
         }
 
         public MovimientosViewModel(ResumenAgrupadoModel resumenAgrupadoProyeccion, IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM, IEnumerable<BaseMovimiento> movimientosProyeccion)
-            :this(resumenAgrupadoProyeccion, movimientosDA, configuracionM)
+            : this(resumenAgrupadoProyeccion, movimientosDA, configuracionM)
         {
             _esProyeccion = true;
 
@@ -38,11 +38,11 @@ namespace ampersand_pb.ViewModels
 
         #region Fields
 
-        private bool _esProyeccion;
+        private readonly bool _esProyeccion;
 
-        private ResumenAgrupadoModel _resumenAgrupadoM;
-        private IMovimientosDataAccess _movimientosDA;
-        ConfiguracionModel _configuracionM;
+        private readonly ResumenAgrupadoModel _resumenAgrupadoM;
+        private readonly IMovimientosDataAccess _movimientosDA;
+        private readonly ConfiguracionModel _configuracionM;
 
         #endregion
 
@@ -178,13 +178,6 @@ namespace ampersand_pb.ViewModels
 
         public IDialogCoordinator DialogCoordinator { get; set; }
 
-        private BaseViewModel _modalVM;
-        public BaseViewModel ModalVM
-        {
-            get { return _modalVM; }
-            set { _modalVM = value; OnPropertyChanged("ModalVM"); }
-        }
-
         private ICommand _proyectarCommand;
         public ICommand ProyectarCommand
         {
@@ -213,7 +206,7 @@ namespace ampersand_pb.ViewModels
             get { return _editarMovimientoCommand ?? (_editarMovimientoCommand = new RelayCommand(param => this.EditarMovimientoCommandExecute(), param => EditarMovimientoCommandCanExecute())); }
         }
 
-        private RelayCommand _eliminarSeleccionadoCommand;
+        private ICommand _eliminarSeleccionadoCommand;
         public ICommand EliminarSeleccionadoCommand
         {
             get
@@ -319,8 +312,8 @@ namespace ampersand_pb.ViewModels
 
             foreach (var resumen in _resumenAgrupadoM.Resumenes)
                 resumen.HuboCambios = false;
-        }        
-        
+        }
+
         protected override void OnRequestCloseEvent()
         {
             if (HuboCambios)
@@ -393,15 +386,15 @@ namespace ampersand_pb.ViewModels
         private void ProyectarCommandExecute()
         {
             var movimientosProyeccion = GetProyeccion(Movimientos);
-            
+
             var resumenAgrupadoProyeccion = _resumenAgrupadoM.Clone() as ResumenAgrupadoModel;
 
             foreach (var resumen in resumenAgrupadoProyeccion.Resumenes)
             {
-                resumen.FechaDeCierre = resumen.ProximoCierre != DateTime.MinValue ? 
-                    resumen.ProximoCierre : 
+                resumen.FechaDeCierre = resumen.ProximoCierre != DateTime.MinValue ?
+                    resumen.ProximoCierre :
                     resumen.FechaDeCierre.AddMonths(1);
-                
+
                 resumen.Periodo = resumen.FechaDeCierre.GetPeriodo();
                 resumen.ProximoCierre = DateTime.MinValue;
                 resumen.FilePath = string.Empty;
