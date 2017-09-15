@@ -1,10 +1,7 @@
 ﻿using ampersand.Core.Common;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ampersand_pb.Models
 {
@@ -16,7 +13,6 @@ namespace ampersand_pb.Models
             get { return _carpetaDeResumenes ?? string.Empty; }
             set { _carpetaDeResumenes = value; }
         }
-
 
         public bool CarpetaDeResumenesValida
         {
@@ -78,7 +74,7 @@ namespace ampersand_pb.Models
         {
             var clone = this.MemberwiseClone() as ConfiguracionModel;
 
-            clone.MediosDePago = new List<PagoModel>(this.MediosDePago.Select(a => a.Clone()));
+            clone.MediosDePago = new List<PagoModel>(this.MediosDePago.Clone());
 
             return clone;
         }
@@ -86,7 +82,7 @@ namespace ampersand_pb.Models
         public void CopyValues(ConfiguracionModel configuracionM)
         {
             this.CarpetaDeResumenes = configuracionM.CarpetaDeResumenes;
-            this.MediosDePago = new List<PagoModel>(configuracionM.MediosDePago.Select(a => a.Clone()));
+            this.MediosDePago = new List<PagoModel>(configuracionM.MediosDePago.Clone());
         }
     }
 }

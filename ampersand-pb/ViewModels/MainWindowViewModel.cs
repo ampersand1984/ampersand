@@ -189,7 +189,7 @@ namespace ampersand_pb.ViewModels
             if (mainWindowItem != null)
                 AgregarMainWindowItem(mainWindowItem);
             else
-                EditViewModel = e.ViewModel;
+                AgregarEditVM(e.ViewModel);
         }
 
         private void AgregarMainWindowItem(IMainWindowItem mainWindowItem)
@@ -232,7 +232,7 @@ namespace ampersand_pb.ViewModels
             configuracionesVM.SaveEvent += ConfiguracionesVM_SaveEvent;
             configuracionesVM.CloseEvent += ConfiguracionesVM_CloseEvent;
 
-            AgregarMainWindowItem(configuracionesVM);
+            AgregarEditVM(configuracionesVM);
         }
 
         private void ConfiguracionesVM_SaveEvent(object sender, ConfiguracionesViewModelSaveEventArgs e)
@@ -266,9 +266,9 @@ namespace ampersand_pb.ViewModels
             EditViewModel = null;
         }
 
-        private void EditViewModelEvent(object sender, EditViewModelEventArgs e)
+        private void AgregarEditVM(BaseViewModel editVM)
         {
-            EditViewModel = e.ViewModel;
+            EditViewModel = editVM;
             EditViewModel.CloseEvent += new EventHandler(EditViewModel_CloseEvent);
         }
     }

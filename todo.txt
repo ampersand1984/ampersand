@@ -8,6 +8,7 @@ ok hamburguer menu
 ok flyout view
    agregar colores
 ok cambiar como se ven los tags
+ok filtro de medios de pago
    agregar tag de servicios
    ABM de tags
    buscar

@@ -57,8 +57,7 @@
                 <DataGridTextColumn Header="Id"
                                     Binding="{Binding Id}"
                                     IsReadOnly="True"/>
-                <DataGridTextColumn Header="Descripcion"
-                                    Binding="{Binding Descripcion}"/>
+                <DataGridTextColumn Header="Descripcion" Binding="{Binding Descripcion}"/>
                 <DataGridTextColumn Header="Color"
                                     Binding="{Binding Color}"
                                     IsReadOnly="True"/>

@@ -5,7 +5,6 @@ using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,6 +23,26 @@ namespace ampersand_pb.ViewModels
             _resumenAgrupadoM = resumenAgrupadoM;
             _movimientosDA = movimientosDA;
             _configuracionM = configuracionM;
+
+            if (!_esProyeccion)
+                _movimientos = GetMovimientos();
+
+            MediosDePago = configuracionM.MediosDePago.Clone();
+            foreach (var medioDePago in MediosDePago)
+            {
+                medioDePago.PropertyChanged += MedioDePago_PropertyChanged;
+                ActualizarMediosDePago(medioDePago);
+            }
+        }
+
+        protected override void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                foreach (var medioDePago in MediosDePago)
+                    medioDePago.PropertyChanged -= MedioDePago_PropertyChanged;
+            }
+            base.Dispose(dispose);
         }
 
         public MovimientosViewModel(ResumenAgrupadoModel resumenAgrupadoProyeccion, IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM, IEnumerable<BaseMovimiento> movimientosProyeccion)
@@ -31,7 +50,7 @@ namespace ampersand_pb.ViewModels
         {
             _esProyeccion = true;
 
-            _movimientos = new ObservableCollection<BaseMovimiento>(movimientosProyeccion);
+            _movimientos = new List<BaseMovimiento>(movimientosProyeccion);
         }
 
         #endregion
@@ -43,6 +62,9 @@ namespace ampersand_pb.ViewModels
         private readonly ResumenAgrupadoModel _resumenAgrupadoM;
         private readonly IMovimientosDataAccess _movimientosDA;
         private readonly ConfiguracionModel _configuracionM;
+
+        private List<BaseMovimiento> _movimientos;
+        private List<BaseMovimiento> _movimientosExcluidos = new List<BaseMovimiento>();
 
         #endregion
 
@@ -94,30 +116,21 @@ namespace ampersand_pb.ViewModels
                 }
                 else
                 {
-                    _movimientosFiltrados = Movimientos.Where(a => a.DescripcionResumen.Contains(_totalesSelectedItem.Descripcion)).OrderBy(a => a.Fecha);
+                    _movimientosFiltrados = _movimientos.Where(a => a.DescripcionResumen.Contains(_totalesSelectedItem.Descripcion)).OrderBy(a => a.Fecha);
                 }
                 OnPropertyChanged("TotalesSelectedItem");
                 OnPropertyChanged("MovimientosFiltrados");
             }
         }
 
-        private ObservableCollection<BaseMovimiento> _movimientos;
-        public ObservableCollection<BaseMovimiento> Movimientos
-        {
-            get
-            {
-                if (_movimientos == null)
-                    _movimientos = GetMovimientos();
-                return _movimientos;
-            }
-        }
+        public IEnumerable<PagoModel> MediosDePago { get; }
 
         private IEnumerable<BaseMovimiento> _movimientosFiltrados;
         public IEnumerable<BaseMovimiento> MovimientosFiltrados
         {
             get
             {
-                return _movimientosFiltrados ?? Movimientos;
+                return _movimientosFiltrados ?? _movimientos;
             }
         }
 
@@ -151,9 +164,9 @@ namespace ampersand_pb.ViewModels
                 else
                 {
                     if (_agrupacionesSelectedItem.Descripcion.Equals(SIN_CATEGORIA))
-                        _movimientosFiltrados = Movimientos.Where(a => !a.Tags.Any()).OrderBy(a => a.Fecha);
+                        _movimientosFiltrados = _movimientos.Where(a => !a.Tags.Any()).OrderBy(a => a.Fecha);
                     else
-                        _movimientosFiltrados = Movimientos.Where(a => a.Tags.Contains(_agrupacionesSelectedItem.Descripcion)).OrderBy(a => a.Fecha);
+                        _movimientosFiltrados = _movimientos.Where(a => a.Tags.Contains(_agrupacionesSelectedItem.Descripcion)).OrderBy(a => a.Fecha);
                 }
                 OnPropertyChanged("AgrupacionesSelectedItem");
                 OnPropertyChanged("MovimientosFiltrados");
@@ -233,7 +246,7 @@ namespace ampersand_pb.ViewModels
                     var resumen = _resumenAgrupadoM.Resumenes.First(a => a.Id == selectedItem.IdResumen);
                     resumen.HuboCambios = true;
 
-                    Movimientos.Remove(selectedItem);
+                    _movimientos.Remove(selectedItem);
 
                     RefrescarMovimientos();
                 }
@@ -308,7 +321,7 @@ namespace ampersand_pb.ViewModels
                 }
             }
 
-            _movimientosDA.SaveMovimientos(_resumenAgrupadoM, Movimientos);
+            _movimientosDA.SaveMovimientos(_resumenAgrupadoM, _movimientos);
 
             foreach (var resumen in _resumenAgrupadoM.Resumenes)
                 resumen.HuboCambios = false;
@@ -321,6 +334,11 @@ namespace ampersand_pb.ViewModels
                 var messageBoxResult = MessageBox.Show("Cerrar sin gurdar cambios?", "Cerrar", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
                 if (messageBoxResult == MessageBoxResult.Yes)
                     base.OnRequestCloseEvent();
+                //var param = new MessageParam(DisplayName, "Cerrar sin gurdar cambios?", MessageDialogStyle.AffirmativeAndNegative, null);
+
+                //var result = await ShowMessage(param);
+                //if (result == MessageDialogResult.Affirmative)
+                //    base.OnRequestCloseEvent();
             }
             else
                 base.OnRequestCloseEvent();
@@ -385,7 +403,7 @@ namespace ampersand_pb.ViewModels
 
         private void ProyectarCommandExecute()
         {
-            var movimientosProyeccion = GetProyeccion(Movimientos);
+            var movimientosProyeccion = GetProyeccion(_movimientos);
 
             var resumenAgrupadoProyeccion = _resumenAgrupadoM.Clone() as ResumenAgrupadoModel;
 
@@ -439,17 +457,11 @@ namespace ampersand_pb.ViewModels
             OnPublishViewModelEvent(movimientoABMVM);
         }
 
-        private ObservableCollection<BaseMovimiento> GetMovimientos()
+        private List<BaseMovimiento> GetMovimientos()
         {
             var movimientos = _movimientosDA.GetMovimientos(_resumenAgrupadoM);
 
-            movimientos = new ObservableCollection<BaseMovimiento>(movimientos);
-
-            _agrupaciones = GetAgrupaciones(movimientos);
-
-            OnPropertyChanged("TotalResumen");
-
-            return new ObservableCollection<BaseMovimiento>(movimientos);
+            return new List<BaseMovimiento>(movimientos);
         }
 
         private IEnumerable<AgrupacionItem> GetTotales()
@@ -481,6 +493,25 @@ namespace ampersand_pb.ViewModels
             return tags.OrderByDescending(a => a.Descripcion);
         }
 
+        private void MedioDePago_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            ActualizarMediosDePago(sender as PagoModel);
+        }
+
+        private void ActualizarMediosDePago(PagoModel medioDePago)
+        {
+            if (medioDePago.Seleccionado)
+            {
+                _movimientos.AddRange(_movimientosExcluidos.Where(a => a.IdResumen == medioDePago.Id));
+                _movimientosExcluidos.RemoveAll(a => a.IdResumen == medioDePago.Id);
+            }
+            else
+            {
+                _movimientosExcluidos.AddRange(_movimientos.Where(a => a.IdResumen == medioDePago.Id));
+                _movimientos.RemoveAll(a => a.IdResumen == medioDePago.Id);
+            }
+        }
+
         #endregion
 
         #region Events
@@ -491,14 +522,6 @@ namespace ampersand_pb.ViewModels
             var handler = this.PublishViewModelEvent;
             if (handler != null)
                 handler(this, new PublishViewModelEventArgs(viewModel));
-        }
-
-        public event EventHandler<PublishMessageEventArgs> PublishMessageEvent;
-        private void OnPublishMessageEvent(MessageParam messageParam)
-        {
-            var handler = this.PublishMessageEvent;
-            if (handler != null)
-                handler(this, new PublishMessageEventArgs(messageParam));
         }
 
         #endregion

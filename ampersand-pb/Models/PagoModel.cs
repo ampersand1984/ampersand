@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ampersand.Core;
+using System;
 
 namespace ampersand_pb.Models
 {
-    public class PagoModel
+    public class PagoModel : BaseModel, ICloneable, IEquatable<PagoModel>
     {
         private string _color;
         public string Color
@@ -29,18 +26,39 @@ namespace ampersand_pb.Models
             set { _descripcion = value; }
         }
 
-        public override bool Equals(object obj)
+        private bool _seleccionado = true;
+        public bool Seleccionado
         {
-            var pagoM = obj as PagoModel;
-            if (pagoM != null)
-                return Id.Equals(pagoM.Id) && Descripcion.Equals(pagoM.Descripcion);
-
-            return false;
+            get
+            {
+                return _seleccionado;
+            }
+            set
+            {
+                _seleccionado = value;
+                OnPropertyChanged("Seleccionado");
+            }
         }
 
-        public PagoModel Clone()
+        public object Clone()
         {
             return this.MemberwiseClone() as PagoModel;
+        }
+
+        public bool Equals(PagoModel other)
+        {
+            return other != null &&
+                   Color == other.Color &&
+                   Id == other.Id &&
+                   Descripcion == other.Descripcion &&
+                   Seleccionado == other.Seleccionado;
+        }
+
+        public override string ToString()
+        {
+            var str = string.Format("Id={0};Descri={1}", Id, Descripcion);
+
+            return str;
         }
     }
 }
