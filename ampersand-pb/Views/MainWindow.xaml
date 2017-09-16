@@ -63,11 +63,11 @@
                              Margin="0 30 0 0"
                              Controls:ControlsHelper.ContentCharacterCasing="Upper"
                              AreAnimationsEnabled="True"
-                             IsOpen="{Binding EditViewModel, Converter={StaticResource nullToBooleanConverter}}"
+                             IsOpen="{Binding FlyoutIsOpen}"
                              IsModal="True"
                              Position="Right"
                              VerticalContentAlignment="Stretch"
-                             Content="{Binding EditViewModel}"/>
+                             Content="{Binding EditViewModel}" />
 
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>

@@ -2,9 +2,11 @@
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
+using ampersand_pb.Properties;
 using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,6 +18,8 @@ namespace ampersand_pb.ViewModels
     {
         public const string SIN_CATEGORIA = "Sin categoría";
 
+        public enum TiposDeAgrupacion  { MedioDePago, Tag }
+
         #region Constructor
 
         public MovimientosViewModel(ResumenAgrupadoModel resumenAgrupadoM, IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM)
@@ -25,22 +29,19 @@ namespace ampersand_pb.ViewModels
             _configuracionM = configuracionM;
 
             if (!_esProyeccion)
-                _movimientos = GetMovimientos();
-
-            MediosDePago = configuracionM.MediosDePago.Clone();
-            foreach (var medioDePago in MediosDePago)
-            {
-                medioDePago.PropertyChanged += MedioDePago_PropertyChanged;
-                ActualizarMediosDePago(medioDePago);
-            }
+                _movimientos = GetMovimientos().ToList();
         }
 
         protected override void Dispose(bool dispose)
         {
             if (dispose)
             {
-                foreach (var medioDePago in MediosDePago)
-                    medioDePago.PropertyChanged -= MedioDePago_PropertyChanged;
+                if (_seleccionDeMediosDePagoVM != null)
+                {
+                    _seleccionDeMediosDePagoVM.SeleccionDeMediosDePagoCambiada -= SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada;
+                    _seleccionDeMediosDePagoVM.Dispose();
+                }
+                _seleccionDeMediosDePagoVM = null;
             }
             base.Dispose(dispose);
         }
@@ -64,7 +65,6 @@ namespace ampersand_pb.ViewModels
         private readonly ConfiguracionModel _configuracionM;
 
         private List<BaseMovimiento> _movimientos;
-        private List<BaseMovimiento> _movimientosExcluidos = new List<BaseMovimiento>();
 
         #endregion
 
@@ -100,37 +100,38 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private AgrupacionItem _totalesSelectedItem;
-        public AgrupacionItem TotalesSelectedItem
+        private AgrupacionItem _graficosSelectedItem;
+        public AgrupacionItem GraficosSelectedItem
         {
             get
             {
-                return _totalesSelectedItem;
+                return _graficosSelectedItem;
             }
             set
             {
-                _totalesSelectedItem = value;
-                if (_totalesSelectedItem == null)
-                {
-                    _movimientosFiltrados = null;
-                }
-                else
-                {
-                    _movimientosFiltrados = _movimientos.Where(a => a.DescripcionResumen.Contains(_totalesSelectedItem.Descripcion)).OrderBy(a => a.Fecha);
-                }
-                OnPropertyChanged("TotalesSelectedItem");
+                _graficosSelectedItem = value;
+                _movimientosFiltrados = null;
+                OnPropertyChanged("GraficosSelectedItem");
                 OnPropertyChanged("MovimientosFiltrados");
+                OnPropertyChanged("PermiteLimpiarSeleccion");
             }
         }
 
-        public IEnumerable<PagoModel> MediosDePago { get; }
-
-        private IEnumerable<BaseMovimiento> _movimientosFiltrados;
-        public IEnumerable<BaseMovimiento> MovimientosFiltrados
+        public bool PermiteLimpiarSeleccion
         {
             get
             {
-                return _movimientosFiltrados ?? _movimientos;
+                return GraficosSelectedItem != null;
+            }
+        }
+
+
+        private ObservableCollection<BaseMovimiento> _movimientosFiltrados;
+        public ObservableCollection<BaseMovimiento> MovimientosFiltrados
+        {
+            get
+            {
+                return _movimientosFiltrados ?? (_movimientosFiltrados = GetMovimientosFiltrados());
             }
         }
 
@@ -144,33 +145,7 @@ namespace ampersand_pb.ViewModels
         private IEnumerable<AgrupacionItem> _agrupaciones;
         public IEnumerable<AgrupacionItem> Agrupaciones
         {
-            get { return _agrupaciones ?? (_agrupaciones = GetAgrupaciones(MovimientosFiltrados)); }
-        }
-
-        private AgrupacionItem _agrupacionesSelectedItem;
-        public AgrupacionItem AgrupacionesSelectedItem
-        {
-            get
-            {
-                return _agrupacionesSelectedItem;
-            }
-            set
-            {
-                _agrupacionesSelectedItem = value;
-                if (_agrupacionesSelectedItem == null)
-                {
-                    _movimientosFiltrados = null;
-                }
-                else
-                {
-                    if (_agrupacionesSelectedItem.Descripcion.Equals(SIN_CATEGORIA))
-                        _movimientosFiltrados = _movimientos.Where(a => !a.Tags.Any()).OrderBy(a => a.Fecha);
-                    else
-                        _movimientosFiltrados = _movimientos.Where(a => a.Tags.Contains(_agrupacionesSelectedItem.Descripcion)).OrderBy(a => a.Fecha);
-                }
-                OnPropertyChanged("AgrupacionesSelectedItem");
-                OnPropertyChanged("MovimientosFiltrados");
-            }
+            get { return _agrupaciones ?? (_agrupaciones = GetAgrupaciones()); }
         }
 
         public bool EsElUtimoMes
@@ -186,6 +161,20 @@ namespace ampersand_pb.ViewModels
             get
             {
                 return _resumenAgrupadoM.Resumenes.Any(a => a.HuboCambios);
+            }
+        }
+
+        private SeleccionDeMediosDePagoViewModel _seleccionDeMediosDePagoVM;
+        public SeleccionDeMediosDePagoViewModel SeleccionDeMediosDePagoVM
+        {
+            get
+            {
+                if (_seleccionDeMediosDePagoVM == null)
+                {
+                    _seleccionDeMediosDePagoVM = new SeleccionDeMediosDePagoViewModel(_configuracionM);
+                    _seleccionDeMediosDePagoVM.SeleccionDeMediosDePagoCambiada += SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada;
+                }
+                return _seleccionDeMediosDePagoVM;
             }
         }
 
@@ -275,20 +264,14 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_limpiarSeleccionCommand == null)
-                    _limpiarSeleccionCommand = new RelayCommand(param => LimpiarSeleccionCommandExecute());
+                    _limpiarSeleccionCommand = new RelayCommand(param => RefrescarMovimientos());
                 return _limpiarSeleccionCommand;
             }
         }
 
-        private void LimpiarSeleccionCommandExecute()
-        {
-            _movimientosFiltrados = null;
-            _agrupacionesSelectedItem = null;
-            _totalesSelectedItem = null;
-            OnPropertyChanged("TotalesSelectedItem");
-            OnPropertyChanged("AgrupacionesSelectedItem");
-            OnPropertyChanged("MovimientosFiltrados");
-        }
+        #endregion
+
+        #region Methods
 
         private async Task<MessageDialogResult> ShowMessage(MessageParam messageParam)
         {
@@ -296,10 +279,6 @@ namespace ampersand_pb.ViewModels
 
             return result;
         }
-
-        #endregion
-
-        #region Methods
 
         private bool SaveCommandCanExecute()
         {
@@ -360,6 +339,14 @@ namespace ampersand_pb.ViewModels
 
         private void MovimientoABMVM_SaveEvent(object sender, MovimientoABMSaveEventArgs e)
         {
+            if (_movimientos.IndexOf(e.Model) == -1)
+            {
+                _movimientos.Add(e.Model);
+                OnPropertyChanged("Movimientos");
+                OnPropertyChanged("MovimientosFiltrados");
+                SelectedIndex = MovimientosFiltrados.IndexOf(e.Model);
+            }
+
             var resumen = _resumenAgrupadoM.Resumenes.FirstOrDefault(a => a.Id.Equals(e.Model.IdResumen));
             if (resumen != null)
                 resumen.HuboCambios = true;
@@ -368,24 +355,53 @@ namespace ampersand_pb.ViewModels
             if (resumenOriginal != null)
                 resumenOriginal.HuboCambios = true;
 
-            if (_movimientos.IndexOf(e.Model) == -1)
-            {
-                _movimientos.Add(e.Model);
-                OnPropertyChanged("Movimientos");
-                OnPropertyChanged("MovimientosFiltrados");
-                SelectedIndex = _movimientos.IndexOf(_movimientos.Last());
-            }
-
             RefrescarMovimientos();
         }
 
         private void RefrescarMovimientos()
         {
+            _graficosSelectedItem = null;
             _totales = null;
             _agrupaciones = null;
+            _movimientosFiltrados = null;
 
+            OnPropertyChanged("GraficosSelectedItem");
             OnPropertyChanged("Totales");
             OnPropertyChanged("Agrupaciones");
+            OnPropertyChanged("MovimientosFiltrados");
+            OnPropertyChanged("TotalResumen");
+            OnPropertyChanged("PermiteLimpiarSeleccion");
+        }
+
+        private ObservableCollection<BaseMovimiento> GetMovimientosFiltrados()
+        {
+            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+
+            var movimientosFiltrados = _movimientos.Where(a => mediosDePago.Contains(a.IdResumen));
+
+            if (GraficosSelectedItem != null)
+            {
+                switch (GraficosSelectedItem.Tipo)
+                {
+                    case TiposDeAgrupacion.MedioDePago:
+                        {
+                            movimientosFiltrados = movimientosFiltrados.Where(a => a.DescripcionResumen.Contains(_graficosSelectedItem.Descripcion));
+                        }
+                        break;
+                    case TiposDeAgrupacion.Tag:
+                        {
+                            if (GraficosSelectedItem.Descripcion.Equals(SIN_CATEGORIA))
+                                movimientosFiltrados = movimientosFiltrados.Where(a => !a.Tags.Any());
+                            else
+                                movimientosFiltrados = movimientosFiltrados.Where(a => a.Tags.Contains(GraficosSelectedItem.Descripcion));
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return new ObservableCollection<BaseMovimiento>(movimientosFiltrados.OrderBy(a => a.Fecha));
         }
 
         private void MovimientoABMVM_CloseEvent(object sender, EventArgs e)
@@ -457,7 +473,7 @@ namespace ampersand_pb.ViewModels
             OnPublishViewModelEvent(movimientoABMVM);
         }
 
-        private List<BaseMovimiento> GetMovimientos()
+        private IEnumerable<BaseMovimiento> GetMovimientos()
         {
             var movimientos = _movimientosDA.GetMovimientos(_resumenAgrupadoM);
 
@@ -469,47 +485,35 @@ namespace ampersand_pb.ViewModels
             var totales = new List<AgrupacionItem>();
 
             foreach (var item in _resumenAgrupadoM.Resumenes)
-                totales.Add(new AgrupacionItem() { Descripcion = item.Descripcion, Monto = item.Total });
+                totales.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.MedioDePago, Descripcion = item.Descripcion, Monto = item.Total });
 
             return totales;
         }
 
-        private IEnumerable<AgrupacionItem> GetAgrupaciones(IEnumerable<BaseMovimiento> movimientos)
+        private IEnumerable<AgrupacionItem> GetAgrupaciones()
         {
+            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+
             var tags = new List<AgrupacionItem>();
-            foreach (var mov in movimientos.Where(a => a.Tags.Any()).OrderBy(b => b.Monto))
+            foreach (var mov in _movimientos.Where(a => mediosDePago.Contains(a.IdResumen)).Where(a => a.Tags.Any()).OrderBy(b => b.Monto))
             {
                 var tagItem = tags.FirstOrDefault(a => a.Descripcion == mov.Tags.First());
                 if (tagItem != null)
                     tagItem.Monto += mov.Monto;
                 else
-                    tags.Add(new AgrupacionItem() { Descripcion = mov.Tags.First(), Monto = mov.Monto });
+                    tags.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.Tag, Descripcion = mov.Tags.First(), Monto = mov.Monto });
             }
 
-            var sinTags = movimientos.Where(a => !a.Tags.Any()).Sum(b => b.Monto);
+            var sinTags = _movimientos.Where(a => mediosDePago.Contains(a.IdResumen)).Where(a => !a.Tags.Any()).Sum(b => b.Monto);
             if (sinTags > 0.00M)
-                tags.Add(new AgrupacionItem() { Descripcion = SIN_CATEGORIA, Monto = sinTags });
+                tags.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.Tag, Descripcion = SIN_CATEGORIA, Monto = sinTags });
 
             return tags.OrderByDescending(a => a.Descripcion);
         }
 
-        private void MedioDePago_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada(object sender, EventArgs e)
         {
-            ActualizarMediosDePago(sender as PagoModel);
-        }
-
-        private void ActualizarMediosDePago(PagoModel medioDePago)
-        {
-            if (medioDePago.Seleccionado)
-            {
-                _movimientos.AddRange(_movimientosExcluidos.Where(a => a.IdResumen == medioDePago.Id));
-                _movimientosExcluidos.RemoveAll(a => a.IdResumen == medioDePago.Id);
-            }
-            else
-            {
-                _movimientosExcluidos.AddRange(_movimientos.Where(a => a.IdResumen == medioDePago.Id));
-                _movimientos.RemoveAll(a => a.IdResumen == medioDePago.Id);
-            }
+            RefrescarMovimientos();
         }
 
         #endregion
@@ -531,5 +535,6 @@ namespace ampersand_pb.ViewModels
     {
         public string Descripcion { get; set; }
         public decimal Monto { get; set; }
+        public MovimientosViewModel.TiposDeAgrupacion Tipo { get; internal set; }
     }
 }

@@ -4,7 +4,9 @@
              xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro">
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -40,10 +42,13 @@
             </Style>
         </Grid.Resources>
 
-        <TextBlock Grid.Row="0" Text="Tipo"/>
+        <TextBlock Text="Tipo" 
+                   Grid.Row="0" 
+                   Grid.Column="0"/>
         <ComboBox x:Name="cmbTipo" 
-                  Grid.Row="0" 
+                  Grid.Row="0"
                   Grid.Column="1" 
+                  Grid.ColumnSpan="3"
                   ItemsSource="{Binding MediosDePago}"
                   SelectedItem="{Binding MedioDePago}" 
                   DisplayMemberPath="Descripcion"
@@ -51,29 +56,44 @@
                   IsEnabled="{Binding EdicionCompleta}" 
                   HorizontalContentAlignment="Left"/>
 
-        <TextBlock Grid.Row="1" Text="Id movimiento"/>
-        <TextBox Grid.Row="1" Text="{Binding IdMovimiento}" Grid.Column="1" IsEnabled="{Binding EdicionCompleta}"
-                 Height="{Binding ElementName=cmbTipo, Path=ActualHeight}" Width="{Binding ElementName=cmbTipo, Path=ActualWidth}"/>
+        <TextBlock Text="Fecha" 
+                   Grid.Row="1" 
+                   Grid.Column="0" />
+        <DatePicker Grid.Row="1" 
+                    Grid.Column="1" 
+                    SelectedDate="{Binding Fecha}" 
+                    IsEnabled="{Binding EdicionCompleta}" 
+                    HorizontalContentAlignment="Left"
+                    Height="{Binding ElementName=cmbTipo, Path=ActualHeight}"
+                    Width="{Binding ElementName=txbMonto, Path=ActualWidth}"
+                    HorizontalAlignment="Stretch"/>
 
-        <TextBlock Grid.Row="2" Text="Fecha"/>
-        <DatePicker Grid.Row="2" SelectedDate="{Binding Fecha}" Grid.Column="1" IsEnabled="{Binding EdicionCompleta}" HorizontalContentAlignment="Left"
-                    Height="{Binding ElementName=cmbTipo, Path=ActualHeight}" Width="{Binding ElementName=cmbTipo, Path=ActualWidth}"/>
+        <TextBlock Text="Id movimiento" 
+                   Grid.Row="1"
+                   Grid.Column="2"/>
+        <TextBox Text="{Binding IdMovimiento}" 
+                 Grid.Row="1" 
+                 Grid.Column="3" 
+                 IsEnabled="{Binding EdicionCompleta}"
+                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
 
-        <TextBlock Grid.Row="3" Text="Descripción"/>
-        <TextBox Grid.Row="3" Text="{Binding Descripcion}" Grid.Column="1" IsEnabled="{Binding EdicionCompleta}"
-                 Height="{Binding ElementName=cmbTipo, Path=ActualHeight}" Width="{Binding ElementName=cmbTipo, Path=ActualWidth}"/>
+        <TextBlock Grid.Row="3" 
+                   Grid.Column="0"
+                   Text="Descripción"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Descripcion}" IsEnabled="{Binding EdicionCompleta}"
+                 />
 
         <TextBlock Grid.Row="4" Text="Descripción adicional"/>
-        <TextBox Grid.Row="4" Text="{Binding DescripcionAdicional}" Grid.Column="1"
+        <TextBox Grid.Row="4" Text="{Binding DescripcionAdicional}" Grid.Column="1" Grid.ColumnSpan="3" 
                  Height="{Binding ElementName=cmbTipo, Path=ActualHeight}" Width="{Binding ElementName=cmbTipo, Path=ActualWidth}"/>
 
         <TextBlock Grid.Row="5" Text="Monto"/>
         <TextBox Grid.Row="5" Text="{Binding Monto}" Grid.Column="1"
-                 Height="{Binding ElementName=cmbTipo, Path=ActualHeight}" Width="{Binding ElementName=cmbTipo, Path=ActualWidth}"/>
+                 x:Name="txbMonto"/>
 
-        <TextBlock Grid.Row="6" Text="Cuota"/>
-        <ComboBox Grid.Row="6" ItemsSource="{Binding Cuotas}" SelectedItem="{Binding Cuota}" IsEditable="True" IsEnabled="{Binding EdicionCompleta}" Grid.Column="1"
-                  Height="{Binding ElementName=cmbTipo, Path=ActualHeight}" Width="{Binding ElementName=cmbTipo, Path=ActualWidth}"/>
+        <TextBlock Grid.Row="5" Text="Cuota" Grid.Column="2"/>
+        <ComboBox Grid.Row="5" ItemsSource="{Binding Cuotas}" SelectedItem="{Binding Cuota}" IsEditable="True" IsEnabled="{Binding EdicionCompleta}" Grid.Column="3"
+                  />
 
         <TextBlock Grid.Row="7" Text="Es mensual"/>
         <CheckBox Grid.Row="7" FlowDirection="LeftToRight" HorizontalContentAlignment="Left" IsChecked="{Binding EsMensual}" Grid.Column="1"/>
@@ -81,7 +101,7 @@
         <TextBlock Grid.Row="8" Text="Es ajeno"/>
         <CheckBox Grid.Row="8" FlowDirection="LeftToRight" HorizontalContentAlignment="Left" IsChecked="{Binding EsAjeno}" Grid.Column="1"/>
         
-        <ItemsControl ItemsSource="{Binding Tags}" Grid.Row="9" Grid.ColumnSpan="2" Margin="5, 20, 0, 10" Grid.Column="1">
+        <ItemsControl ItemsSource="{Binding Tags}" Grid.Row="9" Grid.ColumnSpan="3" Margin="5, 20, 0, 10" Grid.Column="1">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel  />
@@ -114,12 +134,18 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <Button Content="Guardar" 
-                Command="{Binding SaveCommand}"
+        <Button Content="Cancelar" 
+                Command="{Binding CloseCommand}"
                 Grid.Column="1"
                 Grid.Row="10"
                 VerticalAlignment="Bottom"
-                HorizontalAlignment="Right"
-                Foreground="{DynamicResource AccentColorBrush}"/>
+                Width="{Binding ElementName=btnGuardar, Path=ActualWidth}"/>
+
+        <Button Content="Guardar" x:Name="btnGuardar"
+                Command="{Binding SaveCommand}"
+                Grid.Column="3"
+                Grid.Row="10"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Stretch"/>
     </Grid>
 </UserControl>

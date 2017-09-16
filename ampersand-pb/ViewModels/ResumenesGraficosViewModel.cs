@@ -15,7 +15,7 @@ namespace ampersand_pb.ViewModels
         private const string TOTALES_POR_TARJETA_MENSUAL = "Totales mensuales por tarjeta";
         private const string TOTALES_POR_TAGS_MENSUAL = "Totales mensuales por categoría";
 
-        public ResumenesGraficosViewModel(IMovimientosDataAccess movimientosDA)
+        public ResumenesGraficosViewModel(IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM)
         {
             TiposDeGraficos = new List<string>()
             {
@@ -24,9 +24,10 @@ namespace ampersand_pb.ViewModels
                 TOTALES_POR_TAGS_MENSUAL
             };
 
-            GraficoSeleccionado = TOTALES_POR_TARJETA_MENSUAL;
+            _graficoSeleccionado = TOTALES_POR_TARJETA_MENSUAL;
 
             _movimientosDA = movimientosDA;
+            _configuracionM = configuracionM;
 
             _resumenes = _movimientosDA.GetResumenes();
             if (_resumenes.Any())
@@ -49,6 +50,22 @@ namespace ampersand_pb.ViewModels
             }
             _maximoPeriodo = _resumenes.Max(a => a.Periodo);
         }
+
+        protected override void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                if (_seleccionDeMediosDePagoVM != null)
+                {
+                    _seleccionDeMediosDePagoVM.SeleccionDeMediosDePagoCambiada -= SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada;
+                    _seleccionDeMediosDePagoVM.Dispose();
+                }
+                _seleccionDeMediosDePagoVM = null;
+            }
+            base.Dispose(dispose);
+        }
+
+        private readonly ConfiguracionModel _configuracionM;
 
         private IMovimientosDataAccess _movimientosDA;
         private IEnumerable<ResumenModel> _resumenes;
@@ -118,11 +135,28 @@ namespace ampersand_pb.ViewModels
             }
         }
 
+        private SeleccionDeMediosDePagoViewModel _seleccionDeMediosDePagoVM;
+        public SeleccionDeMediosDePagoViewModel SeleccionDeMediosDePagoVM
+        {
+            get
+            {
+                if (_seleccionDeMediosDePagoVM == null)
+                {
+                    _seleccionDeMediosDePagoVM = new SeleccionDeMediosDePagoViewModel(_configuracionM);
+                    _seleccionDeMediosDePagoVM.SeleccionDeMediosDePagoCambiada += SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada;
+                }
+                return _seleccionDeMediosDePagoVM;
+            }
+        }
+
         public IDialogCoordinator DialogCoordinator { get; set; }
 
         private IEnumerable<DatosDelGrafico> GetDatosDelGrafico()
         {
-            var resumenesPorFecha = _resumenes.Where(a => int.Parse(a.Periodo) >= int.Parse(MinimoPeriodo))
+            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+
+            var resumenesPorFecha = _resumenes.Where(a => mediosDePago.Contains(a.Id))
+                                              .Where(a => int.Parse(a.Periodo) >= int.Parse(MinimoPeriodo))
                                               .Where(a => int.Parse(a.Periodo) <= int.Parse(MaximoPeriodo));
 
             var periodos = resumenesPorFecha.Select(a => a.Periodo)
@@ -303,6 +337,12 @@ namespace ampersand_pb.ViewModels
                 _itemsDelGrafico = null;
                 OnPropertyChanged("ItemsDelGrafico");
             }
+        }
+
+        private void SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada(object sender, EventArgs e)
+        {
+            _itemsDelGrafico = null;
+            OnPropertyChanged("ItemsDelGrafico");
         }
 
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;

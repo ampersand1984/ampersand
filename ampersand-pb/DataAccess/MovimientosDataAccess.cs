@@ -176,9 +176,12 @@ namespace ampersand_pb.DataAccess
 
             var strFechaDeCierre = GetValueFromXml<string>("FechaDeCierre", xdoc.Root, "");
             var strProximoCierre = GetValueFromXml<string>("ProximoCierre", xdoc.Root, "");
-
-            resumen.FechaDeCierre = strFechaDeCierre.ToDateTime();
-            resumen.ProximoCierre = strProximoCierre.ToDateTime();
+            try
+            {
+                resumen.FechaDeCierre = strFechaDeCierre.ToDateTime();
+                resumen.ProximoCierre = strProximoCierre.ToDateTime();
+            }
+            catch (Exception) { }
         }
 
         private TipoMovimiento GetTipo(string strTipo)

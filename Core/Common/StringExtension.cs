@@ -69,6 +69,11 @@ namespace ampersand.Core.Common
                 return default(T);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strDateTime">en formato yyyyMMdd</param>
+        /// <returns></returns>
         public static DateTime ToDateTime(this String strDateTime)
         {
             var result = DateTime.MinValue;

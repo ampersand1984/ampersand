@@ -18,3 +18,4 @@ ok filtro de medios de pago
       últimas cuotas de este mes
       proyección totales mes que viene
    mensajes
+   poner el guardar como boton tilde a la derecha arriba

@@ -27,4 +27,8 @@
         <V:ConfiguracionesView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type VM:SeleccionDeMediosDePagoViewModel}">
+        <V:SeleccionDeMediosDePagoView/>
+    </DataTemplate>
+
 </ResourceDictionary>

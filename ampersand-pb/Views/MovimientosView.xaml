@@ -82,25 +82,10 @@
 
         </Grid.Resources>
 
-        <ItemsControl ItemsSource="{Binding MediosDePago}" 
-                      Grid.Row="0"
-                      Grid.ColumnSpan="2"
-                      Focusable="False">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" 
-                                Focusable="False"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <CheckBox IsChecked="{Binding Seleccionado}" 
-                              Content="{Binding Descripcion}"
-                              Focusable="False"
-                              Margin="10"/>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <ContentControl Content="{Binding SeleccionDeMediosDePagoVM}" 
+                        Grid.Row="0"
+                        Grid.ColumnSpan="2"
+                        Focusable="False"/>
         
         <DataGrid ItemsSource="{Binding MovimientosFiltrados}"
                   SelectedIndex="{Binding SelectedIndex}"
@@ -152,14 +137,6 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-                <!--<Style x:Key="leftHeaderAlignment" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                    <Setter Property="OverridesDefaultStyle" Value="False"/>
-                </Style>
-                <Style x:Key="rightHeaderAlignment" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                    <Setter Property="OverridesDefaultStyle" Value="False"/>
-                </Style>-->
                 <Style x:Key="columnHeaderMenu" TargetType="MenuItem">
                     <Setter Property="Header" Value="{Binding}"/>
                 </Style>
@@ -226,23 +203,6 @@
                                                            Margin="1"
                                                            Padding="2"
                                                            Opacity="0.7">
-                                                    <!--<TextBlock.Background>
-                                                        <VisualBrush>
-                                                            <VisualBrush.Visual>
-                                                                <Polygon Fill="LightBlue"
-                                                                         Stroke="Black"
-                                                                         StrokeThickness="2">
-                                                                    <Polygon.Points>
-                                                                        <Point X="0" Y="30" />
-                                                                        <Point X="55" Y="30" />
-                                                                        <Point X="70" Y="15" />
-                                                                        <Point X="55" Y="0" />
-                                                                        <Point X="0" Y="0" />
-                                                                    </Polygon.Points>
-                                                                </Polygon>
-                                                            </VisualBrush.Visual>
-                                                        </VisualBrush>
-                                                    </TextBlock.Background>-->
                                                 </TextBlock>
                                             </StackPanel>
                                         </DataTemplate>
@@ -355,8 +315,8 @@
                     VerticalAlignment="Top"
                     Panel.ZIndex="4"
                     Focusable="False"
-                    Foreground="{DynamicResource AccentColorBrush}"
                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                    Height="40"
                     Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"/>
 
             <chart:PieChart ChartTitle=""
@@ -365,7 +325,7 @@
                             ChartTitleVisibility="Collapsed"
                             Visibility="{Binding Path=IsChecked, ElementName=rdbTotales, Converter={StaticResource boolToVis}}"
                             Focusable="False"
-                            SelectedItem="{Binding Path=TotalesSelectedItem, Mode=TwoWay}">
+                            SelectedItem="{Binding Path=GraficosSelectedItem, Mode=TwoWay}">
                 <chart:PieChart.Series>
                     <chart:ChartSeries SeriesTitle="Totales"
                                        DisplayMember="Descripcion"
@@ -381,7 +341,7 @@
                             ChartTitleVisibility="Collapsed"
                             Visibility="{Binding Path=IsChecked, ElementName=rdbTags, Converter={StaticResource boolToVis}}"
                             Focusable="False"
-                            SelectedItem="{Binding Path=AgrupacionesSelectedItem, Mode=TwoWay}">
+                            SelectedItem="{Binding Path=GraficosSelectedItem, Mode=TwoWay}">
                 <chart:PieChart.Series>
                     <chart:ChartSeries SeriesTitle="Tags"
                                        DisplayMember="Descripcion"
@@ -408,6 +368,7 @@
                         Focusable="False"
                         Foreground="{DynamicResource AccentColorBrush}"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Height="40"
                         Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
                         Margin="5"/>
                 
@@ -418,6 +379,7 @@
                         Focusable="False"
                         Foreground="{DynamicResource AccentColorBrush}"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Height="40"
                         Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
                         Margin="5"/>
 
@@ -429,6 +391,7 @@
                         Focusable="False"
                         Foreground="{DynamicResource AccentColorBrush}"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Height="40"
                         Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
                         Margin="5"/>
 
@@ -440,6 +403,7 @@
                         Focusable="False"
                         Foreground="{DynamicResource AccentColorBrush}"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Height="40"
                         Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
                         Margin="5"/>
             </Grid>

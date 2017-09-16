@@ -115,7 +115,24 @@ namespace ampersand_pb.ViewModels
             set
             {
                 _editViewModel = value;
+                FlyoutIsOpen = _editViewModel != null;
                 OnPropertyChanged("EditViewModel");
+            }
+        }
+
+        private bool _flyoutIsOpen;
+        public bool FlyoutIsOpen
+        {
+            get
+            {
+                return _flyoutIsOpen;
+            }
+            set
+            {
+                _flyoutIsOpen = value;
+                if (!_flyoutIsOpen && EditViewModel != null)
+                    EditViewModel.CloseCommand.Execute(null);
+                OnPropertyChanged("FlyoutIsOpen");
             }
         }
 
@@ -168,7 +185,7 @@ namespace ampersand_pb.ViewModels
             }
             else
             {
-                resumenesVM = new ResumenesGraficosViewModel(MovimientosDA);
+                resumenesVM = new ResumenesGraficosViewModel(MovimientosDA, _configuracionM);
 
                 AgregarMainWindowItem(resumenesVM);
             }
