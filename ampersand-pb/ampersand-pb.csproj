@@ -119,6 +119,9 @@
     <Compile Include="ViewModels\ResumenesGraficosViewModel.cs" />
     <Compile Include="ViewModels\ResumenesViewModel.cs" />
     <Compile Include="ViewModels\SeleccionDeMediosDePagoViewModel.cs" />
+    <Compile Include="Views\BienvenidaView.xaml.cs">
+      <DependentUpon>BienvenidaView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ConfiguracionesView.xaml.cs">
       <DependentUpon>ConfiguracionesView.xaml</DependentUpon>
     </Compile>
@@ -141,6 +144,10 @@
       <DependentUpon>SeleccionDeMediosDePagoView.xaml</DependentUpon>
     </Compile>
     <Page Include="Resources\DataTemplates.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BienvenidaView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

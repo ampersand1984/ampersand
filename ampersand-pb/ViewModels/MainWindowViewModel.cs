@@ -136,6 +136,14 @@ namespace ampersand_pb.ViewModels
             }
         }
 
+        public bool VerVistaDeBienvenida
+        {
+            get
+            {
+                return MainWindowItems.Count == 0;
+            }
+        }
+
         private BienvenidaViewModel _bienvenidaVM;
         public BienvenidaViewModel BienvenidaVM
         {
@@ -198,6 +206,7 @@ namespace ampersand_pb.ViewModels
             mainWindowItem.PublishViewModelEvent -= PublishViewModelEvent;
             MainWindowItems.Remove(mainWindowItem);
             OnPropertyChanged("CurrentMainWindowItem");
+            OnPropertyChanged("VerVistaDeBienvenida");
         }
 
         private void PublishViewModelEvent(object sender, PublishViewModelEventArgs e)
@@ -225,6 +234,7 @@ namespace ampersand_pb.ViewModels
 
                 MainWindowItems.Add(mainWindowItem);
                 CurrentMainWindowItem = _mainWindowItems.LastOrDefault();
+                OnPropertyChanged("VerVistaDeBienvenida");
             }
         }
 

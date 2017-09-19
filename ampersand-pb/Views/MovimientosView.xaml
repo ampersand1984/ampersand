@@ -1,6 +1,7 @@
 ﻿<UserControl x:Class="ampersand_pb.Views.MovimientosView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
              xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
              xmlns:common="clr-namespace:ampersand_pb.Common"
@@ -13,7 +14,7 @@
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -86,7 +87,24 @@
                         Grid.Row="0"
                         Grid.ColumnSpan="2"
                         Focusable="False"/>
-        
+
+        <TextBox x:Name="txbBuscar"
+                 Controls:TextBoxHelper.ButtonCommand="{Binding BuscarCommand, Mode=OneWay}"
+                 Controls:TextBoxHelper.ButtonCommandParameter="{Binding ElementName=txbBuscar, Path=Text}"
+                 Controls:TextBoxHelper.Watermark="Buscar..."
+                 Style="{DynamicResource SearchMetroTextBox}" 
+                 Margin=" 10"
+                 Width="180"
+                 Grid.Row="0"
+                 Grid.ColumnSpan="2"
+                 HorizontalAlignment="Right">
+            <TextBox.InputBindings>
+                <KeyBinding Key="Return"
+                            Command="{Binding BuscarCommand, Mode=OneWay}"
+                            CommandParameter="{Binding ElementName=txbBuscar, Path=Text, Mode=OneWay}" />
+            </TextBox.InputBindings>
+        </TextBox>
+
         <DataGrid ItemsSource="{Binding MovimientosFiltrados}"
                   SelectedIndex="{Binding SelectedIndex}"
                   Style="{StaticResource AzureDataGrid}"
@@ -136,9 +154,6 @@
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
-                </Style>
-                <Style x:Key="columnHeaderMenu" TargetType="MenuItem">
-                    <Setter Property="Header" Value="{Binding}"/>
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>

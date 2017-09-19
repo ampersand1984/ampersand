@@ -11,11 +11,14 @@ ok cambiar como se ven los tags
 ok filtro de medios de pago
    agregar tag de servicios
    ABM de tags
-   buscar
+   permitir ingreso tipo efectivo
+ok buscar
    themes
    vista ppal
+      buscar
       últimas 10 compras
       últimas cuotas de este mes
       proyección totales mes que viene
    mensajes
-   poner el guardar como boton tilde a la derecha arriba
+NO poner el guardar como boton tilde a la derecha arriba
+   vista de resumenes tipo grid

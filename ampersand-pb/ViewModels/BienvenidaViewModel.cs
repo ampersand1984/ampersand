@@ -11,7 +11,7 @@ namespace ampersand_pb.ViewModels
 {
     public class BienvenidaViewModel: BaseViewModel
     {
-        public const int ULTIMOS_GASTOS_CANTIDAD = 10;
+        public const int ULTIMOS_GASTOS_CANTIDAD = 7;
 
         public BienvenidaViewModel(IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM)
         {
@@ -21,6 +21,20 @@ namespace ampersand_pb.ViewModels
 
         private readonly IMovimientosDataAccess _movimientosDA;
         private readonly ConfiguracionModel _configuracionM;
+
+        private SeleccionDeMediosDePagoViewModel _seleccionDeMediosDePagoVM;
+        public SeleccionDeMediosDePagoViewModel SeleccionDeMediosDePagoVM
+        {
+            get
+            {
+                if (_seleccionDeMediosDePagoVM == null)
+                {
+                    _seleccionDeMediosDePagoVM = new SeleccionDeMediosDePagoViewModel(_configuracionM);
+                    _seleccionDeMediosDePagoVM.SeleccionDeMediosDePagoCambiada += SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada;
+                }
+                return _seleccionDeMediosDePagoVM;
+            }
+        }
 
         private IEnumerable<BaseModel> _ultimos_Gastos;
         public IEnumerable<BaseModel> Ultimos_Gastos
@@ -42,13 +56,26 @@ namespace ampersand_pb.ViewModels
                 return _totales ?? (_totales = GetTotales());
             }
         }
+        private void SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada(object sender, EventArgs e)
+        {
+            _ultimos_Gastos = null;
+            _ultimas_Cuotas = null;
+            _totales = null;
+            OnPropertyChanged("Ultimos_Gastos");
+            OnPropertyChanged("Ultimas_Cuotas");
+            OnPropertyChanged("Totales");
+        }
 
         private IEnumerable<BaseModel> GetUltimosGastos()
         {
             var resumenAgrupado = _movimientosDA.GetUltimoResumen();
             var movimientos = _movimientosDA.GetMovimientos(resumenAgrupado);
+            
+            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
 
-            var result = movimientos.Where(a => !a.EsMensual)
+            movimientos = movimientos.Where(a => mediosDePago.Contains(a.IdResumen));
+
+            var result = movimientos.Where(a => !a.EsMensual && a.Fecha.GetPeriodo() == resumenAgrupado.Periodo)
                 .OrderByDescending(a => a.Fecha)
                 .Take(ULTIMOS_GASTOS_CANTIDAD);
 
@@ -59,6 +86,10 @@ namespace ampersand_pb.ViewModels
         {
             var resumenAgrupado = _movimientosDA.GetUltimoResumen();
             var movimientos = _movimientosDA.GetMovimientos(resumenAgrupado);
+
+            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+
+            movimientos = movimientos.Where(a => mediosDePago.Contains(a.IdResumen));
 
             var result = movimientos.Where(a => a.CoutasPendientes != -1)
                 .OrderBy(a => a. CoutasPendientes)
@@ -79,6 +110,10 @@ namespace ampersand_pb.ViewModels
 
             var movimientosActuales = _movimientosDA.GetMovimientos(resumenActual);
 
+            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+
+            movimientosActuales = movimientosActuales.Where(a => mediosDePago.Contains(a.IdResumen));
+
             var movimientosMesProximo = MovimientosViewModel.GetProyeccion(movimientosActuales);
 
             var textoPeriodoMesProximo = DateTime.ParseExact(resumenActual.Periodo + "01", "yyyyMMdd", CultureInfo.InvariantCulture)
@@ -88,9 +123,21 @@ namespace ampersand_pb.ViewModels
 
             return new List<AgrupacionItem>()
             {
-                new AgrupacionItem() { Descripcion = resumenAnterior.TextoPeriodo, Monto = resumenAnterior.Resumenes.Sum(a => a.Total) },
-                new AgrupacionItem() { Descripcion = resumenActual.TextoPeriodo, Monto = resumenActual.Resumenes.Sum(a => a.Total) },
-                new AgrupacionItem() { Descripcion = textoPeriodoMesProximo, Monto = movimientosMesProximo.Sum(a => a.Monto) }
+                new AgrupacionItem()
+                {
+                    Descripcion = resumenAnterior.TextoPeriodo,
+                    Monto = resumenAnterior.Resumenes.Where(a => mediosDePago.Contains(a.Id)).Sum(b => b.Total)
+                },
+                new AgrupacionItem()
+                {
+                    Descripcion = resumenActual.TextoPeriodo,
+                    Monto = resumenActual.Resumenes.Where(a => mediosDePago.Contains(a.Id)).Sum(b => b.Total)
+                },
+                new AgrupacionItem()
+                {
+                    Descripcion = textoPeriodoMesProximo,
+                    Monto = movimientosMesProximo.Sum(a => a.Monto)
+                }
             };
         }
     }

@@ -4,7 +4,7 @@
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
                       xmlns:common="clr-namespace:ampersand_pb.Common"
-                      Title="&amp;personal budget" MinWidth="800" MinHeight="600" WindowState="Maximized"
+                      Title="&amp;personal budget" MinWidth="1024" MinHeight="600" WindowState="Maximized"
                       Icon="/ampersand-pb;component/pb.ico"
                       Dialog:DialogParticipation.Register="{Binding}">
     <Controls:MetroWindow.RightWindowCommands>        
@@ -14,7 +14,7 @@
     </Controls:MetroWindow.RightWindowCommands>
 
     <Window.Resources>
-        <common:NullToBooleanConverter x:Key="nullToBooleanConverter"/>
+        <common:BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter"/>
 
         <DataTemplate x:Key="HamburgerMenuItem" DataType="{x:Type Controls:HamburgerMenuItem}">
             <Grid Height="48">
@@ -100,7 +100,8 @@
                VerticalAlignment="Bottom" 
                Margin="15"
                Source="/ampersand-pb;component/Resources/pb.png"/>-->
-        <TabControl Grid.Column="0" Grid.ColumnSpan="2"
+        <TabControl Grid.Column="0" 
+                    Grid.ColumnSpan="2"
                     Margin="48 0 0 0"
                     Controls:TabControlHelper.Underlined="TabItems"
                     ItemsSource="{Binding MainWindowItems}"
@@ -116,6 +117,11 @@
                 </DataTemplate>
             </TabControl.ContentTemplate>
         </TabControl>
-        
+
+        <ContentControl Grid.Column="0" 
+                        Grid.ColumnSpan="2"
+                        Margin="48 0 0 0" 
+                        Content="{Binding BienvenidaVM}"
+                        Visibility="{Binding VerVistaDeBienvenida, Converter={StaticResource booleanToVisibilityConverter}}"/>
     </Grid>
 </Controls:MetroWindow>

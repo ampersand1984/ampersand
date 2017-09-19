@@ -131,7 +131,7 @@ namespace ampersand_pb.ViewModels
         {
             get
             {
-                return _movimientosFiltrados ?? (_movimientosFiltrados = GetMovimientosFiltrados());
+                return _movimientosFiltrados ?? (_movimientosFiltrados = new ObservableCollection<BaseMovimiento>(GetMovimientosFiltrados()));
             }
         }
 
@@ -220,33 +220,6 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private async void EliminarSeleccionadoCommandExecute()
-        {
-            var selectedItem = MovimientosFiltrados.ElementAt(SelectedIndex);
-            if (selectedItem != null)
-            {
-                var strMessage = string.Format("Eliminar {0}?", selectedItem);
-
-                var param = new MessageParam("Confirmar eliminación", strMessage, MessageDialogStyle.AffirmativeAndNegative, null);
-
-                var result = await ShowMessage(param);
-                if (result == MessageDialogResult.Affirmative)
-                {
-                    var resumen = _resumenAgrupadoM.Resumenes.First(a => a.Id == selectedItem.IdResumen);
-                    resumen.HuboCambios = true;
-
-                    _movimientos.Remove(selectedItem);
-
-                    RefrescarMovimientos();
-                }
-            }
-        }
-
-        private bool EliminarSeleccionadoCommandCanExecute()
-        {
-            return SelectedIndex != -1;
-        }
-
         private ICommand _saveCommand;
         public ICommand SaveCommand
         {
@@ -266,6 +239,18 @@ namespace ampersand_pb.ViewModels
                 if (_limpiarSeleccionCommand == null)
                     _limpiarSeleccionCommand = new RelayCommand(param => RefrescarMovimientos());
                 return _limpiarSeleccionCommand;
+            }
+        }
+
+        private ICommand _buscarCommand;
+        public ICommand BuscarCommand
+        {
+            get
+            {
+                if (_buscarCommand == null)
+                    _buscarCommand = new RelayCommand(param => BuscarCommandExecute(param as string));
+
+                return _buscarCommand;
             }
         }
 
@@ -304,6 +289,52 @@ namespace ampersand_pb.ViewModels
 
             foreach (var resumen in _resumenAgrupadoM.Resumenes)
                 resumen.HuboCambios = false;
+        }
+
+        private async void EliminarSeleccionadoCommandExecute()
+        {
+            var selectedItem = MovimientosFiltrados.ElementAt(SelectedIndex);
+            if (selectedItem != null)
+            {
+                var strMessage = string.Format("Eliminar {0}?", selectedItem);
+
+                var param = new MessageParam("Confirmar eliminación", strMessage, MessageDialogStyle.AffirmativeAndNegative, null);
+
+                var result = await ShowMessage(param);
+                if (result == MessageDialogResult.Affirmative)
+                {
+                    var resumen = _resumenAgrupadoM.Resumenes.First(a => a.Id == selectedItem.IdResumen);
+                    resumen.HuboCambios = true;
+
+                    _movimientos.Remove(selectedItem);
+
+                    RefrescarMovimientos();
+                }
+            }
+        }
+
+        private bool EliminarSeleccionadoCommandCanExecute()
+        {
+            return SelectedIndex != -1;
+        }
+
+        private void BuscarCommandExecute(string texto)
+        {
+            _graficosSelectedItem = null;
+
+            var resultado = GetMovimientosFiltrados();
+            resultado = resultado.Where(a => a.Descripcion.ToLower().Contains(texto.ToLower()) ||
+                                             a.DescripcionAdicional.ToLower().Contains(texto.ToLower()) ||
+                                             a.Tags.Any(t => t.ToLower().Contains(texto.ToLower())));
+            
+            _totales = null;
+            _agrupaciones = null;
+            _movimientosFiltrados = new ObservableCollection<BaseMovimiento>(resultado);
+
+            OnPropertyChanged("GraficosSelectedItem");
+            OnPropertyChanged("MovimientosFiltrados");
+            OnPropertyChanged("TotalResumen");
+            OnPropertyChanged("PermiteLimpiarSeleccion");
         }
 
         protected override void OnRequestCloseEvent()
@@ -373,7 +404,7 @@ namespace ampersand_pb.ViewModels
             OnPropertyChanged("PermiteLimpiarSeleccion");
         }
 
-        private ObservableCollection<BaseMovimiento> GetMovimientosFiltrados()
+        private IEnumerable<BaseMovimiento> GetMovimientosFiltrados()
         {
             var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
 
@@ -401,7 +432,7 @@ namespace ampersand_pb.ViewModels
                 }
             }
 
-            return new ObservableCollection<BaseMovimiento>(movimientosFiltrados.OrderBy(a => a.Fecha));
+            return movimientosFiltrados.OrderBy(a => a.Fecha);
         }
 
         private void MovimientoABMVM_CloseEvent(object sender, EventArgs e)

@@ -31,4 +31,8 @@
         <V:SeleccionDeMediosDePagoView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type VM:BienvenidaViewModel}">
+        <V:BienvenidaView/>
+    </DataTemplate>
+
 </ResourceDictionary>

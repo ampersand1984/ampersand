@@ -15,11 +15,11 @@ using MahApps.Metro.Controls.Dialogs;
 
 namespace ampersand_pb.ViewModels
 {
-    public class ConfiguracionesViewModel : BaseViewModel, IMainWindowItem, IDataErrorInfo
+    public class ConfiguracionesViewModel : BaseViewModel, IDataErrorInfo
     {
         public ConfiguracionesViewModel(ConfiguracionModel configuracionM, IConfiguracionDataAccess configuracionDA)
         {
-            DisplayName = "Configuraciones";
+            Header = "Configuraciones";
             _configuracionOriginal = configuracionM;
             _configuracionM = configuracionM.Clone();
             _configuracionDA = configuracionDA;
@@ -29,7 +29,7 @@ namespace ampersand_pb.ViewModels
         private ConfiguracionModel _configuracionOriginal;
         private ConfiguracionModel _configuracionM;
 
-        public string DisplayName { get; private set; }
+        public string Header { get; private set; }
         
         public string CarpetaDeResumenes
         {
