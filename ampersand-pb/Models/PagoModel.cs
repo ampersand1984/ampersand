@@ -5,6 +5,13 @@ namespace ampersand_pb.Models
 {
     public class PagoModel : BaseModel, ICloneable, IEquatable<PagoModel>
     {
+        public PagoModel()
+        {
+            Tipo = TiposDeMovimiento.Credito;
+        }
+
+        public TiposDeMovimiento Tipo { get; set; }
+
         private string _color;
         public string Color
         {

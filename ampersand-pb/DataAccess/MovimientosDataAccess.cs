@@ -184,16 +184,16 @@ namespace ampersand_pb.DataAccess
             catch (Exception) { }
         }
 
-        private TipoMovimiento GetTipo(string strTipo)
+        private TiposDeMovimiento GetTipo(string strTipo)
         {
             switch (strTipo)
             {
                 case "Credito":
-                    return TipoMovimiento.Credito;
+                    return TiposDeMovimiento.Credito;
                 case "Debito":
-                    return TipoMovimiento.Debito;
+                    return TiposDeMovimiento.Debito;
                 default:
-                    return TipoMovimiento.Efectivo;
+                    return TiposDeMovimiento.Efectivo;
             }
         }
 
@@ -263,7 +263,7 @@ namespace ampersand_pb.DataAccess
                 var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
                                                                      new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
                                                                      new XAttribute("Total", total),
-                                                                     new XAttribute("Tipo", TipoMovimiento.Credito),
+                                                                     new XAttribute("Tipo", TiposDeMovimiento.Credito),
                                                                      new XAttribute("Descripcion", resumenM.Descripcion),
                                                                      new XAttribute("ProximoCierre", strProximoCierre)));
 

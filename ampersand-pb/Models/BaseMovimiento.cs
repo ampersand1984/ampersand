@@ -6,17 +6,17 @@ using System.Linq;
 
 namespace ampersand_pb.Models
 {
-    public enum TipoMovimiento { Efectivo, Debito, Credito }
+    public enum TiposDeMovimiento { Efectivo, Debito, Credito }
 
     public class BaseMovimiento: BaseModel, ICloneable
     {
         public BaseMovimiento()
         {
-            Tipo = TipoMovimiento.Credito;
+            Tipo = TiposDeMovimiento.Credito;
             Fecha = DateTime.Today;
         }
 
-        public TipoMovimiento Tipo { get; set; }
+        public TiposDeMovimiento Tipo { get; set; }
 
         private string _descripcionResumen;
         public string DescripcionResumen

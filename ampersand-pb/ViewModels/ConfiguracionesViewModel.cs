@@ -23,6 +23,8 @@ namespace ampersand_pb.ViewModels
             _configuracionOriginal = configuracionM;
             _configuracionM = configuracionM.Clone();
             _configuracionDA = configuracionDA;
+
+            TiposDeMediosDePago = new List<TiposDeMovimiento>() { TiposDeMovimiento.Credito, TiposDeMovimiento.Efectivo, TiposDeMovimiento.Debito };
         }
 
         private IConfiguracionDataAccess _configuracionDA;
@@ -30,6 +32,8 @@ namespace ampersand_pb.ViewModels
         private ConfiguracionModel _configuracionM;
 
         public string Header { get; private set; }
+
+        public IEnumerable<TiposDeMovimiento> TiposDeMediosDePago { get; private set; }
         
         public string CarpetaDeResumenes
         {

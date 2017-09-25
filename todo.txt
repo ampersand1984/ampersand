@@ -3,7 +3,7 @@ ok corregir la proyección
    sacar los tags a un archivo aparte
 no incluir el parseo al proyecto ppal
 ok agregar la vista de preferencias
-   agregar el % o monto de "ajeno"
+NO agregar el % o monto de "ajeno"
 ok hamburguer menu
 ok flyout view
    agregar colores
@@ -11,14 +11,14 @@ ok cambiar como se ven los tags
 ok filtro de medios de pago
    agregar tag de servicios
    ABM de tags
-   permitir ingreso tipo efectivo
+ok permitir ingreso tipo efectivo
 ok buscar
    themes
    vista ppal
       buscar
-      últimas 10 compras
-      últimas cuotas de este mes
-      proyección totales mes que viene
+ok    últimas 7 compras
+ok    últimas cuotas de este mes
+ok    proyección totales mes que viene
    mensajes
 NO poner el guardar como boton tilde a la derecha arriba
    vista de resumenes tipo grid

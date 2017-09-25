@@ -80,18 +80,29 @@ namespace ampersand_pb.DataAccess
                 result.Add(new PagoModel()
                 {
                     Id = xelement.Attribute("Id").Value,
-                    Descripcion = xelement.Attribute("Descripcion").Value
+                    Descripcion = xelement.Attribute("Descripcion").Value,
+                    Tipo = GetTipoDeMovimiento(xelement.Attribute("Tipo").Value)
                 });
             }
 
             return result;
         }
 
+        private TiposDeMovimiento GetTipoDeMovimiento(string strTipo)
+        {
+            switch (strTipo)
+            {
+                case "Credito": return TiposDeMovimiento.Credito;
+                case "Debito": return TiposDeMovimiento.Debito;
+                default: return TiposDeMovimiento.Efectivo;
+            }
+        }
+
         private void GuardarConfiguracionDePagos(string carpetaDeResumenes, IEnumerable<PagoModel> mediosDePagos)
         {
             XDocument xdoc = new XDocument(new XElement("ConfiguracionDePagos"));
             foreach (var item in mediosDePagos)
-                xdoc.Root.Add(new XElement("MedioDePago", new XAttribute("Id", item.Id), new XAttribute("Descripcion", item.Descripcion)));
+                xdoc.Root.Add(new XElement("MedioDePago", new XAttribute("Tipo", item.Tipo), new XAttribute("Id", item.Id), new XAttribute("Descripcion", item.Descripcion)));
 
             var filePath = string.Format("{0}\\{1}", carpetaDeResumenes, CONFIGIGURACION_DE_PAGOS_FILE_NAME);
             xdoc.Save(filePath);

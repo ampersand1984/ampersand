@@ -31,7 +31,7 @@ namespace ampersand_pb.Models
 
         public XDocument XDoc { get; internal set; }
 
-        public TipoMovimiento Tipo { get; set; }
+        public TiposDeMovimiento Tipo { get; set; }
 
         public string Descripcion { get; set; }
 

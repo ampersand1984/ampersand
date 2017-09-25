@@ -8,35 +8,44 @@
     <ItemsControl ItemsSource="{Binding ResumenesAgrupados}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-                <WrapPanel/>
+                <StackPanel/>
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <Button Margin="10"
+                <Button Margin="2"
                         Command="{Binding Path=DataContext.SeleccionarResumenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         CommandParameter="{Binding}"
-                        Foreground="{DynamicResource AccentColorBrush}">
+                        Foreground="{DynamicResource AccentColorBrush}" HorizontalContentAlignment="Left">
                     <Button.Content>
-                        <StackPanel>
-                            <TextBlock Text="{Binding TextoPeriodo}" FontSize="14" FontWeight="Bold" Margin="5"/>
+                        <Grid Grid.IsSharedSizeScope="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" SharedSizeGroup="TEXTOPERIODO" />
+                                <ColumnDefinition Width="5*" SharedSizeGroup="PERIODOS"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding TextoPeriodo}" 
+                                       Grid.Column="0"
+                                       FontSize="14" 
+                                       FontWeight="Bold" 
+                                       Margin="5"/>
                             <!--<TextBlock Text="{Binding FechaDeCierre, StringFormat='{}{0:dd/MM/yyyy}'}" FontSize="10" Margin="5"/>-->
-                            <ItemsControl ItemsSource="{Binding Resumenes}">
+                            <ItemsControl ItemsSource="{Binding Resumenes}"
+                                          Grid.Column="1">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <StackPanel/>
+                                        <StackPanel Orientation="Horizontal"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
                                             <TextBlock Text="{Binding Descripcion, StringFormat='{}{0} '}" FontWeight="Normal"/>
                                             <TextBlock Text="{Binding Total}" FontWeight="Normal"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </StackPanel>
+                        </Grid>
                     </Button.Content>
                 </Button>
             </DataTemplate>

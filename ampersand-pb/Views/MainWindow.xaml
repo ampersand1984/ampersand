@@ -83,6 +83,7 @@
         </Grid.Resources>
 
         <Controls:HamburgerMenu VerticalScrollBarOnLeftSide="False"
+                                x:Name="hamburgerMenu"
                                 OptionsItemTemplate="{StaticResource HamburgerMenuItem}"
                                 ItemTemplate="{StaticResource HamburgerMenuImageItem}"
                                 Panel.ZIndex="5">
@@ -95,11 +96,27 @@
                 </Controls:HamburgerMenuItemCollection>
             </Controls:HamburgerMenu.ItemsSource>
         </Controls:HamburgerMenu>
-        
-        <!--<Image HorizontalAlignment="Left" 
+
+        <Image HorizontalAlignment="Left" 
                VerticalAlignment="Bottom" 
-               Margin="15"
-               Source="/ampersand-pb;component/Resources/pb.png"/>-->
+               Panel.ZIndex="7"
+               Margin="1"
+               Source="/ampersand-pb;component/Resources/pb.png">
+            <Image.Style>
+                <Style TargetType="Image">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=hamburgerMenu, Path=IsPaneOpen}" Value="true">
+                            <Setter Property="Height" Value="150"/>
+                            <Setter Property="Width" Value="150"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ElementName=hamburgerMenu, Path=IsPaneOpen}" Value="false">
+                            <Setter Property="Height" Value="48"/>
+                            <Setter Property="Width" Value="48"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
         <TabControl Grid.Column="0" 
                     Grid.ColumnSpan="2"
                     Margin="48 0 0 0"
