@@ -92,6 +92,7 @@
     <Compile Include="Common\EqualToVisibilityConverter.cs" />
     <Compile Include="Common\NullToBooleanConverter.cs" />
     <Compile Include="Common\NullToVisibilityConverter.cs" />
+    <Compile Include="Common\ResourceManager.cs" />
     <Compile Include="DataAccess\MovimientosDataAccess.cs" />
     <Compile Include="DataAccess\ConfiguracionDataAccess.cs" />
     <Compile Include="Models\BaseMovimiento.cs" />
@@ -143,6 +144,14 @@
     <Compile Include="Views\SeleccionDeMediosDePagoView.xaml.cs">
       <DependentUpon>SeleccionDeMediosDePagoView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Resources\ChartDarkStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\ChartLightStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\DataTemplates.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -1,0 +1,18 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:ampersand_pb.Resources"
+                    xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
+                    x:Name="ChartDarkStyle">
+    <Style TargetType="chart:ClusteredColumnChart">
+        <Setter Property="Foreground" Value="#FFEEEEEE"/>
+        <Setter Property="Background" Value="#FF252525"/>
+        <!--<Setter Property="MainBackground" Value="#FFEEEEEE"/>
+        <Setter Property="MainForeground" Value="#FFEEEEEE"/>-->
+    </Style>
+    <Style TargetType="chart:PieChart">
+        <Setter Property="Foreground" Value="#FFEEEEEE"/>
+        <Setter Property="Background" Value="#FF252525"/>
+        <!--<Setter Property="MainBackground" Value="#FFEEEEEE"/>
+        <Setter Property="MainForeground" Value="#FFEEEEEE"/>-->
+    </Style>
+</ResourceDictionary>

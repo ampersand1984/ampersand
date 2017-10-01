@@ -25,6 +25,8 @@ namespace ampersand_pb.ViewModels
             _configuracionDA = configuracionDA;
 
             TiposDeMediosDePago = new List<TiposDeMovimiento>() { TiposDeMovimiento.Credito, TiposDeMovimiento.Efectivo, TiposDeMovimiento.Debito };
+
+            Temas = new List<ThemesColors>() { ThemesColors.Light, ThemesColors.Dark };
         }
 
         private IConfiguracionDataAccess _configuracionDA;
@@ -54,6 +56,22 @@ namespace ampersand_pb.ViewModels
             get
             {
                 return _configuracionM.MediosDePago;
+            }
+        }
+
+        public IEnumerable<ThemesColors> Temas { get; private set; }
+
+        private ThemesColors _temaSeleccionado;
+        public ThemesColors TemaSeleccionado
+        {
+            get
+            {
+                return _temaSeleccionado;
+            }
+            set
+            {
+                _temaSeleccionado = value;
+                OnPropertyChanged("TemaSeleccionado");
             }
         }
 
@@ -149,6 +167,11 @@ namespace ampersand_pb.ViewModels
             _configuracionDA.GuardarConfiguracion(_configuracionM);
 
             _configuracionOriginal.CopyValues(_configuracionM);
+
+            Properties.Settings.Default.Tema = TemaSeleccionado.ToString();
+            Properties.Settings.Default.Save();
+
+            ampersand_pb.Common.ResourceManager.AplicarTema();
 
             OnSaveEvent();
             CloseCommand.Execute(null);

@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Resources;
 
 namespace ampersand_pb.Models
 {
+    public enum ThemesColors { Light, Dark }
+
     public class ConfiguracionModel
     {
         private string _carpetaDeResumenes;

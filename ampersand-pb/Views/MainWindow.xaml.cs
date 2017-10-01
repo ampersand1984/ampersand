@@ -10,6 +10,7 @@ namespace ampersand_pb.Views
         public MainWindow()
         {
             InitializeComponent();
+            var x = this.Background;
         }
     }
 }

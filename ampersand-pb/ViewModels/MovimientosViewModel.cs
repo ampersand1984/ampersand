@@ -513,9 +513,11 @@ namespace ampersand_pb.ViewModels
 
         private IEnumerable<AgrupacionItem> GetTotales()
         {
+            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+
             var totales = new List<AgrupacionItem>();
 
-            foreach (var item in _resumenAgrupadoM.Resumenes)
+            foreach (var item in _resumenAgrupadoM.Resumenes.Where(a => mediosDePago.Contains(a.Id)))
                 totales.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.MedioDePago, Descripcion = item.Descripcion, Monto = item.Total });
 
             return totales;

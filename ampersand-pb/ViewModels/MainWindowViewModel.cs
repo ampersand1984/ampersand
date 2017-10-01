@@ -1,5 +1,6 @@
 ﻿using ampersand.Core;
 using ampersand.Core.Common;
+using ampersand_pb.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
@@ -23,6 +24,8 @@ namespace ampersand_pb.ViewModels
             _configuracionDA = configuracionDA;
 
             _configuracionM = _configuracionDA.GetConfiguracion();
+
+            ResourceManager.AplicarTema();
         }
 
         private readonly IDialogCoordinator _dialogCoordinator;

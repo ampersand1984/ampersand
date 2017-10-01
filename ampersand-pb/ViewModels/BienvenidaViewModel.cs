@@ -75,7 +75,7 @@ namespace ampersand_pb.ViewModels
 
             movimientos = movimientos.Where(a => mediosDePago.Contains(a.IdResumen));
 
-            var result = movimientos.Where(a => !a.EsMensual && a.Fecha.GetPeriodo() == resumenAgrupado.Periodo)
+            var result = movimientos.Where(a => !a.EsMensual/* && a.Fecha.GetPeriodo() == resumenAgrupado.Periodo*/)
                 .OrderByDescending(a => a.Fecha)
                 .Take(ULTIMOS_GASTOS_CANTIDAD);
 

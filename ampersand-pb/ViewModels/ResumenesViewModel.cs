@@ -4,6 +4,7 @@ using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Input;
 

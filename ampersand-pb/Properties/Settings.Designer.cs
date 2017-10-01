@@ -34,5 +34,17 @@ namespace ampersand_pb.Properties {
                 this["MediosDePagoSeleccionados"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Tema {
+            get {
+                return ((string)(this["Tema"]));
+            }
+            set {
+                this["Tema"] = value;
+            }
+        }
     }
 }

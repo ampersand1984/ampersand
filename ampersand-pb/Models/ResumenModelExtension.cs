@@ -13,7 +13,8 @@ namespace ampersand_pb.Models
 
             foreach (var periodo in periodos)
             {
-                var resumenAgrupadoM = new ResumenAgrupadoModel(resumenes.Where(a => a.Periodo.Equals(periodo)).ToList());
+                var resumenesDelPeriodo = resumenes.Where(a => a.Periodo.Equals(periodo)).OrderBy(a => a.Id);
+                var resumenAgrupadoM = new ResumenAgrupadoModel(resumenesDelPeriodo);
                 resultado.Add(resumenAgrupadoM);
             }
 
