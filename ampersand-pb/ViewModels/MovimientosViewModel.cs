@@ -456,7 +456,7 @@ namespace ampersand_pb.ViewModels
 
             foreach (var resumen in resumenAgrupadoProyeccion.Resumenes)
             {
-                resumen.FechaDeCierre = resumen.ProximoCierre != DateTime.MinValue ?
+                resumen.FechaDeCierre = resumen.ProximoCierre.Month == resumen.FechaDeCierre.Month + 1 ?
                     resumen.ProximoCierre :
                     resumen.FechaDeCierre.AddMonths(1);
 
