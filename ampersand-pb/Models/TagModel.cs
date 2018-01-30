@@ -6,6 +6,8 @@ namespace ampersand_pb.Models
 {
     public class TagModel: BaseModel, ICloneable
     {
+        public const string SIN_CATEGORIA = "Sin categoría";
+
         private string _tag;
         public string Tag
         {

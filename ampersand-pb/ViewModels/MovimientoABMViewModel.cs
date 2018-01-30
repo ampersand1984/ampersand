@@ -20,13 +20,15 @@ namespace ampersand_pb.ViewModels
             _modelOriginal.DescripcionResumen = configuracionM.MediosDePago.First().Descripcion;
         }
 
-        public MovimientoABMViewModel(BaseMovimiento baseMovimiento, ConfiguracionModel configuracionM)
+        public MovimientoABMViewModel(BaseMovimiento baseMovimiento, ConfiguracionModel configuracionM, bool esCopia = false)
         {
             EdicionCompleta = true;
             _modelOriginal = baseMovimiento;
             _model = baseMovimiento.Clone() as BaseMovimiento;
 
             _configuracionM = configuracionM;
+
+            _esCopia = esCopia;
 
             _tagsPosibles = _configuracionM.Tags.Clone();
         }
@@ -40,6 +42,7 @@ namespace ampersand_pb.ViewModels
         private IEnumerable<TagModel> _tagsPosibles;
         ConfiguracionModel _configuracionM;
         private bool _guardado;
+        private bool _esCopia;
 
         #endregion
 
@@ -49,7 +52,7 @@ namespace ampersand_pb.ViewModels
         {
             get
             {
-                return Descripcion.IsNullOrEmpty() ?
+                return Descripcion.IsNullOrEmpty() || _esCopia?
                     "Nuevo" :
                     Descripcion;
             }
@@ -114,13 +117,42 @@ namespace ampersand_pb.ViewModels
         public decimal Monto
         {
             get { return _model.Monto; }
-            set { _model.Monto = value; OnPropertyChanged("Monto"); }
+            set { _model.SetMonto(value); RefrescarMontos(); }
+        }
+
+        public decimal MontoME
+        {
+            get { return _model.MontoME; }
+            set { _model.SetMontoME(value, _model.Cotizacion); RefrescarMontos(); }
+        }
+
+        public decimal Cotizacion
+        {
+            get { return _model.Cotizacion; }
+            set { _model.Cotizacion = value; RefrescarMontos(); }
+        }
+
+        public bool EsMonedaExtranjera
+        {
+            get
+            {
+                return _model.EsMonedaExtranjera;
+            }
+        }
+
+        public void RefrescarMontos()
+        {
+            OnPropertyChanged("Monto");
+            OnPropertyChanged("MontoME");
+            OnPropertyChanged("EsMonedaExtranjera");
+            OnPropertyChanged("Cotizacion");
+            OnPropertyChanged("TotalCuotas");
         }
 
         public string Cuota
         {
             get { return _model.Cuota; }
-            set { _model.Cuota = value; OnPropertyChanged("Cuota"); }
+            set { _model.Cuota = value; OnPropertyChanged("Cuota"); OnPropertyChanged("TotalCuotas"); }
         }
 
         public IEnumerable<string> Cuotas
@@ -139,6 +171,23 @@ namespace ampersand_pb.ViewModels
                         "01/50",
                         _model.Cuota
                     }.Distinct();
+            }
+        }
+
+        public string TotalCuotas
+        {
+            get
+            {
+                var totalCuotas = string.Empty;
+
+                if (Cuota.Length > 0)
+                {
+                    var slashIndex = Cuota.IndexOf("/");
+                    var cantCuotas = int.Parse(Cuota.Substring(slashIndex + 1));
+                    totalCuotas = $"Total: {(Monto * cantCuotas).ToString("C2")}";
+                }
+
+                return totalCuotas;
             }
         }
 

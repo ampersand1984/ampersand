@@ -278,6 +278,15 @@
   <ItemGroup>
     <Resource Include="Resources\filter-remove_b.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\auto-fix.png" />
+    <Resource Include="Resources\auto-fix_b.png" />
+    <Resource Include="Resources\content-copy.png" />
+    <Resource Include="Resources\content-copy_b.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\calendar-minus_b.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

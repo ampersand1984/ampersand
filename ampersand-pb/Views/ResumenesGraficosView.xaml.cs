@@ -1,4 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using ampersand_pb.ViewModels;
+using De.TorstenMandelkow.MetroChart;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace ampersand_pb.Views
@@ -11,6 +13,16 @@ namespace ampersand_pb.Views
         public ResumenesGraficosView()
         {
             InitializeComponent();
+        }
+
+        private void ChartSeries_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var clusteredColumnChart = sender as ClusteredColumnChart;
+            var selectedItem = clusteredColumnChart.SelectedItem;
+
+            var resumenesGraficosVM = this.DataContext as ResumenesGraficosViewModel;
+
+            resumenesGraficosVM.MostrarSeleccionCommand.Execute(selectedItem);
         }
     }
 }

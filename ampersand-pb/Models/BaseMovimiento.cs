@@ -63,10 +63,43 @@ namespace ampersand_pb.Models
             {
                 return _monto;
             }
+        }
+
+        private decimal _montoME;
+        public decimal MontoME
+        {
+            get
+            {
+                return _montoME;
+            }
             set
             {
-                _monto = value;
-                OnPropertyChanged("Monto");
+                _montoME = value; 
+                _monto = value * Cotizacion;
+                RefrescarMontos();
+            }
+        }
+
+        private decimal _cotizacion = 1;
+        public decimal Cotizacion
+        {
+            get
+            {
+                return _cotizacion;
+            }
+            set
+            {
+                _cotizacion = value > 0 ? value : 1;
+                ActualizarCotizacion();
+                RefrescarMontos();
+            }
+        }
+
+        public bool EsMonedaExtranjera
+        {
+            get
+            {
+                return Cotizacion != 1;
             }
         }
 
@@ -176,6 +209,37 @@ namespace ampersand_pb.Models
                 handler(this, new IsSelectedChangedEventHandler(this.IsSelected));
         }
 
+        public void SetMonto(decimal monto)
+        {
+            SetMonto(monto, Cotizacion);
+        }
+
+        public void SetMonto(decimal monto, decimal cotizacion)
+        {
+            _cotizacion = cotizacion;
+
+            _monto = monto;
+            _montoME = monto / Cotizacion;
+            RefrescarMontos();
+        }
+
+        public void SetMontoME(decimal montoME, decimal cotizacion)
+        {
+            _cotizacion = cotizacion;
+
+            _montoME = montoME;
+            _monto = montoME * Cotizacion;
+            RefrescarMontos();
+        }
+
+        private void ActualizarCotizacion()
+        {
+            if (EsMonedaExtranjera)
+                SetMontoME(MontoME, Cotizacion);
+            else
+                SetMontoME(Monto, Cotizacion);
+        }
+
         public void RefrescarPropiedades()
         {
             OnPropertyChanged("Descripcion");
@@ -184,10 +248,18 @@ namespace ampersand_pb.Models
             OnPropertyChanged("Tipo");
             OnPropertyChanged("DescripcionResumen");
             OnPropertyChanged("Cuota");
-            OnPropertyChanged("Monto");
             OnPropertyChanged("EsMensual");
             OnPropertyChanged("EsAjeno");
             OnPropertyChanged("Tags");
+            RefrescarMontos();
+        }
+
+        public void RefrescarMontos()
+        {
+            OnPropertyChanged("Monto");
+            OnPropertyChanged("MontoME");
+            OnPropertyChanged("EsMonedaExtranjera");
+            OnPropertyChanged("Cotizacion");
         }
 
         internal void CopyValues(BaseMovimiento model)
@@ -203,7 +275,9 @@ namespace ampersand_pb.Models
             Tipo = model.Tipo;
             DescripcionResumen = model.DescripcionResumen;
             Cuota = model.Cuota;
-            Monto = model.Monto;
+            _monto = model.Monto;
+            _montoME = model.MontoME;
+            _cotizacion = model.Cotizacion;
             EsMensual = model.EsMensual;
             EsAjeno = model.EsAjeno;
         }

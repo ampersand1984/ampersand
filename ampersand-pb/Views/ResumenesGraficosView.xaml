@@ -25,9 +25,10 @@
                         VerticalAlignment="Center"
                         Margin="10,0,10,0"/>
             <ComboBox ItemsSource="{Binding TiposDeGraficos}" 
-                        IsEditable="False" 
-                        SelectedValue="{Binding GraficoSeleccionado}"
-                        Width="200"/>
+                      DisplayMemberPath="Descripcion"
+                      IsEditable="False" 
+                      SelectedValue="{Binding GraficoSeleccionado}"
+                      Width="200"/>
             
             <TextBlock Text="Desde"
                         VerticalAlignment="Center"
@@ -63,13 +64,12 @@
                                                     ChartSubTitle="{Binding ChartSubTitle}"
                                                     ChartLegendVisibility="Hidden"
                                                     Focusable="False"
-                                                    Margin="0,-40,0,0">
+                                                    Margin="0,-40,0,0" MouseDoubleClick="ChartSeries_MouseDoubleClick">
                             <chart:ClusteredColumnChart.Series>
                                 <chart:ChartSeries SeriesTitle="Meses"
                                                    DisplayMember="Descripcion"
                                                    ValueMember="Monto"
-                                                   ItemsSource="{Binding Items}"
-                                                   Focusable="False" />
+                                                   ItemsSource="{Binding Items}"/>
                             </chart:ClusteredColumnChart.Series>
                         </chart:ClusteredColumnChart>
                     </DataTemplate>

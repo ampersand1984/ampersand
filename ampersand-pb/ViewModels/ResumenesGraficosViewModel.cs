@@ -6,6 +6,8 @@ using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
+using static ampersand_pb.ViewModels.MovimientosViewModel;
 
 namespace ampersand_pb.ViewModels
 {
@@ -17,14 +19,14 @@ namespace ampersand_pb.ViewModels
 
         public ResumenesGraficosViewModel(IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM)
         {
-            TiposDeGraficos = new List<string>()
+            TiposDeGraficos = new List<TipoDeGrafico>()
             {
-                TOTALES_MENSUAL,
-                TOTALES_POR_TARJETA_MENSUAL,
-                TOTALES_POR_TAGS_MENSUAL
+                new TipoDeGrafico { Descripcion = TOTALES_MENSUAL, Tipo = TiposDeAgrupacion.Totales },
+                new TipoDeGrafico { Descripcion = TOTALES_POR_TARJETA_MENSUAL, Tipo = TiposDeAgrupacion.MedioDePago },
+                new TipoDeGrafico { Descripcion = TOTALES_POR_TAGS_MENSUAL, Tipo = TiposDeAgrupacion.Tag }
             };
 
-            _graficoSeleccionado = TOTALES_POR_TARJETA_MENSUAL;
+            _graficoSeleccionado = TiposDeGraficos.ElementAt(1);
 
             _movimientosDA = movimientosDA;
             _configuracionM = configuracionM;
@@ -78,10 +80,10 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        public IEnumerable<string> TiposDeGraficos { get; private set; }
+        public IEnumerable<TipoDeGrafico> TiposDeGraficos { get; private set; }
 
-        private string _graficoSeleccionado;
-        public string GraficoSeleccionado
+        private TipoDeGrafico _graficoSeleccionado;
+        public TipoDeGrafico GraficoSeleccionado
         {
             get
             {
@@ -151,6 +153,60 @@ namespace ampersand_pb.ViewModels
 
         public IDialogCoordinator DialogCoordinator { get; set; }
 
+        private ICommand _mostrarSeleccionCommand;
+        public ICommand MostrarSeleccionCommand
+        {
+            get
+            {
+                if (_mostrarSeleccionCommand == null)
+                    _mostrarSeleccionCommand = new RelayCommand(param => MostrarSeleccionCommandExecute(param as ItemGrafico), param => MostrarSeleccionCommandCanExecute(param as ItemGrafico));
+                return _mostrarSeleccionCommand;
+            }
+        }
+
+        private bool MostrarSeleccionCommandCanExecute(ItemGrafico itemGrafico)
+        {
+            return itemGrafico != null;
+        }
+
+        private void MostrarSeleccionCommandExecute(ItemGrafico itemGrafico)
+        {
+            switch (GraficoSeleccionado.Tipo)
+            {
+                case TiposDeAgrupacion.Totales:
+                    {
+                        var resumenAgrupado = _movimientosDA.GetResumen(itemGrafico.Id);
+
+                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM);
+                        OnPublishViewModelEvent(movimientosVM);
+                    }
+                    break;
+
+                case TiposDeAgrupacion.MedioDePago:
+                    {
+                        var resumenAgrupado = _movimientosDA.GetResumen(itemGrafico.Id);
+
+                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM);
+                        movimientosVM.GraficosSelectedItem = new AgrupacionItem() { Tipo = GraficoSeleccionado.Tipo, Id = itemGrafico.Grupo };
+                        OnPublishViewModelEvent(movimientosVM);
+                    }
+                    break;
+
+                case TiposDeAgrupacion.Tag:
+                    {
+                        var resumenAgrupado = _movimientosDA.GetResumen(itemGrafico.Id);
+
+                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM);
+                        movimientosVM.GraficosSelectedItem = new AgrupacionItem() { Tipo = GraficoSeleccionado.Tipo, Id = itemGrafico.Grupo, Descripcion = itemGrafico.Grupo };
+                        OnPublishViewModelEvent(movimientosVM);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         private IEnumerable<DatosDelGrafico> GetDatosDelGrafico()
         {
             var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
@@ -165,9 +221,9 @@ namespace ampersand_pb.ViewModels
 
             var resultado = new List<DatosDelGrafico>();
 
-            switch (GraficoSeleccionado)
+            switch (GraficoSeleccionado.Tipo)
             {
-                case TOTALES_MENSUAL:
+                case TiposDeAgrupacion.Totales:
                     {
                         var items = new List<ItemGrafico>();
                         foreach (var periodo in periodos)
@@ -190,7 +246,7 @@ namespace ampersand_pb.ViewModels
                     }
                     break;
 
-                case TOTALES_POR_TARJETA_MENSUAL:
+                case TiposDeAgrupacion.MedioDePago:
                     {
                         var tipos = resumenesPorFecha.Select(a => a.Descripcion).Distinct();
 
@@ -208,7 +264,8 @@ namespace ampersand_pb.ViewModels
                                                              {
                                                                  Id = a.Periodo,
                                                                  Descripcion = a.TextoPeriodo,
-                                                                 Monto = a.Total
+                                                                 Monto = a.Total,
+                                                                 Grupo = a.Id
                                                              })
                                                              .ToList();
 
@@ -238,7 +295,7 @@ namespace ampersand_pb.ViewModels
                     }
                     break;
 
-                case TOTALES_POR_TAGS_MENSUAL:
+                case TiposDeAgrupacion.Tag:
                     {
                         var movimientos = new List<KeyValuePair<string, IEnumerable<BaseMovimiento>>>();
                         //cargo los resúmenes
@@ -269,7 +326,8 @@ namespace ampersand_pb.ViewModels
                                 {
                                     Id = periodo,
                                     Descripcion = descripcion,
-                                    Monto = movimientosPorTagDelPeriodo.Sum(a => a.Monto)
+                                    Monto = movimientosPorTagDelPeriodo.Sum(a => a.Monto),
+                                    Grupo = tag
                                 });
                             }
                             var datosDelGrafico = new DatosDelGrafico
@@ -301,7 +359,8 @@ namespace ampersand_pb.ViewModels
                             {
                                 Id = periodo,
                                 Descripcion = descripcion,
-                                Monto = movimientosSinTagDelPeriodo.Sum(a => a.Monto)
+                                Monto = movimientosSinTagDelPeriodo.Sum(a => a.Monto),
+                                Grupo = TagModel.SIN_CATEGORIA
                             });
                         }
                         var datosDelGraficoSinCategoria = new DatosDelGrafico
@@ -371,5 +430,13 @@ namespace ampersand_pb.ViewModels
         public string Descripcion { get; internal set; }
         public string Id { get; internal set; }
         public decimal Monto { get; internal set; }
+        public string Grupo { get; internal set; }
+    }
+
+    public class TipoDeGrafico
+    {
+        public TiposDeAgrupacion Tipo { get; set; }
+
+        public string Descripcion { get; set; }
     }
 }

@@ -55,7 +55,8 @@ namespace ampersand_pb.Models
                         new TagModel() { Tag = "auto" },
                         new TagModel() { Tag = "delivery" },
                         new TagModel() { Tag = "salida" },
-                        new TagModel() { Tag = "farmacia" }
+                        new TagModel() { Tag = "farmacia" },
+                        new TagModel() { Tag = "vacaciones" }
                     };
                 }
 

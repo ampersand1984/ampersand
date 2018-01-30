@@ -52,8 +52,22 @@
                    MaxHeight="20"
                    MaxWidth="20"/>
 
+            <Image x:Key="anterior" 
+                   Source="/ampersand-pb;component/Resources/calendar-minus_b.png"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="20"
+                   MaxWidth="20"/>
+
             <Image x:Key="proximo" 
                    Source="/ampersand-pb;component/Resources/calendar-plus_b.png"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="20"
+                   MaxWidth="20"/>
+
+            <Image x:Key="copiar" 
+                   Source="/ampersand-pb;component/Resources/content-copy_b.png"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    MaxHeight="20"
@@ -83,7 +97,7 @@
             </TextBox.InputBindings>
         </TextBox>
 
-        <DataGrid ItemsSource="{Binding MovimientosFiltrados}"
+        <DataGrid x:Name="dg" ItemsSource="{Binding MovimientosFiltrados}"
                   SelectedIndex="{Binding SelectedIndex}"
                   Style="{StaticResource AzureDataGrid}"
                   HorizontalContentAlignment="Stretch"
@@ -91,12 +105,12 @@
                   Grid.ColumnSpan="2"
                   Grid.Row="1"
                   Margin="10"
-                  IsReadOnly="True"
+                  IsReadOnly="False"
                   AutoGenerateColumns="False" >
             
             <DataGrid.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick"
-                              Command="{Binding EditarMovimientoCommand}"/>
+                              Command="{Binding EditarMovimientoCommand}" CommandParameter="{Binding ElementName=dg, Path=SelectedItem}"/>
             </DataGrid.InputBindings>
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
@@ -135,20 +149,21 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Fecha" 
+                <DataGridCheckBoxColumn Header="Verificado"/>
+                <DataGridTextColumn Header="Fecha" IsReadOnly="True"
                                     Binding="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}    '}" 
                                     Width="auto" 
                                     CellStyle="{StaticResource leftTopAlignment}"/>
 
                 <DataGridTextColumn Header="Pagos" Binding="{Binding DescripcionResumen}" x:Name="clmPagos"
                                     Width="auto" 
-                                    CellStyle="{StaticResource leftTopAlignment}"/>
+                                    CellStyle="{StaticResource leftTopAlignment}" IsReadOnly="True"/>
 
                 <DataGridTemplateColumn Header="Descripcion"
                                         Width="4*"
                                         CellStyle="{StaticResource leftTopAlignment}"
                                         SortMemberPath="Descripcion"
-                                        x:Name="clmnDescri">
+                                        x:Name="clmnDescri" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid Width="{Binding ElementName=clmnDescri, Path=ActualWidth}">
@@ -209,7 +224,7 @@
                 <DataGridTemplateColumn Header="Cuota" 
                                     Width="auto"
                                     CellStyle="{StaticResource leftTopAlignment}"
-                                        SortMemberPath="CoutasPendientes">
+                                        SortMemberPath="CoutasPendientes" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -228,9 +243,9 @@
                                     FontSize="12" 
                                     FontWeight="Bold"
                                     Width="1*"
-                                    CellStyle="{StaticResource rightTopAlignment}"/>
+                                    CellStyle="{StaticResource rightTopAlignment}" IsReadOnly="True"/>
 
-                <DataGridTemplateColumn Header="Mensual">
+                <DataGridTemplateColumn Header="Mensual" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <RadioButton IsChecked="{Binding EsMensual}"
@@ -241,7 +256,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Ajeno">
+                <DataGridTemplateColumn Header="Ajeno" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <RadioButton IsChecked="{Binding EsAjeno}" 
@@ -347,12 +362,16 @@
             <Grid Grid.Row="4" 
                        Margin="0,0,0,10"
                        HorizontalAlignment="Stretch">
+                
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
+                
                 <Button Content="{StaticResource nuevo}" 
                         Command="{Binding NuevoMovimientoCommand}"
                         ToolTip="Agregar nuevo"
@@ -364,10 +383,11 @@
                         Height="40"
                         Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
                         Margin="5"/>
-                
-                <Button Content="{StaticResource save}" 
-                        Command="{Binding SaveCommand}"
-                        ToolTip="Guardar cambios"
+
+                <Button Content="{StaticResource copiar}" 
+                        Command="{Binding CopiarSeleccionadoCommand}"
+                        CommandParameter="{Binding ElementName=dg, Path=SelectedItem}"
+                        ToolTip="Copiar"
                         Grid.Column="1"
                         Focusable="False"
                         Foreground="{DynamicResource AccentColorBrush}"
@@ -378,9 +398,32 @@
 
                 <Button Content="{StaticResource eliminar}" 
                         Command="{Binding EliminarSeleccionadoCommand}"
+                        CommandParameter="{Binding ElementName=dg, Path=SelectedItem}"
                         ToolTip="Eliminar seleccionado"
                         Grid.Column="2"
                         IsEnabled="{Binding EsElUtimoMes}"
+                        Focusable="False"
+                        Foreground="{DynamicResource AccentColorBrush}"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Height="40"
+                        Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
+                        Margin="5"/>
+                
+                <Button Content="{StaticResource save}" 
+                        Command="{Binding SaveCommand}"
+                        ToolTip="Guardar cambios"
+                        Grid.Column="3"
+                        Focusable="False"
+                        Foreground="{DynamicResource AccentColorBrush}"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Height="40"
+                        Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
+                        Margin="15,5,5,5"/>
+
+                <Button Content="{StaticResource anterior}" 
+                        Command="{Binding VerMesAnteriorCommand}"
+                        ToolTip="Ver mes anterior"
+                        Grid.Column="4"
                         Focusable="False"
                         Foreground="{DynamicResource AccentColorBrush}"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
@@ -391,7 +434,7 @@
                 <Button Content="{StaticResource proximo}" 
                         Command="{Binding ProyectarCommand}"
                         ToolTip="Ver mes que viene"
-                        Grid.Column="3"
+                        Grid.Column="5"
                         IsEnabled="{Binding EsElUtimoMes}"
                         Focusable="False"
                         Foreground="{DynamicResource AccentColorBrush}"

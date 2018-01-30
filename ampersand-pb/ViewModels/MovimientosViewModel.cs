@@ -16,9 +16,7 @@ namespace ampersand_pb.ViewModels
 {
     public class MovimientosViewModel : BaseViewModel, IMainWindowItem
     {
-        public const string SIN_CATEGORIA = "Sin categoría";
-
-        public enum TiposDeAgrupacion  { MedioDePago, Tag }
+        public enum TiposDeAgrupacion  { MedioDePago, Tag, Totales }
 
         #region Constructor
 
@@ -125,7 +123,6 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-
         private ObservableCollection<BaseMovimiento> _movimientosFiltrados;
         public ObservableCollection<BaseMovimiento> MovimientosFiltrados
         {
@@ -191,6 +188,17 @@ namespace ampersand_pb.ViewModels
             }
         }
 
+        private ICommand _verMesAnteriorCommand;
+        public ICommand VerMesAnteriorCommand
+        {
+            get
+            {
+                if (_verMesAnteriorCommand == null)
+                    _verMesAnteriorCommand = new RelayCommand(param => VerMesAnteriorCommandExecute());
+                return _verMesAnteriorCommand;
+            }
+        }
+
         private ICommand _nuevoMovimientoCommand;
         public ICommand NuevoMovimientoCommand
         {
@@ -205,7 +213,7 @@ namespace ampersand_pb.ViewModels
         private ICommand _editarMovimientoCommand;
         public ICommand EditarMovimientoCommand
         {
-            get { return _editarMovimientoCommand ?? (_editarMovimientoCommand = new RelayCommand(param => this.EditarMovimientoCommandExecute(), param => EditarMovimientoCommandCanExecute())); }
+            get { return _editarMovimientoCommand ?? (_editarMovimientoCommand = new RelayCommand(param => this.EditarMovimientoCommandExecute(param as BaseMovimiento), param => EditarMovimientoCommandCanExecute(param as BaseMovimiento))); }
         }
 
         private ICommand _eliminarSeleccionadoCommand;
@@ -214,9 +222,21 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_eliminarSeleccionadoCommand == null)
-                    _eliminarSeleccionadoCommand = new RelayCommand(param => EliminarSeleccionadoCommandExecute(), param => EliminarSeleccionadoCommandCanExecute());
+                    _eliminarSeleccionadoCommand = new RelayCommand(param => EliminarSeleccionadoCommandExecute(param as BaseMovimiento), param => EliminarSeleccionadoCommandCanExecute(param as BaseMovimiento));
 
                 return _eliminarSeleccionadoCommand;
+            }
+        }
+
+        private ICommand _copiarSeleccionadoCommand;
+        public ICommand CopiarSeleccionadoCommand
+        {
+            get
+            {
+                if (_copiarSeleccionadoCommand == null)
+                    _copiarSeleccionadoCommand = new RelayCommand(param => CopiarSeleccionadoCommandExecute(param as BaseMovimiento), param => CopiarSeleccionadoCommandCanExecute(param as BaseMovimiento));
+
+                return _copiarSeleccionadoCommand;
             }
         }
 
@@ -291,31 +311,49 @@ namespace ampersand_pb.ViewModels
                 resumen.HuboCambios = false;
         }
 
-        private async void EliminarSeleccionadoCommandExecute()
+        private void CopiarSeleccionadoCommandExecute(BaseMovimiento param)
         {
-            var selectedItem = MovimientosFiltrados.ElementAt(SelectedIndex);
-            if (selectedItem != null)
+            var copia = param.Clone() as BaseMovimiento;
+            copia.IdMovimiento = 0;
+
+            if (copia.EsMonedaExtranjera)
+                copia.SetMontoME(0, copia.Cotizacion);
+            else
+                copia.SetMonto(0);
+
+            copia.Fecha = DateTime.Today;
+            var movimientoABMVM = new MovimientoABMViewModel(copia, _configuracionM, esCopia: true);
+            movimientoABMVM.CloseEvent += MovimientoABMVM_CloseEvent;
+            movimientoABMVM.SaveEvent += MovimientoABMVM_SaveEvent;
+            OnPublishViewModelEvent(movimientoABMVM);
+        }
+
+        private bool CopiarSeleccionadoCommandCanExecute(BaseMovimiento param)
+        {
+            return param != null;
+        }
+
+        private async void EliminarSeleccionadoCommandExecute(BaseMovimiento param)
+        {
+            var strMessage = string.Format("Eliminar {0}?", param);
+
+            var messageParam = new MessageParam("Confirmar eliminación", strMessage, MessageDialogStyle.AffirmativeAndNegative, null);
+
+            var result = await ShowMessage(messageParam);
+            if (result == MessageDialogResult.Affirmative)
             {
-                var strMessage = string.Format("Eliminar {0}?", selectedItem);
+                var resumen = _resumenAgrupadoM.Resumenes.First(a => a.Id == param.IdResumen);
+                resumen.HuboCambios = true;
 
-                var param = new MessageParam("Confirmar eliminación", strMessage, MessageDialogStyle.AffirmativeAndNegative, null);
+                _movimientos.Remove(param);
 
-                var result = await ShowMessage(param);
-                if (result == MessageDialogResult.Affirmative)
-                {
-                    var resumen = _resumenAgrupadoM.Resumenes.First(a => a.Id == selectedItem.IdResumen);
-                    resumen.HuboCambios = true;
-
-                    _movimientos.Remove(selectedItem);
-
-                    RefrescarMovimientos();
-                }
+                RefrescarMovimientos();
             }
         }
 
-        private bool EliminarSeleccionadoCommandCanExecute()
+        private bool EliminarSeleccionadoCommandCanExecute(BaseMovimiento param)
         {
-            return SelectedIndex != -1;
+            return param != null;
         }
 
         private void BuscarCommandExecute(string texto)
@@ -354,15 +392,14 @@ namespace ampersand_pb.ViewModels
                 base.OnRequestCloseEvent();
         }
 
-        private bool EditarMovimientoCommandCanExecute()
+        private bool EditarMovimientoCommandCanExecute(BaseMovimiento param)
         {
-            return SelectedIndex != -1;
+            return param != null;
         }
 
-        private void EditarMovimientoCommandExecute()
+        private void EditarMovimientoCommandExecute(BaseMovimiento param)
         {
-            var baseMovimiento = MovimientosFiltrados.ElementAt(SelectedIndex);
-            var movimientoABMVM = new MovimientoABMViewModel(baseMovimiento, _configuracionM);
+            var movimientoABMVM = new MovimientoABMViewModel(param, _configuracionM);
             movimientoABMVM.CloseEvent += MovimientoABMVM_CloseEvent;
             movimientoABMVM.SaveEvent += MovimientoABMVM_SaveEvent;
             OnPublishViewModelEvent(movimientoABMVM);
@@ -414,14 +451,15 @@ namespace ampersand_pb.ViewModels
             {
                 switch (GraficosSelectedItem.Tipo)
                 {
+                    case TiposDeAgrupacion.Totales:
                     case TiposDeAgrupacion.MedioDePago:
                         {
-                            movimientosFiltrados = movimientosFiltrados.Where(a => a.DescripcionResumen.Contains(_graficosSelectedItem.Descripcion));
+                            movimientosFiltrados = movimientosFiltrados.Where(a => a.IdResumen.Equals(_graficosSelectedItem.Id));
                         }
                         break;
                     case TiposDeAgrupacion.Tag:
                         {
-                            if (GraficosSelectedItem.Descripcion.Equals(SIN_CATEGORIA))
+                            if (GraficosSelectedItem.Descripcion.Equals(TagModel.SIN_CATEGORIA))
                                 movimientosFiltrados = movimientosFiltrados.Where(a => !a.Tags.Any());
                             else
                                 movimientosFiltrados = movimientosFiltrados.Where(a => a.Tags.Contains(GraficosSelectedItem.Descripcion));
@@ -432,7 +470,7 @@ namespace ampersand_pb.ViewModels
                 }
             }
 
-            return movimientosFiltrados.OrderBy(a => a.Fecha);
+            return movimientosFiltrados.OrderBy(a => !a.EsMensual).ThenBy(a => a.Fecha);
         }
 
         private void MovimientoABMVM_CloseEvent(object sender, EventArgs e)
@@ -441,6 +479,17 @@ namespace ampersand_pb.ViewModels
             movimientoABMVM.CloseEvent -= MovimientoABMVM_CloseEvent;
             movimientoABMVM.SaveEvent -= MovimientoABMVM_SaveEvent;
             movimientoABMVM = null;
+        }
+
+        private void VerMesAnteriorCommandExecute()
+        {
+            var year = _resumenAgrupadoM.Periodo.Substring(0, 4);
+            var month = _resumenAgrupadoM.Periodo.Substring(4, 2);
+            var periodo = new DateTime(int.Parse(year), int.Parse(month), 1).AddMonths(-1).ToString("yyyyMM");
+            var resumenAgrupado = _movimientosDA.GetResumen(periodo);
+                
+            var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM);
+            OnPublishViewModelEvent(movimientosVM);
         }
 
         private bool ProyectarCommandCanExecute()
@@ -518,7 +567,7 @@ namespace ampersand_pb.ViewModels
             var totales = new List<AgrupacionItem>();
 
             foreach (var item in _resumenAgrupadoM.Resumenes.Where(a => mediosDePago.Contains(a.Id)))
-                totales.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.MedioDePago, Descripcion = item.Descripcion, Monto = item.Total });
+                totales.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.MedioDePago, Id = item.Id, Descripcion = item.Descripcion, Monto = item.Total });
 
             return totales;
         }
@@ -539,7 +588,7 @@ namespace ampersand_pb.ViewModels
 
             var sinTags = _movimientos.Where(a => mediosDePago.Contains(a.IdResumen)).Where(a => !a.Tags.Any()).Sum(b => b.Monto);
             if (sinTags > 0.00M)
-                tags.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.Tag, Descripcion = SIN_CATEGORIA, Monto = sinTags });
+                tags.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.Tag, Descripcion = TagModel.SIN_CATEGORIA, Monto = sinTags });
 
             return tags.OrderByDescending(a => a.Descripcion);
         }
@@ -569,5 +618,12 @@ namespace ampersand_pb.ViewModels
         public string Descripcion { get; set; }
         public decimal Monto { get; set; }
         public MovimientosViewModel.TiposDeAgrupacion Tipo { get; internal set; }
+
+        private string _id;
+        public string Id
+        {
+            get { return _id ?? string.Empty; }
+            set { _id = value; }
+        }
     }
 }

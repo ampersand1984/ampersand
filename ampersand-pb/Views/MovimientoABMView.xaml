@@ -88,12 +88,23 @@
                  Height="{Binding ElementName=cmbTipo, Path=ActualHeight}" Width="{Binding ElementName=cmbTipo, Path=ActualWidth}"/>
 
         <TextBlock Grid.Row="5" Text="Monto"/>
-        <TextBox Grid.Row="5" Text="{Binding Monto}" Grid.Column="1"
-                 x:Name="txbMonto"/>
+
+        <TextBox Text="{Binding Monto}" Grid.Row="5" Grid.Column="1"
+                     x:Name="txbMonto"/>
+
+        <TextBlock Grid.Row="6" Text="Monto ME"/>
+
+        <TextBox Text="{Binding MontoME}" Grid.Row="6" Grid.Column="1"
+                     x:Name="txbMontoME"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="2" Text="Cotización"/>
+
+        <TextBox Text="{Binding Cotizacion}" Grid.Row="6" Grid.Column="3"
+                     x:Name="txbCotiz"/>
 
         <TextBlock Grid.Row="5" Text="Cuota" Grid.Column="2"/>
-        <ComboBox Grid.Row="5" ItemsSource="{Binding Cuotas}" SelectedItem="{Binding Cuota}" IsEditable="True" IsEnabled="{Binding EdicionCompleta}" Grid.Column="3"
-                  />
+        <ComboBox Grid.Row="5" ItemsSource="{Binding Cuotas}" SelectedItem="{Binding Cuota}" IsEditable="True" IsEnabled="{Binding EdicionCompleta}" Grid.Column="3"/>
+        <TextBlock FontSize="10" Margin="0,0,10,-5" Text="{Binding TotalCuotas}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="3"/>
 
         <TextBlock Grid.Row="7" Text="Es mensual"/>
         <CheckBox Grid.Row="7" FlowDirection="LeftToRight" HorizontalContentAlignment="Left" IsChecked="{Binding EsMensual}" Grid.Column="1"/>

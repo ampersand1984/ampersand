@@ -82,10 +82,9 @@ namespace ampersand_pb.DataAccess
             var descri = GetValueFromXml<string>("Descripcion", xmlPago, "");
             var descriAdic = GetValueFromXml<string>("DescripcionAdicional", xmlPago, "");
 
-            var strMonto = GetValueFromXml<string>("Monto", xmlPago, "0.00");
-            var numberFormatInfo = new NumberFormatInfo();
-            numberFormatInfo.NumberDecimalSeparator = ".";
-            var monto = decimal.Parse(strMonto, numberFormatInfo);
+            var monto = GetDecimal("Monto", xmlPago);
+            var montoME = GetDecimal("MontoME", xmlPago);
+            var cotiz = GetDecimal("Cotizacion", xmlPago);
 
             var cuota = GetValueFromXml<string>("Cuota", xmlPago, "");
 
@@ -108,18 +107,38 @@ namespace ampersand_pb.DataAccess
                     Fecha = strFecha.ToDateTime(),
                     Descripcion = descri,
                     DescripcionAdicional = descriAdic,
-                    Monto = monto,
                     Cuota = cuota,
                     Tags = tags,
                     EsMensual = esMensual,
                     EsAjeno = esAjeno
                 };
+                if (cotiz != 0)
+                    pago.SetMontoME(montoME, cotiz);
+                else
+                    pago.SetMonto(monto);
+
                 return pago;
 	        }
 	        catch (Exception)
 	        {
                 return null;
 	        }
+        }
+
+        /// <summary>
+        /// devuleve por defecto 0.00
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="xmlPago"></param>
+        /// <returns></returns>
+        private decimal GetDecimal(string property, XElement xmlPago)
+        {
+            var strDec = GetValueFromXml<string>(property, xmlPago, "0.00");
+            var numberFormatInfo = new NumberFormatInfo();
+            numberFormatInfo.NumberDecimalSeparator = ".";
+            var dec = decimal.Parse(strDec, numberFormatInfo);
+
+            return dec;
         }
 
         private T GetValueFromXml<T>(string attribute, XElement xml, T defaultValue)
@@ -274,6 +293,11 @@ namespace ampersand_pb.DataAccess
                                                    new XAttribute("Descripcion", mov.Descripcion),
                                                    new XAttribute("Monto", mov.Monto));
 
+                    if (mov.Cotizacion != 1)
+                    {
+                        xMov.Add(new XAttribute("Cotizacion", mov.Cotizacion));
+                        xMov.Add(new XAttribute("MontoME", mov.MontoME));
+                    }
                     if (mov.DescripcionAdicional.Length > 0)
                         xMov.Add(new XAttribute("DescripcionAdicional", mov.DescripcionAdicional));
 
