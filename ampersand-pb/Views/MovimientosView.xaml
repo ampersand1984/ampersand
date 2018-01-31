@@ -106,7 +106,7 @@
                   Grid.Row="1"
                   Margin="10"
                   IsReadOnly="False"
-                  AutoGenerateColumns="False" >
+                  AutoGenerateColumns="False">
             
             <DataGrid.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick"
@@ -149,7 +149,7 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="Verificado"/>
+                <DataGridCheckBoxColumn Header="Verificado" Binding="{Binding Seleccionado}"/>
                 <DataGridTextColumn Header="Fecha" IsReadOnly="True"
                                     Binding="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}    '}" 
                                     Width="auto" 

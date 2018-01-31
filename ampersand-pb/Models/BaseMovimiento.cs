@@ -32,6 +32,13 @@ namespace ampersand_pb.Models
             }
         }
 
+        private bool _seleccionado;
+        public bool Seleccionado
+        {
+            get { return _seleccionado; }
+            set { _seleccionado = value; OnPropertyChanged("Seleccionado"); }
+        }
+        
         public string IdResumen { get; set; }
         
         public int IdMovimiento { get; set; }

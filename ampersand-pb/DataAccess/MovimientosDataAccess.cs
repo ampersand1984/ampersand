@@ -288,7 +288,8 @@ namespace ampersand_pb.DataAccess
 
                 foreach (var mov in movimientosDelResumen)
                 {
-                    var xMov = new XElement("Mov", new XAttribute("IdMovimiento", mov.IdMovimiento),
+                    var xMov = new XElement("Mov", new XAttribute("Verif", mov.Seleccionado), 
+                                                   new XAttribute("IdMovimiento", mov.IdMovimiento),
                                                    new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
                                                    new XAttribute("Descripcion", mov.Descripcion),
                                                    new XAttribute("Monto", mov.Monto));
