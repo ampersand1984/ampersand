@@ -77,6 +77,7 @@ namespace ampersand_pb.DataAccess
 
         private BaseMovimiento GetPago(XElement xmlPago, string idResumen, string descriResumen)
         {
+            var verif = GetValueFromXml<bool>("Verif", xmlPago, false);
             var idMovimiento = GetValueFromXml<int>("IdMovimiento", xmlPago, 0);
             var strFecha = GetValueFromXml<string>("Fecha", xmlPago, DateTime.MinValue.ToString("dd/MM/yyyy"));
             var descri = GetValueFromXml<string>("Descripcion", xmlPago, "");
@@ -101,6 +102,7 @@ namespace ampersand_pb.DataAccess
 	        {
                 var pago = new BaseMovimiento
                 {
+                    Seleccionado = verif,
                     IdResumen = idResumen,
                     DescripcionResumen = descriResumen,
                     IdMovimiento = idMovimiento,
