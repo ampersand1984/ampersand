@@ -6,20 +6,21 @@ namespace ampersand_pb.Common
 {
     public class BooleanToVisibilityConverter : IValueConverter
     {
-        private object GetVisibility(object value)
+        private object GetVisibility(object value, object parameter)
         {
             if (!(value is bool))
                 return Visibility.Collapsed;
-            bool objValue = (bool)value;
+
+            var objValue = (bool)value;
             if (objValue)
             {
-                return Visibility.Visible;
+                return parameter == null ? Visibility.Visible : Visibility.Collapsed;
             }
-            return Visibility.Collapsed;
+            return parameter == null ? Visibility.Collapsed : Visibility.Visible;
         }
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return GetVisibility(value);
+            return GetVisibility(value, parameter);
         }
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

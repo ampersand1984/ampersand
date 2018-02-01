@@ -6,6 +6,7 @@ using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -143,7 +144,7 @@ namespace ampersand_pb.ViewModels
         {
             get
             {
-                return MainWindowItems.Count == 0;
+                return _configuracionM.CarpetaDeResumenesValida && MainWindowItems.Count == 0;
             }
         }
 
@@ -152,7 +153,7 @@ namespace ampersand_pb.ViewModels
         {
             get
             {
-                if (_bienvenidaVM == null)
+                if (_bienvenidaVM == null && VerVistaDeBienvenida)
                     _bienvenidaVM = new BienvenidaViewModel(MovimientosDA, _configuracionM);
 
                 return _bienvenidaVM;

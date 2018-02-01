@@ -6,7 +6,8 @@
                       xmlns:common="clr-namespace:ampersand_pb.Common"
                       Title="&amp;personal budget" MinWidth="1024" MinHeight="600" WindowState="Maximized"
                       Icon="/ampersand-pb;component/pb.ico"
-                      Dialog:DialogParticipation.Register="{Binding}">
+                      Dialog:DialogParticipation.Register="{Binding}"
+                      WindowStartupLocation="Manual">
     <Controls:MetroWindow.RightWindowCommands>        
         <Controls:WindowCommands>
             <Button Content="Configuraciones" Command="{Binding MostrarConfiguracionesCommand}"/>

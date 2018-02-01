@@ -69,7 +69,7 @@ namespace ampersand_pb.Models
             var configuracionM = obj as ConfiguracionModel;
 
             var equals = CarpetaDeResumenes.Equals(configuracionM.CarpetaDeResumenes);
-            equals = MediosDePago.AreEquals(configuracionM.MediosDePago);
+            equals &= MediosDePago.AreEquals(configuracionM.MediosDePago);
 
             return equals;
         }
