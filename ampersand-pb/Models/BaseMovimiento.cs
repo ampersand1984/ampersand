@@ -94,12 +94,6 @@ namespace ampersand_pb.Models
             {
                 return _cotizacion;
             }
-            set
-            {
-                _cotizacion = value > 0 ? value : 1;
-                ActualizarCotizacion();
-                RefrescarMontos();
-            }
         }
 
         public bool EsMonedaExtranjera
@@ -218,13 +212,6 @@ namespace ampersand_pb.Models
 
         public void SetMonto(decimal monto)
         {
-            SetMonto(monto, Cotizacion);
-        }
-
-        public void SetMonto(decimal monto, decimal cotizacion)
-        {
-            _cotizacion = cotizacion;
-
             _monto = monto;
             _montoME = monto / Cotizacion;
             RefrescarMontos();
@@ -232,19 +219,11 @@ namespace ampersand_pb.Models
 
         public void SetMontoME(decimal montoME, decimal cotizacion)
         {
-            _cotizacion = cotizacion;
+            _cotizacion = cotizacion > 0 ? cotizacion : 1;
 
             _montoME = montoME;
             _monto = montoME * Cotizacion;
             RefrescarMontos();
-        }
-
-        private void ActualizarCotizacion()
-        {
-            if (EsMonedaExtranjera)
-                SetMontoME(MontoME, Cotizacion);
-            else
-                SetMontoME(Monto, Cotizacion);
         }
 
         public void RefrescarPropiedades()

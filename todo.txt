@@ -9,8 +9,7 @@ ok flyout view
 ok cambiar como se ven los tags
 ok filtro de medios de pago
    agregar tag de servicios
-   sacar los tags a un archivo aparte
-   ABM de tags
+ok sacar los tags a un archivo aparte
 ok permitir ingreso tipo efectivo
 ok buscar
 ok themes
@@ -22,3 +21,10 @@ ok    proyección totales mes que viene
    mensajes
 NO poner el guardar como boton tilde a la derecha arriba
 ~~ vista de resumenes tipo grid
+   agregar la cotización como prop de cada resumen
+   permitir editar la cotización de cada resumen
+   permitir ocultar resúmenes
+   ver/ocultar el "modo consolidación" (el check de cada movimiento)
+   ABM de tags
+   manejar deudas
+

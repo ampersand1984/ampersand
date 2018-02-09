@@ -99,18 +99,18 @@
                       Grid.Row="5" 
                       Grid.Column="2"
                       HorizontalAlignment="Left"
-                      IsChecked="{Binding EsMonedaExtranjera, Mode=OneTime}"
+                      IsChecked="{Binding EsMonedaExtranjera, Mode=OneTime, FallbackValue=true}"
                       FontSize="20"
                       Width="40" 
                       Height="40">
             <ToggleButton.Style>
                 <Style TargetType="ToggleButton" BasedOn="{StaticResource MahApps.Metro.Styles.MetroCircleToggleButtonStyle}">
                     <Style.Triggers>
-                        <Trigger Property="ToggleButton.IsChecked" Value="true">
-                            <Setter Property="Content" Value="US$"/>
-                        </Trigger>
                         <Trigger Property="ToggleButton.IsChecked" Value="false">
                             <Setter Property="Content" Value="$"/>
+                        </Trigger>
+                        <Trigger Property="ToggleButton.IsChecked" Value="true">
+                            <Setter Property="Content" Value="US$"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
@@ -119,21 +119,18 @@
 
         <Grid Grid.Row="5" Grid.Column="1"
                      x:Name="txbMonto">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
             <TextBox Text="{Binding Monto}" 
                      HorizontalContentAlignment="Right"    
                      Visibility="{Binding ElementName=tglEsME, Path=IsChecked, Converter={StaticResource boolToVis}, ConverterParameter=INV}"
                      Grid.Column="0"
                      Grid.ColumnSpan="3"/>
-            
+
             <TextBox Text="{Binding MontoME}" 
-                     HorizontalContentAlignment="Right"                     
+                     HorizontalContentAlignment="Right"    
                      Visibility="{Binding ElementName=tglEsME, Path=IsChecked, Converter={StaticResource boolToVis}}"
-                     Grid.Column="0"/>
+                     Grid.Column="0"
+                     Grid.ColumnSpan="3"/>
+            
             <TextBlock Text="{Binding Monto, StringFormat={}$ {0}}"                        
                        Visibility="{Binding ElementName=tglEsME, Path=IsChecked, Converter={StaticResource boolToVis}}"
                        FontSize="10"
@@ -141,13 +138,13 @@
                        Margin="0,0,10,-5"
                        VerticalAlignment="Bottom" 
                        HorizontalAlignment="Right"/>
-            <TextBlock Text="Cotización"
+            <TextBlock Text="{Binding Cotizacion, StringFormat='(Cotización: ${0})'}"
                        Visibility="{Binding ElementName=tglEsME, Path=IsChecked, Converter={StaticResource boolToVis}}"
-                       Grid.Column="1"/>
-            <TextBox Text="{Binding Cotizacion}" 
-                     HorizontalContentAlignment="Right"
-                     Visibility="{Binding ElementName=tglEsME, Path=IsChecked, Converter={StaticResource boolToVis}}"
-                     Grid.Column="2"/>
+                       FontSize="10"
+                       Grid.Column="0"
+                       Margin="10,0,0,-5"
+                       VerticalAlignment="Bottom" 
+                       HorizontalAlignment="Left"/>
         </Grid>
 
         <TextBlock Grid.Row="5" Text="Cuota" Grid.Column="2"/>

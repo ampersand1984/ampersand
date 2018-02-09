@@ -28,7 +28,7 @@ namespace ampersand_pb.DataAccess
         private XDocument GetConfiguracionXml()
         {
             XDocument xdoc = new XDocument(new XElement("Configuraciones",
-                    new XElement("PC", new XAttribute("Nombre", _machineName), new XElement("FilesPath", "")))); ;
+                    new XElement("PC", new XAttribute("Nombre", _machineName), new XElement("FilesPath", ""))));
 
             string configFilePath = GetConfigFilePath();
             if (File.Exists(configFilePath))
@@ -159,7 +159,7 @@ namespace ampersand_pb.DataAccess
         {
             var result = new ConfiguracionModel()
             {
-                CarpetaDeResumenes = GetCarpetaDeResumenes()
+                CarpetaDeResumenes = GetCarpetaDeResumenes()                
             };
 
             if (result.CarpetaDeResumenesValida)
@@ -183,6 +183,8 @@ namespace ampersand_pb.DataAccess
                     }
 
                     result.MediosDePago = mediosDePago;
+
+                    result.Tags = GetTags(result.CarpetaDeResumenes);
                 }
                 catch (Exception)
                 {
@@ -191,6 +193,35 @@ namespace ampersand_pb.DataAccess
             }
 
             return result;
+        }
+
+        private IEnumerable<TagModel> GetTags(string carpetaDeResumenes)
+        {
+            try
+            {
+                XDocument xdoc = XDocument.Load(carpetaDeResumenes + "\\tags.xml");
+
+                var tags = xdoc.Root.Elements("Tag").Select(a => new TagModel() { Tag = a.Value });
+
+                //var tags = new List<TagModel>()
+                //{
+                //    new TagModel() { Tag = "super" },
+                //    new TagModel() { Tag = "chinos" },
+                //    new TagModel() { Tag = "nafta" },
+                //    new TagModel() { Tag = "ropa" },
+                //    new TagModel() { Tag = "donado" },
+                //    new TagModel() { Tag = "auto" },
+                //    new TagModel() { Tag = "delivery" },
+                //    new TagModel() { Tag = "salida" },
+                //    new TagModel() { Tag = "farmacia" },
+                //    new TagModel() { Tag = "vacaciones" }
+                //};
+                return tags;
+            }
+            catch (Exception)
+            {
+                return new List<TagModel>();
+            }
         }
     }
 

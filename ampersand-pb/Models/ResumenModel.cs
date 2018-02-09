@@ -35,6 +35,19 @@ namespace ampersand_pb.Models
 
         public string Descripcion { get; set; }
 
+        private decimal _cotizacion = 1;
+        public decimal Cotizacion
+        {
+            get
+            {
+                return _cotizacion;
+            }
+            set
+            {
+                _cotizacion = value > 0 ? value : 1;
+            }
+        }
+
         public decimal Total { get; internal set; }
 
         public bool HuboCambios { get; internal set; }

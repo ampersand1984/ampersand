@@ -129,7 +129,6 @@ namespace ampersand_pb.ViewModels
         public decimal Cotizacion
         {
             get { return _model.Cotizacion; }
-            set { _model.Cotizacion = value; RefrescarMontos(); }
         }
 
         public bool EsMonedaExtranjera

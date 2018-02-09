@@ -43,24 +43,11 @@ namespace ampersand_pb.Models
         {
             get
             {
-                if (_tags == null)
-                {
-                    _tags = new List<TagModel>()
-                    {
-                        new TagModel() { Tag = "super" },
-                        new TagModel() { Tag = "chinos" },
-                        new TagModel() { Tag = "nafta" },
-                        new TagModel() { Tag = "ropa" },
-                        new TagModel() { Tag = "donado" },
-                        new TagModel() { Tag = "auto" },
-                        new TagModel() { Tag = "delivery" },
-                        new TagModel() { Tag = "salida" },
-                        new TagModel() { Tag = "farmacia" },
-                        new TagModel() { Tag = "vacaciones" }
-                    };
-                }
-
-                return _tags;
+                return _tags ?? (_tags= Enumerable.Empty<TagModel>());
+            }
+            set
+            {
+                _tags = value;
             }
         }
 

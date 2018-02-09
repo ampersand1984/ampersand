@@ -50,10 +50,7 @@ namespace ampersand_pb.DataAccess
                     resultado.AddRange(pagos);
                 }
             }
-            catch (Exception)
-            {
-
-            }
+            catch (Exception) { }
 
             return resultado;
         }
@@ -65,9 +62,11 @@ namespace ampersand_pb.DataAccess
             var xmlPagos = from XElement mov in resumen.XDoc.Root.Elements("Mov")
                         select mov;
 
+            var cotizacion = GetDecimal("Cotizacion", resumen.XDoc.Root, "1.00");
+
             foreach (var xmlPago in xmlPagos)
             {
-                var pago = GetPago(xmlPago, resumen.Id, resumen.Descripcion);
+                var pago = GetPago(xmlPago, resumen.Id, resumen.Descripcion, cotizacion);
                 if (pago != null)
                     resultado.Add(pago);
             }
@@ -75,7 +74,7 @@ namespace ampersand_pb.DataAccess
             return resultado;
         }
 
-        private BaseMovimiento GetPago(XElement xmlPago, string idResumen, string descriResumen)
+        private BaseMovimiento GetPago(XElement xmlPago, string idResumen, string descriResumen, decimal cotizacion)
         {
             var verif = GetValueFromXml<bool>("Verif", xmlPago, false);
             var idMovimiento = GetValueFromXml<int>("IdMovimiento", xmlPago, 0);
@@ -85,7 +84,6 @@ namespace ampersand_pb.DataAccess
 
             var monto = GetDecimal("Monto", xmlPago);
             var montoME = GetDecimal("MontoME", xmlPago);
-            var cotiz = GetDecimal("Cotizacion", xmlPago);
 
             var cuota = GetValueFromXml<string>("Cuota", xmlPago, "");
 
@@ -114,8 +112,8 @@ namespace ampersand_pb.DataAccess
                     EsMensual = esMensual,
                     EsAjeno = esAjeno
                 };
-                if (cotiz != 0)
-                    pago.SetMontoME(montoME, cotiz);
+                if (montoME != 0)
+                    pago.SetMontoME(montoME, cotizacion);
                 else
                     pago.SetMonto(monto);
 
@@ -127,15 +125,9 @@ namespace ampersand_pb.DataAccess
 	        }
         }
 
-        /// <summary>
-        /// devuleve por defecto 0.00
-        /// </summary>
-        /// <param name="property"></param>
-        /// <param name="xmlPago"></param>
-        /// <returns></returns>
-        private decimal GetDecimal(string property, XElement xmlPago)
+        private decimal GetDecimal(string property, XElement xmlPago, string strDefecto = "0.00")
         {
-            var strDec = GetValueFromXml<string>(property, xmlPago, "0.00");
+            var strDec = GetValueFromXml<string>(property, xmlPago, strDefecto);
             var numberFormatInfo = new NumberFormatInfo();
             numberFormatInfo.NumberDecimalSeparator = ".";
             var dec = decimal.Parse(strDec, numberFormatInfo);
@@ -192,6 +184,8 @@ namespace ampersand_pb.DataAccess
 
             resumen.Descripcion = GetValueFromXml<string>("Descripcion", xdoc.Root, "");
             resumen.Descripcion = _configuracion.MediosDePago.FirstOrDefault(a => a.Id == resumen.Id)?.Descripcion;
+
+            resumen.Cotizacion = GetDecimal("Cotizacion", xdoc.Root, "1.00");
 
             resumen.Total = GetValueFromXml<decimal>("Total", xdoc.Root, 0M);
 
@@ -286,6 +280,7 @@ namespace ampersand_pb.DataAccess
                                                                      new XAttribute("Total", total),
                                                                      new XAttribute("Tipo", TiposDeMovimiento.Credito),
                                                                      new XAttribute("Descripcion", resumenM.Descripcion),
+                                                                     new XAttribute("Cotizacion", resumenM.Cotizacion),
                                                                      new XAttribute("ProximoCierre", strProximoCierre)));
 
                 foreach (var mov in movimientosDelResumen)
@@ -293,14 +288,13 @@ namespace ampersand_pb.DataAccess
                     var xMov = new XElement("Mov", new XAttribute("Verif", mov.Seleccionado), 
                                                    new XAttribute("IdMovimiento", mov.IdMovimiento),
                                                    new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
-                                                   new XAttribute("Descripcion", mov.Descripcion),
-                                                   new XAttribute("Monto", mov.Monto));
+                                                   new XAttribute("Descripcion", mov.Descripcion));
 
-                    if (mov.Cotizacion != 1)
-                    {
-                        xMov.Add(new XAttribute("Cotizacion", mov.Cotizacion));
+                    if (mov.EsMonedaExtranjera)
                         xMov.Add(new XAttribute("MontoME", mov.MontoME));
-                    }
+                    else
+                        xMov.Add(new XAttribute("Monto", mov.Monto));
+
                     if (mov.DescripcionAdicional.Length > 0)
                         xMov.Add(new XAttribute("DescripcionAdicional", mov.DescripcionAdicional));
 
