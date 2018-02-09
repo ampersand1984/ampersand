@@ -9,17 +9,27 @@ using System.Windows.Input;
 
 namespace ampersand_pb.ViewModels
 {
-    public class MovimientoABMViewModel: BaseViewModel
+    public class MovimientoABMViewModel : BaseViewModel
     {
         #region Constructor
 
+        /// <summary>
+        /// constructor para nuevo movimiento
+        /// </summary>
+        /// <param name="configuracionM"></param>
         public MovimientoABMViewModel(ConfiguracionModel configuracionM)
-            :this(new BaseMovimiento(), configuracionM)
+            : this(new BaseMovimiento(), configuracionM)
         {
             _modelOriginal.IdResumen = configuracionM.MediosDePago.First().Id;
             _modelOriginal.DescripcionResumen = configuracionM.MediosDePago.First().Descripcion;
         }
 
+        /// <summary>
+        /// constructor para edición/copia de un movimiento existente
+        /// </summary>
+        /// <param name="baseMovimiento"></param>
+        /// <param name="configuracionM"></param>
+        /// <param name="esCopia"></param>
         public MovimientoABMViewModel(BaseMovimiento baseMovimiento, ConfiguracionModel configuracionM, bool esCopia = false)
         {
             EdicionCompleta = true;
@@ -52,7 +62,7 @@ namespace ampersand_pb.ViewModels
         {
             get
             {
-                return Descripcion.IsNullOrEmpty() || _esCopia?
+                return Descripcion.IsNullOrEmpty() || _esCopia ?
                     "Nuevo" :
                     Descripcion;
             }

@@ -85,6 +85,7 @@
                                         SelectedItemBinding="{Binding Tipo}"
                                         ItemsSource="{Binding Source={StaticResource tiposDeMovimiento}, Mode=OneWay}" />
                 <DataGridTextColumn Header="Descripcion" Binding="{Binding Descripcion}"/>
+                <DataGridCheckBoxColumn Header="Ocultar" Binding="{Binding Ocultar}"/>
                 <DataGridTextColumn Header="Color"
                                     Binding="{Binding Color}"
                                     IsReadOnly="True"/>

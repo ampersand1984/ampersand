@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace ampersand_pb.ViewModels
 {
-    public class SeleccionDeMediosDePagoViewModel: BaseViewModel
+    public class SeleccionDeMediosDePagoViewModel : BaseViewModel
     {
         public SeleccionDeMediosDePagoViewModel(ConfiguracionModel configuracionM)
         {
@@ -19,7 +19,7 @@ namespace ampersand_pb.ViewModels
                 .Split(';')
                 .Where(a => !a.IsNullOrEmpty()).ToList();
 
-            MediosDePago = configuracionM.MediosDePago.Clone();
+            MediosDePago = configuracionM.MediosDePago.Where(a => !a.Ocultar).Clone();
             foreach (var medioDePago in MediosDePago)
             {
                 medioDePago.Seleccionado = mediosDePagoSeleccionados.Any() ?

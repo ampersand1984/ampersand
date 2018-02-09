@@ -47,6 +47,13 @@ namespace ampersand_pb.Models
             }
         }
 
+        private bool _ocultar;
+        public bool Ocultar
+        {
+            get { return _ocultar; }
+            set { _ocultar = value; OnPropertyChanged("Ocultar"); }
+        }
+
         public object Clone()
         {
             return this.MemberwiseClone() as PagoModel;

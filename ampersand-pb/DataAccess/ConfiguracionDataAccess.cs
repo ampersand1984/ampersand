@@ -14,7 +14,7 @@ namespace ampersand_pb.DataAccess
             _machineName = Environment.MachineName;
         }
 
-        private string _machineName;
+        private readonly string _machineName;
         private const string CONFIGIGURACION_FILE_NAME = "config.xml";
         private const string CONFIGIGURACION_DE_PAGOS_FILE_NAME = "configuracionDePagos.xml";
 
@@ -52,7 +52,7 @@ namespace ampersand_pb.DataAccess
             XDocument xdoc = new XDocument(new XElement("ConfiguracionDePagos"));
 
             var filePath = string.Format("{0}\\{1}", carpetaDeResumenes, CONFIGIGURACION_DE_PAGOS_FILE_NAME);
-            
+
             if (File.Exists(filePath))
             {
                 try
@@ -81,7 +81,8 @@ namespace ampersand_pb.DataAccess
                 {
                     Id = xelement.Attribute("Id").Value,
                     Descripcion = xelement.Attribute("Descripcion").Value,
-                    Tipo = GetTipoDeMovimiento(xelement.Attribute("Tipo").Value)
+                    Tipo = GetTipoDeMovimiento(xelement.Attribute("Tipo").Value),
+                    Ocultar = MovimientosDataAccess.GetValueFromXml("Tipo", xelement, false)
                 });
             }
 
@@ -102,7 +103,10 @@ namespace ampersand_pb.DataAccess
         {
             XDocument xdoc = new XDocument(new XElement("ConfiguracionDePagos"));
             foreach (var item in mediosDePagos)
-                xdoc.Root.Add(new XElement("MedioDePago", new XAttribute("Tipo", item.Tipo), new XAttribute("Id", item.Id), new XAttribute("Descripcion", item.Descripcion)));
+                xdoc.Root.Add(new XElement("MedioDePago", new XAttribute("Tipo", item.Tipo),
+                                                          new XAttribute("Id", item.Id),
+                                                          new XAttribute("Descripcion", item.Descripcion),
+                                                          new XAttribute("Ocultar", item.Ocultar)));
 
             var filePath = string.Format("{0}\\{1}", carpetaDeResumenes, CONFIGIGURACION_DE_PAGOS_FILE_NAME);
             xdoc.Save(filePath);
@@ -159,7 +163,7 @@ namespace ampersand_pb.DataAccess
         {
             var result = new ConfiguracionModel()
             {
-                CarpetaDeResumenes = GetCarpetaDeResumenes()                
+                CarpetaDeResumenes = GetCarpetaDeResumenes()
             };
 
             if (result.CarpetaDeResumenesValida)

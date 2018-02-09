@@ -60,7 +60,7 @@ namespace ampersand_pb.DataAccess
             var resultado = new List<BaseMovimiento>();
 
             var xmlPagos = from XElement mov in resumen.XDoc.Root.Elements("Mov")
-                        select mov;
+                           select mov;
 
             var cotizacion = GetDecimal("Cotizacion", resumen.XDoc.Root, "1.00");
 
@@ -76,28 +76,28 @@ namespace ampersand_pb.DataAccess
 
         private BaseMovimiento GetPago(XElement xmlPago, string idResumen, string descriResumen, decimal cotizacion)
         {
-            var verif = GetValueFromXml<bool>("Verif", xmlPago, false);
-            var idMovimiento = GetValueFromXml<int>("IdMovimiento", xmlPago, 0);
-            var strFecha = GetValueFromXml<string>("Fecha", xmlPago, DateTime.MinValue.ToString("dd/MM/yyyy"));
-            var descri = GetValueFromXml<string>("Descripcion", xmlPago, "");
-            var descriAdic = GetValueFromXml<string>("DescripcionAdicional", xmlPago, "");
+            var verif = GetValueFromXml("Verif", xmlPago, false);
+            var idMovimiento = GetValueFromXml("IdMovimiento", xmlPago, 0);
+            var strFecha = GetValueFromXml("Fecha", xmlPago, DateTime.MinValue.ToString("dd/MM/yyyy"));
+            var descri = GetValueFromXml("Descripcion", xmlPago, "");
+            var descriAdic = GetValueFromXml("DescripcionAdicional", xmlPago, "");
 
             var monto = GetDecimal("Monto", xmlPago);
             var montoME = GetDecimal("MontoME", xmlPago);
 
-            var cuota = GetValueFromXml<string>("Cuota", xmlPago, "");
+            var cuota = GetValueFromXml("Cuota", xmlPago, "");
 
-            var strTags = GetValueFromXml<string>("Tags", xmlPago, "");
+            var strTags = GetValueFromXml("Tags", xmlPago, "");
             var tags = strTags.IsNullOrEmpty() ?
                 Enumerable.Empty<string>() :
                 strTags.Split(';').ToList();
-            
 
-            var esMensual = GetValueFromXml<bool>("EsMensual", xmlPago, false);
-            var esAjeno = GetValueFromXml<bool>("EsAjeno", xmlPago, false);
 
-            try 
-	        {
+            var esMensual = GetValueFromXml("EsMensual", xmlPago, false);
+            var esAjeno = GetValueFromXml("EsAjeno", xmlPago, false);
+
+            try
+            {
                 var pago = new BaseMovimiento
                 {
                     Seleccionado = verif,
@@ -118,16 +118,16 @@ namespace ampersand_pb.DataAccess
                     pago.SetMonto(monto);
 
                 return pago;
-	        }
-	        catch (Exception)
-	        {
+            }
+            catch (Exception)
+            {
                 return null;
-	        }
+            }
         }
 
         private decimal GetDecimal(string property, XElement xmlPago, string strDefecto = "0.00")
         {
-            var strDec = GetValueFromXml<string>(property, xmlPago, strDefecto);
+            var strDec = GetValueFromXml(property, xmlPago, strDefecto);
             var numberFormatInfo = new NumberFormatInfo();
             numberFormatInfo.NumberDecimalSeparator = ".";
             var dec = decimal.Parse(strDec, numberFormatInfo);
@@ -135,7 +135,7 @@ namespace ampersand_pb.DataAccess
             return dec;
         }
 
-        private T GetValueFromXml<T>(string attribute, XElement xml, T defaultValue)
+        public static T GetValueFromXml<T>(string attribute, XElement xml, T defaultValue)
         {
             var value = xml.Attribute(attribute);
             if (value != null)
@@ -180,17 +180,17 @@ namespace ampersand_pb.DataAccess
         {
             var xdoc = XDocument.Load(resumen.FilePath);
             resumen.XDoc = xdoc;
-            resumen.Tipo = GetTipo(GetValueFromXml<string>("Tipo", xdoc.Root, ""));
+            resumen.Tipo = GetTipo(GetValueFromXml("Tipo", xdoc.Root, ""));
 
-            resumen.Descripcion = GetValueFromXml<string>("Descripcion", xdoc.Root, "");
+            resumen.Descripcion = GetValueFromXml("Descripcion", xdoc.Root, "");
             resumen.Descripcion = _configuracion.MediosDePago.FirstOrDefault(a => a.Id == resumen.Id)?.Descripcion;
 
             resumen.Cotizacion = GetDecimal("Cotizacion", xdoc.Root, "1.00");
 
-            resumen.Total = GetValueFromXml<decimal>("Total", xdoc.Root, 0M);
+            resumen.Total = GetValueFromXml("Total", xdoc.Root, 0M);
 
-            var strFechaDeCierre = GetValueFromXml<string>("FechaDeCierre", xdoc.Root, "");
-            var strProximoCierre = GetValueFromXml<string>("ProximoCierre", xdoc.Root, "");
+            var strFechaDeCierre = GetValueFromXml("FechaDeCierre", xdoc.Root, "");
+            var strProximoCierre = GetValueFromXml("ProximoCierre", xdoc.Root, "");
             try
             {
                 resumen.FechaDeCierre = strFechaDeCierre.ToDateTime();
@@ -285,7 +285,7 @@ namespace ampersand_pb.DataAccess
 
                 foreach (var mov in movimientosDelResumen)
                 {
-                    var xMov = new XElement("Mov", new XAttribute("Verif", mov.Seleccionado), 
+                    var xMov = new XElement("Mov", new XAttribute("Verif", mov.Seleccionado),
                                                    new XAttribute("IdMovimiento", mov.IdMovimiento),
                                                    new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
                                                    new XAttribute("Descripcion", mov.Descripcion));
@@ -312,7 +312,7 @@ namespace ampersand_pb.DataAccess
 
                     xdoc.Root.Add(xMov);
                 }
-                
+
                 xdoc.Save(resumenM.FilePath);
             }
         }

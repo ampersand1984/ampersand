@@ -16,7 +16,7 @@ namespace ampersand_pb.ViewModels
 {
     public class MovimientosViewModel : BaseViewModel, IMainWindowItem
     {
-        public enum TiposDeAgrupacion  { MedioDePago, Tag, Totales }
+        public enum TiposDeAgrupacion { MedioDePago, Tag, Totales }
 
         #region Constructor
 
@@ -44,6 +44,13 @@ namespace ampersand_pb.ViewModels
             base.Dispose(dispose);
         }
 
+        /// <summary>
+        /// constructor usado para proyecciones
+        /// </summary>
+        /// <param name="resumenAgrupadoProyeccion"></param>
+        /// <param name="movimientosDA"></param>
+        /// <param name="configuracionM"></param>
+        /// <param name="movimientosProyeccion"></param>
         public MovimientosViewModel(ResumenAgrupadoModel resumenAgrupadoProyeccion, IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM, IEnumerable<BaseMovimiento> movimientosProyeccion)
             : this(resumenAgrupadoProyeccion, movimientosDA, configuracionM)
         {
@@ -364,7 +371,7 @@ namespace ampersand_pb.ViewModels
             resultado = resultado.Where(a => a.Descripcion.ToLower().Contains(texto.ToLower()) ||
                                              a.DescripcionAdicional.ToLower().Contains(texto.ToLower()) ||
                                              a.Tags.Any(t => t.ToLower().Contains(texto.ToLower())));
-            
+
             _totales = null;
             _agrupaciones = null;
             _movimientosFiltrados = new ObservableCollection<BaseMovimiento>(resultado);
@@ -487,7 +494,7 @@ namespace ampersand_pb.ViewModels
             var month = _resumenAgrupadoM.Periodo.Substring(4, 2);
             var periodo = new DateTime(int.Parse(year), int.Parse(month), 1).AddMonths(-1).ToString("yyyyMM");
             var resumenAgrupado = _movimientosDA.GetResumen(periodo);
-                
+
             var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM);
             OnPublishViewModelEvent(movimientosVM);
         }
