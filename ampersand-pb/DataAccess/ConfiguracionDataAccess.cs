@@ -82,7 +82,7 @@ namespace ampersand_pb.DataAccess
                     Id = xelement.Attribute("Id").Value,
                     Descripcion = xelement.Attribute("Descripcion").Value,
                     Tipo = GetTipoDeMovimiento(xelement.Attribute("Tipo").Value),
-                    Ocultar = MovimientosDataAccess.GetValueFromXml("Tipo", xelement, false)
+                    Ocultar = MovimientosDataAccess.GetValueFromXml("Ocultar", xelement, false)
                 });
             }
 
@@ -179,11 +179,19 @@ namespace ampersand_pb.DataAccess
                     var mediosDePago = new List<PagoModel>();
                     foreach (var id in resumenesEnDisco)
                     {
-                        var config = configuracionDePagos.FirstOrDefault(a => a.Id == id);
+                        var configDePago = configuracionDePagos.FirstOrDefault(a => a.Id == id);
+                        if (configDePago != null)
+                        {
+                            var medioDePago = new PagoModel()
+                            {
+                                Id = id,
+                                Descripcion = configDePago?.Descripcion,
+                                Tipo = configDePago.Tipo,
+                                Ocultar = configDePago.Ocultar
+                            };
 
-                        var medioDePago = new PagoModel() { Id = id, Descripcion = config?.Descripcion };
-
-                        mediosDePago.Add(medioDePago);
+                            mediosDePago.Add(medioDePago);
+                        }
                     }
 
                     result.MediosDePago = mediosDePago;

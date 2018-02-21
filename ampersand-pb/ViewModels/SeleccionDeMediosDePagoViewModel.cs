@@ -42,7 +42,6 @@ namespace ampersand_pb.ViewModels
         }
 
         private ConfiguracionModel _configuracionM;
-
         public IEnumerable<PagoModel> MediosDePago { get; private set; }
 
         public IEnumerable<string> GetIds()

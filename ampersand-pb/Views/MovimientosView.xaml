@@ -66,6 +66,13 @@
                    MaxHeight="20"
                    MaxWidth="20"/>
 
+            <Image x:Key="verificar" 
+                   Source="/ampersand-pb;component/Resources/verif_b.png"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="20"
+                   MaxWidth="20"/>
+
             <Image x:Key="copiar" 
                    Source="/ampersand-pb;component/Resources/content-copy_b.png"
                    HorizontalAlignment="Center"
@@ -106,7 +113,8 @@
                   Grid.Row="1"
                   Margin="10"
                   IsReadOnly="False"
-                  AutoGenerateColumns="False">
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False">
             
             <DataGrid.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick"
@@ -149,7 +157,7 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="Verificado" Binding="{Binding Seleccionado}"/>
+                <!--<DataGridCheckBoxColumn Header="Verificado" Binding="{Binding Seleccionado}" Visibility="{Binding ElementName=btnVerif, Path=IsChecked, Converter={StaticResource boolToVis}}"/>-->
                 <DataGridTextColumn Header="Fecha" IsReadOnly="True"
                                     Binding="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}    '}" 
                                     Width="auto" 
@@ -222,8 +230,8 @@
                 </DataGridTemplateColumn>
 
                 <DataGridTemplateColumn Header="Cuota" 
-                                    Width="auto"
-                                    CellStyle="{StaticResource leftTopAlignment}"
+                                        Width="auto"
+                                        CellStyle="{StaticResource leftTopAlignment}"
                                         SortMemberPath="CoutasPendientes" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -370,6 +378,7 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <Button Content="{StaticResource nuevo}" 
@@ -408,7 +417,7 @@
                         Height="40"
                         Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
                         Margin="5"/>
-                
+
                 <Button Content="{StaticResource save}" 
                         Command="{Binding SaveCommand}"
                         ToolTip="Guardar cambios"
@@ -442,6 +451,18 @@
                         Height="40"
                         Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
                         Margin="5"/>
+
+                <!--<ToggleButton Content="{StaticResource verificar}" 
+                              IsThreeState="False"
+                              x:Name="btnVerif"
+                              ToolTip="Verificar"
+                              Grid.Column="6"                              
+                              Focusable="False"
+                              Foreground="{DynamicResource AccentColorBrush}"
+                              HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                              Height="40"
+                              Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
+                              Margin="15,5,5,5"/>-->
             </Grid>
         </Grid>
     </Grid>

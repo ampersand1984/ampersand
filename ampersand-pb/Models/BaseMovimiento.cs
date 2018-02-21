@@ -205,9 +205,7 @@ namespace ampersand_pb.Models
         public event EventHandler<IsSelectedChangedEventHandler> IsSelectedChangedEvent;
         private void OnIsSelectedChangedEvent()
         {
-            var handler = this.IsSelectedChangedEvent;
-            if (handler != null)
-                handler(this, new IsSelectedChangedEventHandler(this.IsSelected));
+            this.IsSelectedChangedEvent?.Invoke(this, new IsSelectedChangedEventHandler(this.IsSelected));
         }
 
         public void SetMonto(decimal monto)
@@ -223,6 +221,7 @@ namespace ampersand_pb.Models
 
             _montoME = montoME;
             _monto = montoME * Cotizacion;
+            _monto = Math.Round(_monto, 2);
             RefrescarMontos();
         }
 
