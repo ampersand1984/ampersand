@@ -157,7 +157,7 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <!--<DataGridCheckBoxColumn Header="Verificado" Binding="{Binding Seleccionado}" Visibility="{Binding ElementName=btnVerif, Path=IsChecked, Converter={StaticResource boolToVis}}"/>-->
+                <DataGridCheckBoxColumn Header="Verificado" Binding="{Binding Seleccionado}" Visibility="Visible"/>
                 <DataGridTextColumn Header="Fecha" IsReadOnly="True"
                                     Binding="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}    '}" 
                                     Width="auto" 

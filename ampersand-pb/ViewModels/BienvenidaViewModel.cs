@@ -36,8 +36,8 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private IEnumerable<BaseModel> _ultimos_Gastos;
-        public IEnumerable<BaseModel> Ultimos_Gastos
+        private IEnumerable<BaseMovimiento> _ultimos_Gastos;
+        public IEnumerable<BaseMovimiento> Ultimos_Gastos
         {
             get => _ultimos_Gastos ?? (_ultimos_Gastos = GetUltimosGastos());
         }
@@ -66,7 +66,7 @@ namespace ampersand_pb.ViewModels
             OnPropertyChanged("Totales");
         }
 
-        private IEnumerable<BaseModel> GetUltimosGastos()
+        private IEnumerable<BaseMovimiento> GetUltimosGastos()
         {
             var resumenAgrupado = _movimientosDA.GetUltimoResumen();
             var movimientos = _movimientosDA.GetMovimientos(resumenAgrupado);

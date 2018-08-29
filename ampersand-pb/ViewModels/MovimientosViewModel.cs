@@ -509,7 +509,7 @@ namespace ampersand_pb.ViewModels
             var movimientosProyeccion = GetProyeccion(_movimientos);
 
             var resumenAgrupadoProyeccion = _resumenAgrupadoM.Clone() as ResumenAgrupadoModel;
-
+            
             foreach (var resumen in resumenAgrupadoProyeccion.Resumenes)
             {
                 resumen.FechaDeCierre = resumen.ProximoCierre.Month == resumen.FechaDeCierre.Month + 1 ?
@@ -543,6 +543,9 @@ namespace ampersand_pb.ViewModels
                 movProy.Fecha = movProy.Fecha.AddMonths(1);
                 movimientosProyeccion.Add(movProy);
             }
+
+            foreach (var mov in movimientosProyeccion)
+                mov.Seleccionado = false;
 
             return movimientosProyeccion;
         }
