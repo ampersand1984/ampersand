@@ -18,7 +18,7 @@ namespace ampersand_pb.ViewModels
         /// </summary>
         /// <param name="configuracionM"></param>
         public MovimientoABMViewModel(ConfiguracionModel configuracionM)
-            : this(new BaseMovimiento(), configuracionM)
+            : this(new GastoModel(), configuracionM)
         {
             _modelOriginal.IdResumen = configuracionM.MediosDePago.First().Id;
             _modelOriginal.DescripcionResumen = configuracionM.MediosDePago.First().Descripcion;

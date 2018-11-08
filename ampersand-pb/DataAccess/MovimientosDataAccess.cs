@@ -60,13 +60,14 @@ namespace ampersand_pb.DataAccess
             var resultado = new List<BaseMovimiento>();
 
             var xmlPagos = from XElement mov in resumen.XDoc.Root.Elements("Mov")
+                           .Union(resumen.XDoc.Root.Elements("Deuda"))
                            select mov;
 
             var cotizacion = GetDecimal("Cotizacion", resumen.XDoc.Root, "1.00");
 
-            foreach (var xmlPago in xmlPagos)
+            foreach (var xmlMov in xmlPagos)
             {
-                var pago = GetPago(xmlPago, resumen.Id, resumen.Descripcion, cotizacion);
+                var pago = GetMovimiento(xmlMov, resumen.Id, resumen.Descripcion, cotizacion);
                 if (pago != null)
                     resultado.Add(pago);
             }
@@ -74,50 +75,65 @@ namespace ampersand_pb.DataAccess
             return resultado;
         }
 
-        private BaseMovimiento GetPago(XElement xmlPago, string idResumen, string descriResumen, decimal cotizacion)
+        private BaseMovimiento GetMovimiento(XElement xmlMov, string idResumen, string descriResumen, decimal cotizacion)
         {
-            var verif = GetValueFromXml("Verif", xmlPago, false);
-            var idMovimiento = GetValueFromXml("IdMovimiento", xmlPago, 0);
-            var strFecha = GetValueFromXml("Fecha", xmlPago, DateTime.MinValue.ToString("dd/MM/yyyy"));
-            var descri = GetValueFromXml("Descripcion", xmlPago, "");
-            var descriAdic = GetValueFromXml("DescripcionAdicional", xmlPago, "");
+            var verif = GetValueFromXml("Verif", xmlMov, false);
+            var idMovimiento = GetValueFromXml("IdMovimiento", xmlMov, 0);
+            var strFecha = GetValueFromXml("Fecha", xmlMov, DateTime.MinValue.ToString("dd/MM/yyyy"));
+            var descri = GetValueFromXml("Descripcion", xmlMov, "");
+            var descriAdic = GetValueFromXml("DescripcionAdicional", xmlMov, "");
 
-            var monto = GetDecimal("Monto", xmlPago);
-            var montoME = GetDecimal("MontoME", xmlPago);
-
-            var cuota = GetValueFromXml("Cuota", xmlPago, "");
-
-            var strTags = GetValueFromXml("Tags", xmlPago, "");
-            var tags = strTags.IsNullOrEmpty() ?
-                Enumerable.Empty<string>() :
-                strTags.Split(';').ToList();
-
-
-            var esMensual = GetValueFromXml("EsMensual", xmlPago, false);
-            var esAjeno = GetValueFromXml("EsAjeno", xmlPago, false);
+            var monto = GetDecimal("Monto", xmlMov);
+            var montoME = GetDecimal("MontoME", xmlMov);
 
             try
             {
-                var pago = new BaseMovimiento
-                {
-                    Seleccionado = verif,
-                    IdResumen = idResumen,
-                    DescripcionResumen = descriResumen,
-                    IdMovimiento = idMovimiento,
-                    Fecha = strFecha.ToDateTime(),
-                    Descripcion = descri,
-                    DescripcionAdicional = descriAdic,
-                    Cuota = cuota,
-                    Tags = tags,
-                    EsMensual = esMensual,
-                    EsAjeno = esAjeno
-                };
-                if (montoME != 0)
-                    pago.SetMontoME(montoME, cotizacion);
-                else
-                    pago.SetMonto(monto);
+                BaseMovimiento mov = null;
 
-                return pago;
+                switch (xmlMov.Name.ToString())
+                {
+                    case "Mov":
+                        {
+                            var cuota = GetValueFromXml("Cuota", xmlMov, "");
+
+                            var strTags = GetValueFromXml("Tags", xmlMov, "");
+                            var tags = strTags.IsNullOrEmpty() ?
+                                Enumerable.Empty<string>() :
+                                strTags.Split(';').ToList();
+
+                            var esMensual = GetValueFromXml("EsMensual", xmlMov, false);
+                            var esAjeno = GetValueFromXml("EsAjeno", xmlMov, false);
+                            mov = new GastoModel();
+                            mov.Cuota = cuota;
+                            mov.Tags = tags;
+                            mov.EsMensual = esMensual;
+                            mov.EsAjeno = esAjeno;
+                        }
+                        break;
+
+                    case "Deuda":
+                        mov = new DeudaModel();
+                        break;
+
+                    default:
+                        mov = null;
+                        break;
+                }
+
+                mov.Seleccionado = verif;
+                mov.IdMovimiento = idMovimiento;
+                mov.IdResumen = idResumen;
+                mov.Fecha = strFecha.ToDateTime();
+                mov.DescripcionResumen = descriResumen;
+                mov.Descripcion = descri;
+                mov.DescripcionAdicional = descriAdic;
+
+                if (montoME != 0)
+                    mov.SetMontoME(montoME, cotizacion);
+                else
+                    mov.SetMonto(monto);
+
+                return mov;
             }
             catch (Exception)
             {
@@ -187,7 +203,7 @@ namespace ampersand_pb.DataAccess
 
             resumen.Cotizacion = GetDecimal("Cotizacion", xdoc.Root, "1.00");
 
-            resumen.Total = GetValueFromXml("Total", xdoc.Root, 0M);
+            //resumen.Total = GetValueFromXml("Total", xdoc.Root, 0M);
 
             var strFechaDeCierre = GetValueFromXml("FechaDeCierre", xdoc.Root, "");
             var strProximoCierre = GetValueFromXml("ProximoCierre", xdoc.Root, "");
@@ -285,10 +301,15 @@ namespace ampersand_pb.DataAccess
 
                 foreach (var mov in movimientosDelResumen)
                 {
-                    var xMov = new XElement("Mov", new XAttribute("Verif", mov.Seleccionado),
-                                                   new XAttribute("IdMovimiento", mov.IdMovimiento),
-                                                   new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
-                                                   new XAttribute("Descripcion", mov.Descripcion));
+                    var strMov = "Mov";
+
+                    if (mov is DeudaModel)
+                        strMov = "Deuda";
+
+                    var xMov = new XElement(strMov, new XAttribute("Verif", mov.Seleccionado),
+                                                    new XAttribute("IdMovimiento", mov.IdMovimiento),
+                                                    new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
+                                                    new XAttribute("Descripcion", mov.Descripcion));
 
                     if (mov.EsMonedaExtranjera)
                         xMov.Add(new XAttribute("MontoME", mov.MontoME));

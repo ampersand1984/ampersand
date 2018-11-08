@@ -16,7 +16,7 @@ namespace ampersand_pb.ViewModels
 {
     public class MovimientosViewModel : BaseViewModel, IMainWindowItem
     {
-        public enum TiposDeAgrupacion { MedioDePago, Tag, Totales }
+        public enum TiposDeAgrupacion { MedioDePago, Tag, Totales, Cuotas }
 
         #region Constructor
 
@@ -337,7 +337,7 @@ namespace ampersand_pb.ViewModels
 
         private bool CopiarSeleccionadoCommandCanExecute(BaseMovimiento param)
         {
-            return param != null;
+            return param != null && param.Tipo != TiposDeMovimiento.Deuda;
         }
 
         private async void EliminarSeleccionadoCommandExecute(BaseMovimiento param)
@@ -360,7 +360,7 @@ namespace ampersand_pb.ViewModels
 
         private bool EliminarSeleccionadoCommandCanExecute(BaseMovimiento param)
         {
-            return param != null;
+            return param != null && param.Tipo != TiposDeMovimiento.Deuda;
         }
 
         private void BuscarCommandExecute(string texto)
@@ -401,7 +401,7 @@ namespace ampersand_pb.ViewModels
 
         private bool EditarMovimientoCommandCanExecute(BaseMovimiento param)
         {
-            return param != null;
+            return param != null && param.Tipo != TiposDeMovimiento.Deuda;
         }
 
         private void EditarMovimientoCommandExecute(BaseMovimiento param)
@@ -477,7 +477,9 @@ namespace ampersand_pb.ViewModels
                 }
             }
 
-            return movimientosFiltrados.OrderBy(a => !a.EsMensual).ThenBy(a => a.Fecha);
+            return movimientosFiltrados.OrderBy(a => a.Tipo != TiposDeMovimiento.Deuda)
+                                       .ThenBy(a => !a.EsMensual)
+                                       .ThenBy(a => a.Fecha);
         }
 
         private void MovimientoABMVM_CloseEvent(object sender, EventArgs e)
@@ -506,7 +508,7 @@ namespace ampersand_pb.ViewModels
 
         private void ProyectarCommandExecute()
         {
-            var movimientosProyeccion = GetProyeccion(_movimientos);
+            var movimientosProyeccion = GetMovimientosProyectados(_movimientos);
 
             var resumenAgrupadoProyeccion = _resumenAgrupadoM.Clone() as ResumenAgrupadoModel;
             
@@ -519,13 +521,13 @@ namespace ampersand_pb.ViewModels
                 resumen.Periodo = resumen.FechaDeCierre.GetPeriodo();
                 resumen.ProximoCierre = DateTime.MinValue;
                 resumen.FilePath = string.Empty;
-                resumen.Total = movimientosProyeccion.Where(a => a.DescripcionResumen.Equals(resumen.Descripcion)).Sum(a => a.Monto);
+                //resumen.Total = movimientosProyeccion.Where(a => a.DescripcionResumen.Equals(resumen.Descripcion)).Sum(a => a.Monto);
             }
             var movimientosVM = new MovimientosViewModel(resumenAgrupadoProyeccion, _movimientosDA, _configuracionM, movimientosProyeccion);
             OnPublishViewModelEvent(movimientosVM);
         }
 
-        public static IEnumerable<BaseMovimiento> GetProyeccion(IEnumerable<BaseMovimiento> movimientos)
+        public static IEnumerable<BaseMovimiento> GetMovimientosProyectados(IEnumerable<BaseMovimiento> movimientos)
         {
             var movimientosProyeccion = new List<BaseMovimiento>();
 
@@ -541,6 +543,12 @@ namespace ampersand_pb.ViewModels
             {
                 var movProy = mov.Clone() as BaseMovimiento;
                 movProy.Fecha = movProy.Fecha.AddMonths(1);
+                movimientosProyeccion.Add(movProy);
+            }
+
+            foreach (var mov in movimientos.Where(a => a.Tipo == TiposDeMovimiento.Deuda))
+            {
+                var movProy = mov.Clone() as BaseMovimiento;
                 movimientosProyeccion.Add(movProy);
             }
 
@@ -576,8 +584,8 @@ namespace ampersand_pb.ViewModels
 
             var totales = new List<AgrupacionItem>();
 
-            foreach (var item in _resumenAgrupadoM.Resumenes.Where(a => mediosDePago.Contains(a.Id)))
-                totales.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.MedioDePago, Id = item.Id, Descripcion = item.Descripcion, Monto = item.Total });
+            foreach (var resumen in _resumenAgrupadoM.Resumenes.Where(a => mediosDePago.Contains(a.Id)))
+                totales.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.MedioDePago, Id = resumen.Id, Descripcion = resumen.Descripcion, Monto = resumen.GetTotal() });
 
             return totales;
         }

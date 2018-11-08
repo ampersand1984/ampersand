@@ -17,10 +17,10 @@
         </Grid.RowDefinitions>
         
         <ContentControl Content="{Binding SeleccionDeMediosDePagoVM}" 
-                        Grid.Row="0"
+                        Grid.Row="0" Margin="10,0"
                         Focusable="False"/>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,20,0,0">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10,10,0,0">
             <TextBlock Text="Tipos de gráficos"
                         VerticalAlignment="Center"
                         Margin="10,0,10,0"/>
@@ -51,27 +51,29 @@
                         Width="180"/>
         </StackPanel>
         
-        <ScrollViewer Grid.Row="2">
-            <ItemsControl ItemsSource="{Binding ItemsDelGrafico}">
+        <ScrollViewer Grid.Row="2" Focusable="False">
+            <ItemsControl ItemsSource="{Binding ItemsDelGrafico}" Focusable="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Margin="0,70,0,0"/>
+                        <StackPanel Margin="0,70,0,0" Focusable="False"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <chart:ClusteredColumnChart ChartTitle="{Binding ChartTitle}"
-                                                    ChartSubTitle="{Binding ChartSubTitle}"
+                        <StackPanel Focusable="False">
+                            <TextBlock Text="{Binding ChartTitle}" Panel.ZIndex="1" VerticalAlignment="Top" Margin="20,-60,0,0"/>
+                            <chart:ClusteredColumnChart ChartTitleVisibility="Collapsed"
                                                     ChartLegendVisibility="Hidden"
                                                     Focusable="False"
-                                                    Margin="0,-40,0,0" MouseDoubleClick="ChartSeries_MouseDoubleClick">
-                            <chart:ClusteredColumnChart.Series>
-                                <chart:ChartSeries SeriesTitle="Meses"
+                                                    Margin="0,-30,0,0" MouseDoubleClick="ChartSeries_MouseDoubleClick">
+                                <chart:ClusteredColumnChart.Series>
+                                    <chart:ChartSeries SeriesTitle="Meses"
                                                    DisplayMember="Descripcion"
                                                    ValueMember="Monto"
                                                    ItemsSource="{Binding Items}"/>
-                            </chart:ClusteredColumnChart.Series>
-                        </chart:ClusteredColumnChart>
+                                </chart:ClusteredColumnChart.Series>
+                            </chart:ClusteredColumnChart>
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

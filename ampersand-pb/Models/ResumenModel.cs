@@ -48,8 +48,6 @@ namespace ampersand_pb.Models
             }
         }
 
-        public decimal Total { get; internal set; }
-
         public bool HuboCambios { get; internal set; }
 
         internal static ResumenModel GetFromFile(string file)
@@ -72,6 +70,48 @@ namespace ampersand_pb.Models
                 //throw;
             }
             return null;
+        }
+
+        public decimal GetTotal()
+        {
+            return GetTotal(null);
+        }
+        public decimal GetTotalDeuda()
+        {
+            return GetTotal("Deuda");
+        }
+        public decimal GetTotalSinDeuda()
+        {
+            return GetTotal("Mov");
+        }
+
+        private decimal GetTotal(string elementsName)
+        {
+            var total = 0.00M;
+            var attrCotiz = XDoc.Root.Attribute("Cotizacion");
+
+            var elements = elementsName.IsNullOrEmpty()?
+                XDoc.Root.Elements():
+                XDoc.Root.Elements(elementsName);
+
+            foreach (var mov in elements)
+            {
+                var cotiz = 1.00M;
+                var attrMonto = mov.Attribute("Monto");
+                if (attrMonto == null)
+                {
+                    attrMonto = mov.Attribute("MontoME");
+
+                    decimal.TryParse(attrCotiz.Value, out cotiz);
+                }
+
+                var strMonto = attrMonto.Value;
+
+                var monto = 0.00M;
+                decimal.TryParse(strMonto, out monto);
+                total += monto * cotiz;
+            }
+            return total;
         }
 
         public object Clone()

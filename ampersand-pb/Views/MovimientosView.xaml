@@ -124,6 +124,12 @@
                 <Style TargetType="DataGridRow">
                     <Setter Property="IsSelected" 
                             Value="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Tipo}" Value="Deuda">
+                            <Setter Property="Foreground" Value="Red"/>
+                        </DataTrigger>
+                    </Style.Triggers>
                 </Style>
             </DataGrid.RowStyle>
             

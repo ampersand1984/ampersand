@@ -114,7 +114,7 @@ namespace ampersand_pb.ViewModels
 
             movimientosActuales = movimientosActuales.Where(a => mediosDePago.Contains(a.IdResumen));
 
-            var movimientosMesProximo = MovimientosViewModel.GetProyeccion(movimientosActuales);
+            var movimientosMesProximo = MovimientosViewModel.GetMovimientosProyectados(movimientosActuales);
 
             var textoPeriodoMesProximo = DateTime.ParseExact(resumenActual.Periodo + "01", "yyyyMMdd", CultureInfo.InvariantCulture)
                 .AddMonths(1)
@@ -126,12 +126,12 @@ namespace ampersand_pb.ViewModels
                 new AgrupacionItem()
                 {
                     Descripcion = resumenAnterior.TextoPeriodo,
-                    Monto = resumenAnterior.Resumenes.Where(a => mediosDePago.Contains(a.Id)).Sum(b => b.Total)
+                    Monto = resumenAnterior.Resumenes.Where(a => mediosDePago.Contains(a.Id)).Sum(b => b.GetTotal())
                 },
                 new AgrupacionItem()
                 {
                     Descripcion = resumenActual.TextoPeriodo,
-                    Monto = resumenActual.Resumenes.Where(a => mediosDePago.Contains(a.Id)).Sum(b => b.Total)
+                    Monto = resumenActual.Resumenes.Where(a => mediosDePago.Contains(a.Id)).Sum(b => b.GetTotal())
                 },
                 new AgrupacionItem()
                 {
