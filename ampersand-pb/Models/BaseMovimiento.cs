@@ -8,7 +8,7 @@ namespace ampersand_pb.Models
 {
     public enum TiposDeMovimiento { Efectivo, Debito, Credito, Deuda }
 
-    public abstract class BaseMovimiento: BaseModel, ICloneable
+    public abstract class BaseMovimiento : BaseModel, ICloneable
     {
         protected BaseMovimiento()
         {
@@ -37,12 +37,14 @@ namespace ampersand_pb.Models
             get { return _seleccionado; }
             set { _seleccionado = value; OnPropertyChanged("Seleccionado"); }
         }
-        
+
         public string IdResumen { get; set; }
-        
+
         public int IdMovimiento { get; set; }
 
         public DateTime Fecha { get; set; } = DateTime.Today;
+
+        public DateTime FechaVencimiento { get; set; } = DateTime.MinValue;
 
         private string _descripcion;
         public string Descripcion
@@ -59,11 +61,16 @@ namespace ampersand_pb.Models
         }
 
         private decimal _monto;
-        public decimal Monto
+        public virtual decimal Monto
         {
             get
             {
                 return _monto;
+            }
+            set
+            {
+                //qué basura esto
+                SetMonto(value);
             }
         }
 
@@ -76,7 +83,7 @@ namespace ampersand_pb.Models
             }
             set
             {
-                _montoME = value; 
+                _montoME = value;
                 _monto = value * Cotizacion;
                 RefrescarMontos();
             }
@@ -126,7 +133,7 @@ namespace ampersand_pb.Models
             get { return _esAjeno; }
             set { _esAjeno = value; OnPropertyChanged("EsAjeno"); }
         }
-        
+
         public string Error
         {
             get;
@@ -168,6 +175,15 @@ namespace ampersand_pb.Models
                 _isSelected = value;
                 OnPropertyChanged("IsSelected");
                 OnIsSelectedChangedEvent();
+            }
+        }
+
+        public bool TieneFechaVencimiento
+        {
+            get
+            {
+                var tiene = FechaVencimiento != DateTime.MinValue;
+                return tiene;
             }
         }
 
@@ -240,6 +256,14 @@ namespace ampersand_pb.Models
             OnPropertyChanged("MontoME");
             OnPropertyChanged("EsMonedaExtranjera");
             OnPropertyChanged("Cotizacion");
+
+            OnRefrescarMontosTerminado();
+        }
+
+        public event EventHandler<EventArgs> RefrescarMontosTerminado;
+        protected virtual void OnRefrescarMontosTerminado()
+        {
+            RefrescarMontosTerminado?.Invoke(this, EventArgs.Empty);
         }
 
         internal void CopyValues(BaseMovimiento model)
@@ -288,7 +312,7 @@ namespace ampersand_pb.Models
         }
     }
 
-    public class IsSelectedChangedEventHandler: EventArgs
+    public class IsSelectedChangedEventHandler : EventArgs
     {
         public IsSelectedChangedEventHandler(bool isSelected)
         {

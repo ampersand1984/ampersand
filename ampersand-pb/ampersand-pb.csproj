@@ -105,12 +105,14 @@
     <Compile Include="Models\ResumenAgrupadoModel.cs" />
     <Compile Include="Models\ResumenModelExtension.cs" />
     <Compile Include="Models\ResumenModel.cs" />
+    <Compile Include="Models\SaldoModel.cs" />
     <Compile Include="Models\TagModel.cs" />
     <Compile Include="ViewModels\BienvenidaViewModel.cs" />
     <Compile Include="ViewModels\ConfiguracionesViewModel.cs" />
     <Compile Include="ViewModels\EditViewModelEventArgs.cs" />
     <Compile Include="ViewModels\IMainWindowItem.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\MovimientosEfectivoViewModel.cs" />
     <Compile Include="ViewModels\MovimientosViewModel.cs" />
     <Compile Include="ViewModels\MovimientoABMViewModel.cs" />
     <Compile Include="App.xaml.cs">
@@ -133,6 +135,9 @@
     </Compile>
     <Compile Include="Views\MovimientoABMView.xaml.cs">
       <DependentUpon>MovimientoABMView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MovimientosEfectivoView.xaml.cs">
+      <DependentUpon>MovimientosEfectivoView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MovimientosView.xaml.cs">
       <DependentUpon>MovimientosView.xaml</DependentUpon>
@@ -171,6 +176,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MovimientoABMView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MovimientosEfectivoView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -291,6 +300,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\verif_b.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\cash-multiple.png" />
+    <Resource Include="Resources\cash-multiple_b.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

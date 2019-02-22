@@ -61,6 +61,7 @@ namespace ampersand_pb.DataAccess
 
             var xmlPagos = from XElement mov in resumen.XDoc.Root.Elements("Mov")
                            .Union(resumen.XDoc.Root.Elements("Deuda"))
+                           .Union(resumen.XDoc.Root.Elements("Saldo"))
                            select mov;
 
             var cotizacion = GetDecimal("Cotizacion", resumen.XDoc.Root, "1.00");
@@ -69,7 +70,10 @@ namespace ampersand_pb.DataAccess
             {
                 var pago = GetMovimiento(xmlMov, resumen.Id, resumen.Descripcion, cotizacion);
                 if (pago != null)
+                {
+                    pago.Tipo = resumen.Tipo;
                     resultado.Add(pago);
+                }
             }
 
             return resultado;
@@ -80,6 +84,7 @@ namespace ampersand_pb.DataAccess
             var verif = GetValueFromXml("Verif", xmlMov, false);
             var idMovimiento = GetValueFromXml("IdMovimiento", xmlMov, 0);
             var strFecha = GetValueFromXml("Fecha", xmlMov, DateTime.MinValue.ToString("dd/MM/yyyy"));
+            var strFechaVencimiento = GetValueFromXml("FechaVencimiento", xmlMov, string.Empty);
             var descri = GetValueFromXml("Descripcion", xmlMov, "");
             var descriAdic = GetValueFromXml("DescripcionAdicional", xmlMov, "");
 
@@ -115,6 +120,10 @@ namespace ampersand_pb.DataAccess
                         mov = new DeudaModel();
                         break;
 
+                    case "Saldo":
+                        mov = new SaldoModel();
+                        break;
+
                     default:
                         mov = null;
                         break;
@@ -124,6 +133,7 @@ namespace ampersand_pb.DataAccess
                 mov.IdMovimiento = idMovimiento;
                 mov.IdResumen = idResumen;
                 mov.Fecha = strFecha.ToDateTime();
+                mov.FechaVencimiento = strFechaVencimiento.IsNullOrEmpty() ? DateTime.MinValue : strFechaVencimiento.ToDateTime();
                 mov.DescripcionResumen = descriResumen;
                 mov.Descripcion = descri;
                 mov.DescripcionAdicional = descriAdic;
@@ -202,8 +212,6 @@ namespace ampersand_pb.DataAccess
             resumen.Descripcion = _configuracion.MediosDePago.FirstOrDefault(a => a.Id == resumen.Id)?.Descripcion;
 
             resumen.Cotizacion = GetDecimal("Cotizacion", xdoc.Root, "1.00");
-
-            //resumen.Total = GetValueFromXml("Total", xdoc.Root, 0M);
 
             var strFechaDeCierre = GetValueFromXml("FechaDeCierre", xdoc.Root, "");
             var strProximoCierre = GetValueFromXml("ProximoCierre", xdoc.Root, "");
@@ -285,19 +293,22 @@ namespace ampersand_pb.DataAccess
             {
                 var movimientosDelResumen = movimientos.Where(a => a.IdResumen.Equals(resumenM.Id)).ToList();
 
-                var total = movimientosDelResumen.Sum(a => a.Monto);
-
                 var strProximoCierre = resumenM.ProximoCierre != DateTime.MinValue ?
                     resumenM.ProximoCierre.ToString("yyyyMMdd") :
                     string.Empty;
 
-                var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
-                                                                     new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
-                                                                     new XAttribute("Total", total),
+                var movimientosElement = new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
                                                                      new XAttribute("Tipo", TiposDeMovimiento.Credito),
                                                                      new XAttribute("Descripcion", resumenM.Descripcion),
-                                                                     new XAttribute("Cotizacion", resumenM.Cotizacion),
-                                                                     new XAttribute("ProximoCierre", strProximoCierre)));
+                                                                     new XAttribute("Cotizacion", resumenM.Cotizacion));
+
+                if (resumenM.Tipo == TiposDeMovimiento.Credito)
+                {
+                    movimientosElement.Add(new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")));
+                    movimientosElement.Add(new XAttribute("ProximoCierre", strProximoCierre));
+                }
+
+                var xdoc = new XDocument(movimientosElement);
 
                 foreach (var mov in movimientosDelResumen)
                 {
@@ -305,6 +316,9 @@ namespace ampersand_pb.DataAccess
 
                     if (mov is DeudaModel)
                         strMov = "Deuda";
+
+                    if (mov is SaldoModel)
+                        strMov = "Saldo";
 
                     var xMov = new XElement(strMov, new XAttribute("Verif", mov.Seleccionado),
                                                     new XAttribute("IdMovimiento", mov.IdMovimiento),
@@ -330,6 +344,9 @@ namespace ampersand_pb.DataAccess
 
                     if (mov.EsAjeno)
                         xMov.Add(new XAttribute("EsAjeno", mov.EsAjeno));
+
+                    if (mov.FechaVencimiento != DateTime.MinValue)
+                        xMov.Add(new XAttribute("FechaVencimiento", mov.FechaVencimiento.ToString("yyyyMMdd")));
 
                     xdoc.Root.Add(xMov);
                 }

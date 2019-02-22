@@ -6,7 +6,6 @@ using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -82,6 +81,17 @@ namespace ampersand_pb.ViewModels
                 if (_mostrarActualCommand == null)
                     _mostrarActualCommand = new RelayCommand(param => MostrarActualCommandExecuteAsync(), param => _configuracionM.CarpetaDeResumenesValida);
                 return _mostrarActualCommand;
+            }
+        }
+
+        private ICommand _mostrarEfectivoActualCommand;
+        public ICommand MostrarEfectivoActualCommand
+        {
+            get
+            {
+                if (_mostrarEfectivoActualCommand == null)
+                    _mostrarEfectivoActualCommand = new RelayCommand(param => MostrarEfectivoActualCommandExecuteAsync(), param => _configuracionM.CarpetaDeResumenesValida);
+                return _mostrarEfectivoActualCommand;
             }
         }
 
@@ -253,6 +263,15 @@ namespace ampersand_pb.ViewModels
             if (resumenAgrupado != null)
             {
                 var movimientosVM = new MovimientosViewModel(resumenAgrupado, MovimientosDA, _configuracionM);
+                AgregarMainWindowItem(movimientosVM);
+            }
+        }
+
+        private void MostrarEfectivoActualCommandExecuteAsync()
+        {
+            if (!MainWindowItems.Any(a => a.DisplayName.Equals("Efectivo")))
+            {
+                var movimientosVM = new MovimientosEfectivoViewModel(_configuracionM, MovimientosDA);
                 AgregarMainWindowItem(movimientosVM);
             }
         }

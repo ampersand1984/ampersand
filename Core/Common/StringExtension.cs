@@ -51,6 +51,34 @@ namespace ampersand.Core.Common
             return periodo;
         }
 
+        public static string GetPeriodoAnterior(this string periodo)
+        {
+            var resultado = string.Empty;
+
+            var year = int.Parse(periodo.Substring(0, 4));
+            var month = int.Parse(periodo.Substring(4, 2));
+
+            var fecha = new DateTime(year, month, 1).AddMonths(-1);
+
+            resultado = string.Format("{0}{1}", fecha.Year, fecha.Month.ToString("00"));
+
+            return resultado;
+        }
+
+        public static string GetPeriodoProximo(this string periodo)
+        {
+            var resultado = string.Empty;
+
+            var year = int.Parse(periodo.Substring(0, 4));
+            var month = int.Parse(periodo.Substring(4, 2));
+
+            var fecha = new DateTime(year, month, 1).AddMonths(1);
+
+            resultado = string.Format("{0}{1}", fecha.Year, fecha.Month.ToString("00"));
+
+            return resultado;
+        }
+
         public static T Parse<T>(string stringValue) where T : struct, IConvertible, IComparable, IFormattable
         {
             var converter = TypeDescriptor.GetConverter(typeof(T));

@@ -1,0 +1,136 @@
+﻿<UserControl x:Class="ampersand_pb.Views.MovimientosEfectivoView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Este mes"
+                   FontSize="15" FontWeight="Bold"
+                   Grid.Row="0"
+                   HorizontalAlignment="Left"/>
+        
+        <DataGrid ItemsSource="{Binding MovimientosActual}"
+                  CanUserAddRows="True"
+                  Grid.Column="0"
+                  Grid.Row="1"
+                  HorizontalContentAlignment="Left"
+                  HorizontalAlignment="Left"
+                  AutoGenerateColumns="False"
+                  FontSize="10">
+
+            <DataGrid.Resources>
+
+                <Style x:Key="leftTopAlignment"
+                        TargetType="{x:Type DataGridCell}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Grid Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Left"
+                                                        VerticalAlignment="Top"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style x:Key="rightTopAlignment"
+                        TargetType="{x:Type DataGridCell}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Grid Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.Resources>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Descripcion" 
+                                    Binding="{Binding Descripcion}"
+                                    CellStyle="{StaticResource leftTopAlignment}"/>
+                <DataGridTextColumn Header="Monto" 
+                                    Binding="{Binding Monto}"
+                                    CellStyle="{StaticResource rightTopAlignment}"/>
+
+                <DataGridTemplateColumn Header="Vencimiento" x:Name="clmnVenc"
+                                        CellStyle="{StaticResource rightTopAlignment}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{Binding FechaVencimiento, StringFormat='{}{0:dd/MM/yyyy}    '}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding FechaVencimiento}" Value="{x:Static sys:DateTime.MinValue}" >
+                                                <Setter Property="Text" Value=""/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding FechaVencimiento}" Focusable="False" FontSize="10">
+                                <DatePicker.Style>
+                                    <Style TargetType="DatePicker">
+                                        <Setter Property="SelectedDate" Value="{Binding FechaVencimiento}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding FechaVencimiento}" Value="{x:Static sys:DateTime.MinValue}" >
+                                                <Setter Property="SelectedDate" Value="{x:Static sys:DateTime.Today}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DatePicker.Style>
+                            </DatePicker>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Fecha de pago"
+                                        CellStyle="{StaticResource rightTopAlignment}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}    '}"
+                                       HorizontalAlignment="Right"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding Fecha}" Focusable="False" FontSize="10"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Text="{Binding TotalActual, StringFormat={}Total ${0}}"
+                   FontSize="15" FontWeight="Bold"
+                   Grid.Row="2"
+                   HorizontalAlignment="Left"/>
+
+        <Button Content="+"
+                Grid.Column="1"
+                  Grid.Row="1"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Left"/>
+    </Grid>
+</UserControl>
