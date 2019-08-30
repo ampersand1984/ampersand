@@ -20,11 +20,11 @@ ok    últimas cuotas de este mes
 ok    proyección totales mes que viene
    mensajes
 NO poner el guardar como boton tilde a la derecha arriba
-~~ vista de resumenes tipo grid
-   agregar la cotización como prop de cada resumen
+~  vista de resumenes tipo grid
+ok agregar la cotización como prop de cada resumen
    permitir editar la cotización de cada resumen
-   permitir ocultar resúmenes
+ok permitir ocultar resúmenes
    ver/ocultar el "modo consolidación" (el check de cada movimiento)
    ABM de tags
-   manejar deudas
+~  manejar deudas
 

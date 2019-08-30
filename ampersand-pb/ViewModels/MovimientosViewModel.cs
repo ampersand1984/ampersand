@@ -2,7 +2,6 @@
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
-using ampersand_pb.Properties;
 using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
@@ -511,7 +510,7 @@ namespace ampersand_pb.ViewModels
             var movimientosProyeccion = GetMovimientosProyectados(_movimientos);
 
             var resumenAgrupadoProyeccion = _resumenAgrupadoM.Clone() as ResumenAgrupadoModel;
-            
+
             foreach (var resumen in resumenAgrupadoProyeccion.Resumenes)
             {
                 resumen.FechaDeCierre = resumen.ProximoCierre.Month == resumen.FechaDeCierre.Month + 1 ?
@@ -521,7 +520,6 @@ namespace ampersand_pb.ViewModels
                 resumen.Periodo = resumen.FechaDeCierre.GetPeriodo();
                 resumen.ProximoCierre = DateTime.MinValue;
                 resumen.FilePath = string.Empty;
-                //resumen.Total = movimientosProyeccion.Where(a => a.DescripcionResumen.Equals(resumen.Descripcion)).Sum(a => a.Monto);
             }
             var movimientosVM = new MovimientosViewModel(resumenAgrupadoProyeccion, _movimientosDA, _configuracionM, movimientosProyeccion);
             OnPublishViewModelEvent(movimientosVM);

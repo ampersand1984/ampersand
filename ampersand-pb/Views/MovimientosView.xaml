@@ -161,6 +161,15 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
+
+                <Style x:Key="montoRightTopAlignment" TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource ResourceKey=rightTopAlignment}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=DataContext.EsMonedaExtranjera, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRow}}" Value="True">
+                            <Setter Property="Foreground" Value="LightGreen"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+                
             </DataGrid.Resources>
             <DataGrid.Columns>
                 <DataGridCheckBoxColumn Header="Verificado" Binding="{Binding Seleccionado}" Visibility="Visible"/>
@@ -257,7 +266,7 @@
                                     FontSize="12" 
                                     FontWeight="Bold"
                                     Width="1*"
-                                    CellStyle="{StaticResource rightTopAlignment}" IsReadOnly="True"/>
+                                    CellStyle="{StaticResource montoRightTopAlignment}" IsReadOnly="True"/>
 
                 <DataGridTemplateColumn Header="Mensual" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
@@ -298,6 +307,12 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+
+            <!--<Controls:ToggleSwitch Header="Ver panel derecho"
+                                   x:Name="tglPanelDerecho" 
+                                   VerticalAlignment="Top"
+                                   HorizontalAlignment="Right"
+                                   Panel.ZIndex="10"/>-->
 
             <TextBlock Text="{Binding TotalResumen, StringFormat='Total: ${0}'}"
                        FontSize="20"
@@ -373,19 +388,9 @@
                 </chart:PieChart.Series>
             </chart:PieChart>
 
-            <Grid Grid.Row="4" 
+            <StackPanel Grid.Row="4" x:Name="stkBotones"
                        Margin="0,0,0,10"
-                       HorizontalAlignment="Stretch">
-                
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
+                       HorizontalAlignment="Stretch" Orientation="Horizontal">
                 
                 <Button Content="{StaticResource nuevo}" 
                         Command="{Binding NuevoMovimientoCommand}"
@@ -469,7 +474,7 @@
                               Height="40"
                               Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}"
                               Margin="15,5,5,5"/>-->
-            </Grid>
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

@@ -203,8 +203,6 @@ namespace ampersand_pb.DataAccess
 
             resumen.Cotizacion = GetDecimal("Cotizacion", xdoc.Root, "1.00");
 
-            //resumen.Total = GetValueFromXml("Total", xdoc.Root, 0M);
-
             var strFechaDeCierre = GetValueFromXml("FechaDeCierre", xdoc.Root, "");
             var strProximoCierre = GetValueFromXml("ProximoCierre", xdoc.Root, "");
             try
@@ -285,15 +283,12 @@ namespace ampersand_pb.DataAccess
             {
                 var movimientosDelResumen = movimientos.Where(a => a.IdResumen.Equals(resumenM.Id)).ToList();
 
-                var total = movimientosDelResumen.Sum(a => a.Monto);
-
                 var strProximoCierre = resumenM.ProximoCierre != DateTime.MinValue ?
                     resumenM.ProximoCierre.ToString("yyyyMMdd") :
                     string.Empty;
 
                 var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
                                                                      new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
-                                                                     new XAttribute("Total", total),
                                                                      new XAttribute("Tipo", TiposDeMovimiento.Credito),
                                                                      new XAttribute("Descripcion", resumenM.Descripcion),
                                                                      new XAttribute("Cotizacion", resumenM.Cotizacion),
