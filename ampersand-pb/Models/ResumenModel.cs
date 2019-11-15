@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace ampersand_pb.Models
 {
-    public class ResumenModel: ICloneable
+    public class ResumenModel : ICloneable
     {
         public string Id { get; internal set; }
 
@@ -72,30 +72,42 @@ namespace ampersand_pb.Models
             return null;
         }
 
-        public decimal GetTotal()
+        public decimal GetTotal(bool incluyeAjenos = true)
         {
-            return GetTotal(null);
+            return GetTotal(null, incluyeAjenos);
         }
-        public decimal GetTotalDeuda()
+        public decimal GetTotalDeuda(bool incluyeAjenos = true)
         {
-            return GetTotal("Deuda");
+            return GetTotal("Deuda", incluyeAjenos);
         }
-        public decimal GetTotalSinDeuda()
+        public decimal GetTotalSinDeuda(bool incluyeAjenos = true)
         {
-            return GetTotal("Mov");
+            return GetTotal("Mov", incluyeAjenos);
         }
 
-        private decimal GetTotal(string elementsName)
+        private decimal GetTotal(string elementsName, bool incluyeAjenos)
         {
             var total = 0.00M;
             var attrCotiz = XDoc.Root.Attribute("Cotizacion");
 
-            var elements = elementsName.IsNullOrEmpty()?
-                XDoc.Root.Elements():
+            var elements = elementsName.IsNullOrEmpty() ?
+                XDoc.Root.Elements() :
                 XDoc.Root.Elements(elementsName);
 
             foreach (var mov in elements)
             {
+                if (!incluyeAjenos)
+                {
+                    var attrEsAjeno = mov.Attribute("EsAjeno");
+                    if (attrEsAjeno != null)
+                    {
+                        var esAjeno = false;
+                        bool.TryParse(attrEsAjeno.Value, out esAjeno);
+                        if (esAjeno)
+                            continue;
+                    }
+                }
+
                 var cotiz = 1.00M;
                 var attrMonto = mov.Attribute("Monto");
                 if (attrMonto == null)

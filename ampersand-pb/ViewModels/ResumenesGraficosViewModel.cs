@@ -1,13 +1,12 @@
-﻿using ampersand.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Input;
+using ampersand.Core;
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using static ampersand_pb.ViewModels.MovimientosViewModel;
 
 namespace ampersand_pb.ViewModels
@@ -149,6 +148,14 @@ namespace ampersand_pb.ViewModels
             }
         }
 
+        private bool _incluyeAjenos;
+        public bool IncluyeAjenos
+        {
+            get { return _incluyeAjenos; }
+            set { _incluyeAjenos = value; OnPropertyChanged("IncluyeAjenos"); }
+        }
+
+
         private IEnumerable<DatosDelGrafico> _itemsDelGrafico;
         public IEnumerable<DatosDelGrafico> ItemsDelGrafico
         {
@@ -252,9 +259,9 @@ namespace ampersand_pb.ViewModels
                     {
                         var totales = new List<dynamic>()
                         {
-                            new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotal()), chartTitle = TOTALES_MENSUAL },
-                            new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotalDeuda()), chartTitle = "Deuda de tarjetas" },
-                            new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotalSinDeuda()), chartTitle = TOTALES_MENSUAL + " sin deuda" }
+                            new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotal(IncluyeAjenos)), chartTitle = TOTALES_MENSUAL },
+                            new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotalDeuda(IncluyeAjenos)), chartTitle = "Deuda de tarjetas" },
+                            new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotalSinDeuda(IncluyeAjenos)), chartTitle = TOTALES_MENSUAL + " sin deuda" }
                         };
 
                         foreach (var tot in totales)
@@ -298,7 +305,7 @@ namespace ampersand_pb.ViewModels
                                                              {
                                                                  Id = a.Periodo,
                                                                  Descripcion = a.TextoPeriodo,
-                                                                 Monto = a.GetTotal(),
+                                                                 Monto = a.GetTotal(IncluyeAjenos),
                                                                  Grupo = a.Id
                                                              })
                                                              .ToList();
@@ -336,6 +343,10 @@ namespace ampersand_pb.ViewModels
                         foreach (var resumen in resumenesPorFecha)
                         {
                             var movimientosPorResumen = _movimientosDA.GetMovimientos(resumen);
+
+                            if (!IncluyeAjenos)
+                                movimientosPorResumen = movimientosPorResumen.Where(a => !a.EsAjeno);
+
                             movimientos.Add(new KeyValuePair<string, IEnumerable<BaseMovimiento>>(resumen.Periodo, movimientosPorResumen));
                         }
 
@@ -421,6 +432,9 @@ namespace ampersand_pb.ViewModels
 
                             movimientosPorResumen.RemoveAll(a => a.Cuota.IsNullOrEmpty());
 
+                            if (!IncluyeAjenos)
+                                movimientosPorResumen.RemoveAll(a => a.EsAjeno);
+
                             if (movimientos.Keys.Contains(resumen.Periodo))
                                 movimientos[resumen.Periodo].AddRange(movimientosPorResumen);
                             else
@@ -479,7 +493,8 @@ namespace ampersand_pb.ViewModels
 
             if (propertyName.Equals("MinimoPeriodo") ||
                 propertyName.Equals("MaximoPeriodo") ||
-                propertyName.Equals("GraficoSeleccionado"))
+                propertyName.Equals("GraficoSeleccionado") ||
+                propertyName.Equals("IncluyeAjenos"))
             {
                 _itemsDelGrafico = null;
                 OnPropertyChanged("ItemsDelGrafico");

@@ -49,6 +49,11 @@
                         SelectedValuePath="Periodo"
                         SelectedValue="{Binding MaximoPeriodo}"
                         Width="180"/>
+
+            <TextBlock Text="Incluir ajenos"
+                       VerticalAlignment="Center"
+                       Margin="20,0,10,0"/>
+            <CheckBox IsChecked="{Binding IncluyeAjenos}" />
         </StackPanel>
         
         <ScrollViewer Grid.Row="2" Focusable="False">
