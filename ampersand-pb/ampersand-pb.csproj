@@ -66,6 +66,12 @@
     <Reference Include="MahApps.Metro, Version=1.5.0.23, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\MahApps.Metro.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.2.10.0\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.File.4.1.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -107,6 +113,7 @@
     <Compile Include="Models\ResumenModel.cs" />
     <Compile Include="Models\TagModel.cs" />
     <Compile Include="ViewModels\BienvenidaViewModel.cs" />
+    <Compile Include="ViewModels\BuscarMovimentosViewModel.cs" />
     <Compile Include="ViewModels\ConfiguracionesViewModel.cs" />
     <Compile Include="ViewModels\EditViewModelEventArgs.cs" />
     <Compile Include="ViewModels\IMainWindowItem.cs" />
@@ -124,6 +131,9 @@
     <Compile Include="ViewModels\SeleccionDeMediosDePagoViewModel.cs" />
     <Compile Include="Views\BienvenidaView.xaml.cs">
       <DependentUpon>BienvenidaView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BuscarMovimentosView.xaml.cs">
+      <DependentUpon>BuscarMovimentosView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ConfiguracionesView.xaml.cs">
       <DependentUpon>ConfiguracionesView.xaml</DependentUpon>
@@ -159,6 +169,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\BienvenidaView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BuscarMovimentosView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -291,6 +305,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\verif_b.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\layers-search.png" />
+    <Resource Include="Resources\layers-search_b.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

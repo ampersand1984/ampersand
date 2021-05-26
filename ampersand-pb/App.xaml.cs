@@ -1,8 +1,12 @@
-﻿using ampersand_pb.ViewModels;
+﻿using System;
+using System.Threading;
+using System.Windows;
+using ampersand_pb.ViewModels;
 using ampersand_pb.Views;
 using MahApps.Metro.Controls.Dialogs;
-using System;
-using System.Windows;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace ampersand_pb
 {
@@ -14,6 +18,15 @@ namespace ampersand_pb
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.With(new ThreadIdEnricher())
+                .WriteTo.File($"{System.AppDomain.CurrentDomain.FriendlyName}-{Environment.MachineName}-.log",
+                outputTemplate: "{Timestamp:yyyyMMdd HH:mm:ss.fff} ({ThreadId}) [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+                rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            Log.Information("Application start");
+
             EventManager.RegisterClassHandler(typeof(System.Windows.Controls.TextBox),
                   System.Windows.Controls.TextBox.GotFocusEvent,
                   new RoutedEventHandler(TextBox_GotFocus));
@@ -42,6 +55,7 @@ namespace ampersand_pb
             _eventHandler = null;
             _mainWindowVM = null;
             _window = null;
+            Log.Information("Application end");
         }
 
         private void mainWindow_RequestClose(object sender, EventArgs e)
@@ -53,6 +67,15 @@ namespace ampersand_pb
         private void TextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             (sender as System.Windows.Controls.TextBox).SelectAll();
+        }
+    }
+
+    class ThreadIdEnricher : ILogEventEnricher
+    {
+        public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        {
+            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty(
+                    "ThreadId", Thread.CurrentThread.ManagedThreadId));
         }
     }
 }

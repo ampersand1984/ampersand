@@ -1,7 +1,7 @@
-﻿using ampersand.Core.Common;
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Data;
+using ampersand.Core.Common;
 
 namespace ampersand_pb.Common
 {

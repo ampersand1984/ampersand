@@ -1,12 +1,11 @@
-﻿using ampersand.Core.Common;
-using ampersand_pb.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Windows;
 using System.Xml.Linq;
+using ampersand.Core.Common;
+using ampersand_pb.Models;
 
 namespace ampersand_pb.DataAccess
 {
@@ -18,25 +17,6 @@ namespace ampersand_pb.DataAccess
         }
 
         private ConfiguracionModel _configuracion;
-
-        private XDocument GetXDocument(string file, string periodo)
-        {
-            XDocument xdoc = null;
-
-            try
-            {
-                xdoc = XDocument.Load(file);
-            }
-            catch (FileNotFoundException)
-            {
-                xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", periodo)));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            return xdoc;
-        }
 
         public IEnumerable<BaseMovimiento> GetMovimientos(ResumenAgrupadoModel resumenAgrupadoM)
         {
@@ -277,59 +257,64 @@ namespace ampersand_pb.DataAccess
             return resultado;
         }
 
+
+        public void SaveMovimientos(ResumenModel resumenM, IEnumerable<BaseMovimiento> movimientosDelResumen)
+        {
+            var strProximoCierre = resumenM.ProximoCierre != DateTime.MinValue ?
+                resumenM.ProximoCierre.ToString("yyyyMMdd") :
+                string.Empty;
+
+            var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
+                                                                 new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
+                                                                 new XAttribute("Tipo", TiposDeMovimiento.Credito),
+                                                                 new XAttribute("Descripcion", resumenM.Descripcion),
+                                                                 new XAttribute("Cotizacion", resumenM.Cotizacion),
+                                                                 new XAttribute("ProximoCierre", strProximoCierre)));
+
+            foreach (var mov in movimientosDelResumen)
+            {
+                var strMov = "Mov";
+
+                if (mov is DeudaModel)
+                    strMov = "Deuda";
+
+                var xMov = new XElement(strMov, new XAttribute("Verif", mov.Seleccionado),
+                                                new XAttribute("IdMovimiento", mov.IdMovimiento),
+                                                new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
+                                                new XAttribute("Descripcion", mov.Descripcion));
+
+                if (mov.EsMonedaExtranjera)
+                    xMov.Add(new XAttribute("MontoME", mov.MontoME.Round()));
+                else
+                    xMov.Add(new XAttribute("Monto", mov.Monto.Round()));
+
+                if (mov.DescripcionAdicional.Length > 0)
+                    xMov.Add(new XAttribute("DescripcionAdicional", mov.DescripcionAdicional));
+
+                if (mov.Cuota.Length > 0)
+                    xMov.Add(new XAttribute("Cuota", mov.Cuota));
+
+                if (mov.Tags.Any())
+                    xMov.Add(new XAttribute("Tags", string.Join(";", mov.Tags)));
+
+                if (mov.EsMensual)
+                    xMov.Add(new XAttribute("EsMensual", mov.EsMensual));
+
+                if (mov.EsAjeno)
+                    xMov.Add(new XAttribute("EsAjeno", mov.EsAjeno));
+
+                xdoc.Root.Add(xMov);
+            }
+
+            xdoc.Save(resumenM.FilePath);
+        }
+
         public void SaveMovimientos(ResumenAgrupadoModel resumenAgrupadoM, IEnumerable<BaseMovimiento> movimientos)
         {
             foreach (var resumenM in resumenAgrupadoM.Resumenes.Where(a => a.HuboCambios))
             {
                 var movimientosDelResumen = movimientos.Where(a => a.IdResumen.Equals(resumenM.Id)).ToList();
-
-                var strProximoCierre = resumenM.ProximoCierre != DateTime.MinValue ?
-                    resumenM.ProximoCierre.ToString("yyyyMMdd") :
-                    string.Empty;
-
-                var xdoc = new XDocument(new XElement("Movimientos", new XAttribute("Periodo", resumenM.Periodo),
-                                                                     new XAttribute("FechaDeCierre", resumenM.FechaDeCierre.ToString("yyyyMMdd")),
-                                                                     new XAttribute("Tipo", TiposDeMovimiento.Credito),
-                                                                     new XAttribute("Descripcion", resumenM.Descripcion),
-                                                                     new XAttribute("Cotizacion", resumenM.Cotizacion),
-                                                                     new XAttribute("ProximoCierre", strProximoCierre)));
-
-                foreach (var mov in movimientosDelResumen)
-                {
-                    var strMov = "Mov";
-
-                    if (mov is DeudaModel)
-                        strMov = "Deuda";
-
-                    var xMov = new XElement(strMov, new XAttribute("Verif", mov.Seleccionado),
-                                                    new XAttribute("IdMovimiento", mov.IdMovimiento),
-                                                    new XAttribute("Fecha", mov.Fecha.ToString("yyyyMMdd")),
-                                                    new XAttribute("Descripcion", mov.Descripcion));
-
-                    if (mov.EsMonedaExtranjera)
-                        xMov.Add(new XAttribute("MontoME", mov.MontoME));
-                    else
-                        xMov.Add(new XAttribute("Monto", mov.Monto));
-
-                    if (mov.DescripcionAdicional.Length > 0)
-                        xMov.Add(new XAttribute("DescripcionAdicional", mov.DescripcionAdicional));
-
-                    if (mov.Cuota.Length > 0)
-                        xMov.Add(new XAttribute("Cuota", mov.Cuota));
-
-                    if (mov.Tags.Any())
-                        xMov.Add(new XAttribute("Tags", string.Join(";", mov.Tags)));
-
-                    if (mov.EsMensual)
-                        xMov.Add(new XAttribute("EsMensual", mov.EsMensual));
-
-                    if (mov.EsAjeno)
-                        xMov.Add(new XAttribute("EsAjeno", mov.EsAjeno));
-
-                    xdoc.Root.Add(xMov);
-                }
-
-                xdoc.Save(resumenM.FilePath);
+                SaveMovimientos(resumenM, movimientosDelResumen);
             }
         }
     }
@@ -340,6 +325,7 @@ namespace ampersand_pb.DataAccess
         ResumenAgrupadoModel GetUltimoResumen();
         IEnumerable<BaseMovimiento> GetMovimientos(ResumenAgrupadoModel resumenAgrupadoM);
         IEnumerable<BaseMovimiento> GetMovimientos(ResumenModel resumen);
+        void SaveMovimientos(ResumenModel resumenM, IEnumerable<BaseMovimiento> movimientosDelResumen);
         void SaveMovimientos(ResumenAgrupadoModel resumenAgrupadoM, IEnumerable<BaseMovimiento> movimientos);
         ResumenAgrupadoModel GetResumen(string periodo);
     }

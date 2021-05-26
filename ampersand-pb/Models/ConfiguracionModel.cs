@@ -1,8 +1,7 @@
-﻿using ampersand.Core.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Resources;
+using ampersand.Core.Common;
 
 namespace ampersand_pb.Models
 {

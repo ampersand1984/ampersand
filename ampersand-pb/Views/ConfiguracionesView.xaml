@@ -21,6 +21,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -92,7 +93,14 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Grid Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="6" VerticalAlignment="Bottom">
+        <CheckBox IsChecked="{Binding VerCheckDeVerificacion}" 
+                  Content="Ver check de verificación en la vista de movimientos"
+                  Grid.Column="0" 
+                  Grid.ColumnSpan="4" 
+                  Grid.Row="6" 
+                  Margin="0,20"/>
+
+        <Grid Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="7" VerticalAlignment="Bottom">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>

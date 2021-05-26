@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using ampersand.Core;
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
+using ampersand_pb.Properties;
 using MahApps.Metro.Controls.Dialogs;
 using static ampersand_pb.ViewModels.MovimientosViewModel;
 
@@ -16,7 +18,9 @@ namespace ampersand_pb.ViewModels
         private const string TOTALES_MENSUAL = "Totales mensuales";
         private const string TOTALES_POR_TARJETA_MENSUAL = "Totales mensuales por tarjeta";
         private const string TOTALES_POR_TAGS_MENSUAL = "Totales mensuales por categoría";
+        private const string MOVIMIENTOS_POR_TAGS_SEMANAL = "Movimientos semanales por categoría";
         private const string TOTALES_DE_CUOTAS = "Totales mensuales de cuotas";
+        private const string DIFERENCIA_CON_MES_ANTERIOR = "Diferencia con mes anterior por categoría";
 
         public ResumenesGraficosViewModel(IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM)
         {
@@ -25,29 +29,16 @@ namespace ampersand_pb.ViewModels
                 new TipoDeGrafico { Descripcion = TOTALES_MENSUAL, Tipo = TiposDeAgrupacion.Totales },
                 new TipoDeGrafico { Descripcion = TOTALES_POR_TARJETA_MENSUAL, Tipo = TiposDeAgrupacion.MedioDePago },
                 new TipoDeGrafico { Descripcion = TOTALES_POR_TAGS_MENSUAL, Tipo = TiposDeAgrupacion.Tag },
-                new TipoDeGrafico { Descripcion = TOTALES_DE_CUOTAS, Tipo = TiposDeAgrupacion.Cuotas }
+                //new TipoDeGrafico { Descripcion = MOVIMIENTOS_POR_TAGS_SEMANAL, Tipo = TiposDeAgrupacion.TagSemanales },
+                new TipoDeGrafico { Descripcion = TOTALES_DE_CUOTAS, Tipo = TiposDeAgrupacion.Cuotas },
+                new TipoDeGrafico { Descripcion = DIFERENCIA_CON_MES_ANTERIOR, Tipo = TiposDeAgrupacion.DiferenciaConMesAnterior }
             };
 
-            _graficoSeleccionado = TiposDeGraficos.ElementAt(1);
+            _incluyeAjenos = Settings.Default.IncluirMovimientosAjenos;
+            _graficoSeleccionado = (TiposDeAgrupacion)Settings.Default.TipoDeGraficoEnResumen;
 
             _movimientosDA = movimientosDA;
             _configuracionM = configuracionM;
-
-            _resumenes = _movimientosDA.GetResumenes();
-            if (_resumenes.Any())
-            {
-                SetPeriodos();
-
-                _minimoPeriodo = (DateTime.Today.Year - 1) + "01";//Enero del año pasado
-                //o junio si ya estamos mes 6
-                if (DateTime.Today.Month > 5)
-                    _minimoPeriodo = (DateTime.Today.Year - 1) + "06";//Junio del año pasado
-
-                if (int.Parse(_minimoPeriodo) < int.Parse(_resumenes.Min(a => a.Periodo)))
-                    _minimoPeriodo = _resumenes.Min(a => a.Periodo);//a menos que no exista
-
-            }
-            _maximoPeriodo = _resumenes.Max(a => a.Periodo);
         }
 
         private void SetPeriodos()
@@ -59,7 +50,7 @@ namespace ampersand_pb.ViewModels
                         TextoPeriodo = grp.First().TextoPeriodo
                     }).ToList();
 
-            if (GraficoSeleccionado.Tipo == TiposDeAgrupacion.Cuotas)
+            if (GraficoSeleccionado == TiposDeAgrupacion.Cuotas)
             {
                 for (int i = 1; i < 13; i++)
                 {
@@ -104,8 +95,8 @@ namespace ampersand_pb.ViewModels
 
         public IEnumerable<TipoDeGrafico> TiposDeGraficos { get; private set; }
 
-        private TipoDeGrafico _graficoSeleccionado;
-        public TipoDeGrafico GraficoSeleccionado
+        private TiposDeAgrupacion _graficoSeleccionado;
+        public TiposDeAgrupacion GraficoSeleccionado
         {
             get
             {
@@ -114,7 +105,13 @@ namespace ampersand_pb.ViewModels
             set
             {
                 _graficoSeleccionado = value;
+                _itemsDelGrafico = null;
                 OnPropertyChanged("GraficoSeleccionado");
+                OnPropertyChanged("ItemsDelGrafico");
+                OnPropertyChanged("MostrarTags");
+                OnPropertyChanged("MostrarDiferenciaConMesAnterior");
+                OnPropertyChanged("MostrarPeriodos");
+                ActualizarGraficoSettings();
             }
         }
 
@@ -152,9 +149,55 @@ namespace ampersand_pb.ViewModels
         public bool IncluyeAjenos
         {
             get { return _incluyeAjenos; }
-            set { _incluyeAjenos = value; OnPropertyChanged("IncluyeAjenos"); }
+            set
+            {
+                _incluyeAjenos = value;
+                OnPropertyChanged("IncluyeAjenos");
+            }
         }
 
+        private IEnumerable<string> _tags;
+        public IEnumerable<string> Tags
+        {
+            get
+            {
+                if (_tags == null)
+                    _tags = _configuracionM.Tags.Select(a => a.Tag).ToList();
+                return _tags;
+            }
+        }
+
+        private string _tagSeleccionado;
+        public string TagSeleccionado
+        {
+            get { return _tagSeleccionado ?? (_tagSeleccionado = Tags.First()); }
+            set { _tagSeleccionado = value; OnPropertyChanged("TagSeleccionado"); }
+        }
+
+        public bool MostrarTags
+        {
+            get { return GraficoSeleccionado == TiposDeAgrupacion.TagSemanales; }
+        }
+
+        public bool MostrarDiferenciaConMesAnterior
+        {
+            get { return GraficoSeleccionado == TiposDeAgrupacion.DiferenciaConMesAnterior; }
+        }
+
+        public bool MostrarPeriodos
+        {
+            get { return GraficoSeleccionado != TiposDeAgrupacion.DiferenciaConMesAnterior; }
+        }
+
+        public string TotalDiferencia
+        {
+            get
+            {
+                return GraficoSeleccionado == TiposDeAgrupacion.DiferenciaConMesAnterior && _itemsDelGrafico != null ?
+                    "$" + ItemsDelGrafico.Sum(a => a.Items.ElementAt(1).Monto - a.Items.ElementAt(0).Monto).ToString("N0") :
+                    "";
+            }
+        }
 
         private IEnumerable<DatosDelGrafico> _itemsDelGrafico;
         public IEnumerable<DatosDelGrafico> ItemsDelGrafico
@@ -162,7 +205,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 if (_itemsDelGrafico == null)
-                    _itemsDelGrafico = GetDatosDelGrafico();
+                    CargarItemsDelGrafico();
                 return _itemsDelGrafico;
             }
         }
@@ -194,6 +237,21 @@ namespace ampersand_pb.ViewModels
             }
         }
 
+        private void ActualizarGraficoSettings()
+        {
+            var tipoDeGrafiSeleccionado = (int)GraficoSeleccionado;
+
+            var actualizar = Settings.Default.TipoDeGraficoEnResumen != tipoDeGrafiSeleccionado ||
+                             Settings.Default.IncluirMovimientosAjenos != _incluyeAjenos;
+
+            if (actualizar)
+            {
+                Settings.Default.IncluirMovimientosAjenos = _incluyeAjenos;
+                Settings.Default.TipoDeGraficoEnResumen = tipoDeGrafiSeleccionado;
+                Settings.Default.Save();
+            }
+        }
+
         private bool MostrarSeleccionCommandCanExecute(ItemGrafico itemGrafico)
         {
             return itemGrafico != null;
@@ -201,13 +259,13 @@ namespace ampersand_pb.ViewModels
 
         private void MostrarSeleccionCommandExecute(ItemGrafico itemGrafico)
         {
-            switch (GraficoSeleccionado.Tipo)
+            switch (GraficoSeleccionado)
             {
                 case TiposDeAgrupacion.Totales:
                     {
                         var resumenAgrupado = _movimientosDA.GetResumen(itemGrafico.Id);
 
-                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM);
+                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM) { DialogCoordinator = DialogCoordinator };
                         OnPublishViewModelEvent(movimientosVM);
                     }
                     break;
@@ -216,8 +274,8 @@ namespace ampersand_pb.ViewModels
                     {
                         var resumenAgrupado = _movimientosDA.GetResumen(itemGrafico.Id);
 
-                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM);
-                        movimientosVM.GraficosSelectedItem = new AgrupacionItem() { Tipo = GraficoSeleccionado.Tipo, Id = itemGrafico.Grupo };
+                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM) { DialogCoordinator = DialogCoordinator };
+                        movimientosVM.GraficosSelectedItem = new AgrupacionItem() { Tipo = GraficoSeleccionado, Id = itemGrafico.Grupo };
                         OnPublishViewModelEvent(movimientosVM);
                     }
                     break;
@@ -226,8 +284,8 @@ namespace ampersand_pb.ViewModels
                     {
                         var resumenAgrupado = _movimientosDA.GetResumen(itemGrafico.Id);
 
-                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM);
-                        movimientosVM.GraficosSelectedItem = new AgrupacionItem() { Tipo = GraficoSeleccionado.Tipo, Id = itemGrafico.Grupo, Descripcion = itemGrafico.Grupo };
+                        var movimientosVM = new MovimientosViewModel(resumenAgrupado, _movimientosDA, _configuracionM) { DialogCoordinator = DialogCoordinator };
+                        movimientosVM.GraficosSelectedItem = new AgrupacionItem() { Tipo = GraficoSeleccionado, Id = itemGrafico.Grupo, Descripcion = itemGrafico.Grupo };
                         OnPublishViewModelEvent(movimientosVM);
                     }
                     break;
@@ -237,129 +295,173 @@ namespace ampersand_pb.ViewModels
             }
         }
 
-        private IEnumerable<DatosDelGrafico> GetDatosDelGrafico()
+        private void CargarItemsDelGrafico()
         {
-            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
-
-            var resumenesPorFecha = _resumenes.Where(a => mediosDePago.Contains(a.Id))
-                                              .Where(a => int.Parse(a.Periodo) >= int.Parse(MinimoPeriodo))
-                                              .Where(a => int.Parse(a.Periodo) <= int.Parse(MaximoPeriodo));
-
-            var periodos = resumenesPorFecha.Select(a => a.Periodo)
-                                            .Distinct()
-                                            .OrderBy(a => a);
-
-            var resultado = new List<DatosDelGrafico>();
-
-            SetPeriodos();
-
-            switch (GraficoSeleccionado.Tipo)
+            var task = new Task<IEnumerable<DatosDelGrafico>>(() =>
             {
-                case TiposDeAgrupacion.Totales:
-                    {
-                        var totales = new List<dynamic>()
+                if (_resumenes == null)
+                    CargarResumenes();
+
+                var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+
+                var resumenesPorFecha = _resumenes.Where(a => mediosDePago.Contains(a.Id))
+                                                  .Where(a => int.Parse(a.Periodo) >= int.Parse(MinimoPeriodo))
+                                                  .Where(a => int.Parse(a.Periodo) <= int.Parse(MaximoPeriodo))
+                                                  .ToList();
+
+                var periodos = resumenesPorFecha.Select(a => a.Periodo)
+                                                .Distinct()
+                                                .OrderBy(a => a)
+                                                .ToList();
+
+                var resultado = new List<DatosDelGrafico>();
+
+                SetPeriodos();
+
+                switch (GraficoSeleccionado)
+                {
+                    case TiposDeAgrupacion.Totales:
+                        {
+                            var totales = new List<dynamic>()
                         {
                             new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotal(IncluyeAjenos)), chartTitle = TOTALES_MENSUAL },
                             new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotalDeuda(IncluyeAjenos)), chartTitle = "Deuda de tarjetas" },
                             new { getTotal = new Func<ResumenModel, decimal>(r => r.GetTotalSinDeuda(IncluyeAjenos)), chartTitle = TOTALES_MENSUAL + " sin deuda" }
                         };
 
-                        foreach (var tot in totales)
-                        {
-                            var items = new List<ItemGrafico>();
-                            foreach (var periodo in periodos)
+                            foreach (var tot in totales)
                             {
-                                items.Add(new ItemGrafico
+                                var items = new List<ItemGrafico>();
+                                foreach (var periodo in periodos)
                                 {
-                                    Descripcion = resumenesPorFecha.FirstOrDefault(a => a.Periodo.Equals(periodo)).TextoPeriodo,
-                                    Id = periodo,
-                                    Monto = resumenesPorFecha.Where(a => a.Periodo.Equals(periodo)).Sum(a => (decimal)tot.getTotal(a))
+                                    items.Add(new ItemGrafico
+                                    {
+                                        Descripcion = resumenesPorFecha.FirstOrDefault(a => a.Periodo.Equals(periodo)).TextoPeriodo,
+                                        Id = periodo,
+                                        Monto = resumenesPorFecha.Where(a => a.Periodo.Equals(periodo)).Sum(a => (decimal)tot.getTotal(a))
+                                    });
+                                }
+
+                                resultado.Add(new DatosDelGrafico
+                                {
+                                    ChartTitle = tot.chartTitle,
+                                    ChartSubTitle = "",
+                                    Items = items
                                 });
                             }
-
-                            resultado.Add(new DatosDelGrafico
-                            {
-                                ChartTitle = tot.chartTitle,
-                                ChartSubTitle = "",
-                                Items = items
-                            });
                         }
-                    }
-                    break;
+                        break;
 
-                case TiposDeAgrupacion.MedioDePago:
-                    {
-                        var tipos = resumenesPorFecha.Select(a => a.Descripcion).Distinct();
-
-                        foreach (var tipo in tipos)
+                    case TiposDeAgrupacion.MedioDePago:
                         {
-                            var datosDelGrafico = new DatosDelGrafico
-                            {
-                                ChartTitle = tipo,
-                                ChartSubTitle = "",
-                            };
+                            var tipos = resumenesPorFecha.Select(a => a.Descripcion).Distinct();
 
-                            var resumenesPorTipo = resumenesPorFecha.Where(a => a.Descripcion.Equals(tipo))
-                                                             .Where(a => periodos.Contains(a.Periodo))
-                                                             .Select(a => new ItemGrafico
-                                                             {
-                                                                 Id = a.Periodo,
-                                                                 Descripcion = a.TextoPeriodo,
-                                                                 Monto = a.GetTotal(IncluyeAjenos),
-                                                                 Grupo = a.Id
-                                                             })
-                                                             .ToList();
-
-                            foreach (var periodo in periodos)
+                            foreach (var tipo in tipos)
                             {
-                                if (!resumenesPorTipo.Any(a => a.Id.Equals(periodo)))
+                                var datosDelGrafico = new DatosDelGrafico
                                 {
+                                    ChartTitle = tipo,
+                                    ChartSubTitle = "",
+                                };
+
+                                var resumenesPorTipo = resumenesPorFecha.Where(a => a.Descripcion.Equals(tipo))
+                                                                 .Where(a => periodos.Contains(a.Periodo))
+                                                                 .Select(a => new ItemGrafico
+                                                                 {
+                                                                     Id = a.Periodo,
+                                                                     Descripcion = a.TextoPeriodo,
+                                                                     Monto = a.GetTotal(IncluyeAjenos),
+                                                                     Grupo = a.Id
+                                                                 })
+                                                                 .ToList();
+
+                                foreach (var periodo in periodos)
+                                {
+                                    if (!resumenesPorTipo.Any(a => a.Id.Equals(periodo)))
+                                    {
+                                        var month = int.Parse(periodo.Substring(4));
+                                        var year = int.Parse(periodo.Substring(0, 4));
+                                        var descripcion = new DateTime(year, month, 20).ToString("MMMM");
+                                        descripcion = descripcion.Substring(0, 1).ToUpper() + descripcion.Substring(1);
+                                        descripcion += " " + year;
+
+                                        var resumenVacio = new ItemGrafico
+                                        {
+                                            Id = periodo,
+                                            Descripcion = descripcion
+                                        };
+                                        resumenesPorTipo.Add(resumenVacio);
+                                    }
+                                }
+
+                                datosDelGrafico.Items = resumenesPorTipo.OrderBy(a => a.Id).ToList();
+
+                                resultado.Add(datosDelGrafico);
+                            }
+                        }
+                        break;
+
+                    case TiposDeAgrupacion.DiferenciaConMesAnterior:
+                    case TiposDeAgrupacion.Tag:
+                        {
+                            if (GraficoSeleccionado == TiposDeAgrupacion.DiferenciaConMesAnterior)
+                            {
+                                periodos = periodos.Where(a => a.Equals(periodos.Last()) || a.Equals(periodos.ElementAt(periodos.Count - 2))).ToList();
+
+                                resumenesPorFecha = resumenesPorFecha.Where(a => periodos.Contains(a.Periodo)).ToList();
+                            }
+
+                            var movimientos = new List<KeyValuePair<string, IEnumerable<BaseMovimiento>>>();
+                            //cargo los resúmenes
+                            foreach (var resumen in resumenesPorFecha)
+                            {
+                                var movimientosPorResumen = _movimientosDA.GetMovimientos(resumen);
+
+                                if (!IncluyeAjenos)
+                                    movimientosPorResumen = movimientosPorResumen.Where(a => !a.EsAjeno);
+
+                                movimientos.Add(new KeyValuePair<string, IEnumerable<BaseMovimiento>>(resumen.Periodo, movimientosPorResumen));
+                            }
+
+                            var tags = movimientos.SelectMany(a => a.Value).SelectMany(b => b.Tags).Distinct();
+
+                            foreach (var tag in tags)
+                            {
+                                var items = new List<ItemGrafico>();
+                                foreach (var periodo in periodos)
+                                {
+                                    var movimientosPorTagDelPeriodo = movimientos.Where(a => a.Key.Equals(periodo))
+                                                                                 .SelectMany(a => a.Value)
+                                                                                 .Where(a => a.Tags.Any(b => b.Equals(tag)))
+                                                                                 .ToList();
+
                                     var month = int.Parse(periodo.Substring(4));
                                     var year = int.Parse(periodo.Substring(0, 4));
                                     var descripcion = new DateTime(year, month, 20).ToString("MMMM");
                                     descripcion = descripcion.Substring(0, 1).ToUpper() + descripcion.Substring(1);
                                     descripcion += " " + year;
 
-                                    var resumenVacio = new ItemGrafico
+                                    items.Add(new ItemGrafico()
                                     {
                                         Id = periodo,
-                                        Descripcion = descripcion
-                                    };
-                                    resumenesPorTipo.Add(resumenVacio);
+                                        Descripcion = descripcion,
+                                        Monto = movimientosPorTagDelPeriodo.Sum(a => a.Monto),
+                                        Grupo = tag
+                                    });
                                 }
+
+                                var datosDelGrafico = GetDatosDelGrafico(tag, items, GraficoSeleccionado);
+
+                                resultado.Add(datosDelGrafico);
                             }
 
-                            datosDelGrafico.Items = resumenesPorTipo.OrderBy(a => a.Id).ToList();
-
-                            resultado.Add(datosDelGrafico);
-                        }
-                    }
-                    break;
-
-                case TiposDeAgrupacion.Tag:
-                    {
-                        var movimientos = new List<KeyValuePair<string, IEnumerable<BaseMovimiento>>>();
-                        //cargo los resúmenes
-                        foreach (var resumen in resumenesPorFecha)
-                        {
-                            var movimientosPorResumen = _movimientosDA.GetMovimientos(resumen);
-
-                            if (!IncluyeAjenos)
-                                movimientosPorResumen = movimientosPorResumen.Where(a => !a.EsAjeno);
-
-                            movimientos.Add(new KeyValuePair<string, IEnumerable<BaseMovimiento>>(resumen.Periodo, movimientosPorResumen));
-                        }
-
-                        var tags = movimientos.SelectMany(a => a.Value).SelectMany(b => b.Tags).Distinct();
-
-                        foreach (var tag in tags)
-                        {
-                            var items = new List<ItemGrafico>();
+                            //sin tags
+                            var itemsSinTags = new List<ItemGrafico>();
                             foreach (var periodo in periodos)
                             {
-                                var movimientosPorTagDelPeriodo = movimientos.Where(a => a.Key.Equals(periodo))
+                                var movimientosSinTagDelPeriodo = movimientos.Where(a => a.Key.Equals(periodo))
                                                                              .SelectMany(a => a.Value)
-                                                                             .Where(a => a.Tags.Any(b => b.Equals(tag)))
+                                                                             .Where(a => !a.Tags.Any())
                                                                              .ToList();
 
                                 var month = int.Parse(periodo.Substring(4));
@@ -368,123 +470,185 @@ namespace ampersand_pb.ViewModels
                                 descripcion = descripcion.Substring(0, 1).ToUpper() + descripcion.Substring(1);
                                 descripcion += " " + year;
 
-                                items.Add(new ItemGrafico()
+                                itemsSinTags.Add(new ItemGrafico()
                                 {
                                     Id = periodo,
                                     Descripcion = descripcion,
-                                    Monto = movimientosPorTagDelPeriodo.Sum(a => a.Monto),
-                                    Grupo = tag
+                                    Monto = movimientosSinTagDelPeriodo.Sum(a => a.Monto),
+                                    Grupo = TagModel.SIN_CATEGORIA
                                 });
                             }
+                            var datosDelGraficoSinCategoria = GetDatosDelGrafico("Sin categoría", itemsSinTags, GraficoSeleccionado);
+
+                            resultado.Add(datosDelGraficoSinCategoria);
+                        }
+                        break;
+
+                    case TiposDeAgrupacion.Cuotas:
+                        {
+                            _maximoPeriodo = Periodos.Last().Periodo;
+
+                            var movimientos = new Dictionary<string, List<BaseMovimiento>>();
+                            //cargo los resúmenes
+                            foreach (var resumen in resumenesPorFecha.OrderBy(a => a.Periodo))
+                            {
+                                var movimientosPorResumen = _movimientosDA.GetMovimientos(resumen).ToList();
+
+                                movimientosPorResumen.RemoveAll(a => a.Cuota.IsNullOrEmpty());
+
+                                if (!IncluyeAjenos)
+                                    movimientosPorResumen.RemoveAll(a => a.EsAjeno);
+
+                                if (movimientos.Keys.Contains(resumen.Periodo))
+                                    movimientos[resumen.Periodo].AddRange(movimientosPorResumen);
+                                else
+                                    movimientos[resumen.Periodo] = movimientosPorResumen;
+                            }
+
+                            while (movimientos.Keys.Last() != MaximoPeriodo)
+                            {
+                                var ultimoPeriodo = movimientos.Keys.Last();
+                                var nuevoPeriodo = (ultimoPeriodo + "01").ToDateTime().AddMonths(1).GetPeriodo();
+                                var nuevosMovimientos = MovimientosViewModel.GetMovimientosProyectados(movimientos[ultimoPeriodo]);
+
+                                movimientos[nuevoPeriodo] = nuevosMovimientos.ToList();
+                            }
+
+
+                            var items = new List<ItemGrafico>();
+
+                            foreach (var periodo in movimientos.Keys)
+                            {
+                                items.Add(new ItemGrafico
+                                {
+                                    Id = periodo,
+                                    Descripcion = periodo,
+                                    Monto = movimientos[periodo].Sum(a => a.Monto),
+                                    Grupo = periodo
+                                });
+                            }
+
                             var datosDelGrafico = new DatosDelGrafico
                             {
-                                ChartTitle = tag,
+                                ChartTitle = "Totales de deuda de tarjetas",
                                 ChartSubTitle = "",
                                 Items = items
                             };
 
                             resultado.Add(datosDelGrafico);
+
                         }
+                        break;
 
-                        //sin tags
-                        var itemsSinTags = new List<ItemGrafico>();
-                        foreach (var periodo in periodos)
-                        {
-                            var movimientosSinTagDelPeriodo = movimientos.Where(a => a.Key.Equals(periodo))
-                                                                         .SelectMany(a => a.Value)
-                                                                         .Where(a => !a.Tags.Any())
-                                                                         .ToList();
+                    //case TiposDeAgrupacion.TagSemanales:
+                    //    {
+                    //        var movimientos = new List<KeyValuePair<string, IEnumerable<BaseMovimiento>>>();
+                    //        //cargo los resúmenes
+                    //        foreach (var resumen in resumenesPorFecha)
+                    //        {
+                    //            var movimientosPorResumen = _movimientosDA.GetMovimientos(resumen);
 
-                            var month = int.Parse(periodo.Substring(4));
-                            var year = int.Parse(periodo.Substring(0, 4));
-                            var descripcion = new DateTime(year, month, 20).ToString("MMMM");
-                            descripcion = descripcion.Substring(0, 1).ToUpper() + descripcion.Substring(1);
-                            descripcion += " " + year;
+                    //            movimientosPorResumen = movimientosPorResumen.Where(a => a.Tags.Contains(TagSeleccionado));
 
-                            itemsSinTags.Add(new ItemGrafico()
-                            {
-                                Id = periodo,
-                                Descripcion = descripcion,
-                                Monto = movimientosSinTagDelPeriodo.Sum(a => a.Monto),
-                                Grupo = TagModel.SIN_CATEGORIA
-                            });
-                        }
-                        var datosDelGraficoSinCategoria = new DatosDelGrafico
-                        {
-                            ChartTitle = "Sin categoría",
-                            ChartSubTitle = "",
-                            Items = itemsSinTags
-                        };
+                    //            if (!IncluyeAjenos)
+                    //                movimientosPorResumen = movimientosPorResumen.Where(a => !a.EsAjeno);
 
-                        resultado.Add(datosDelGraficoSinCategoria);
-                    }
-                    break;
+                    //            movimientos.Add(new KeyValuePair<string, IEnumerable<BaseMovimiento>>(resumen.Periodo, movimientosPorResumen));
+                    //        }
 
-                case TiposDeAgrupacion.Cuotas:
-                    {
-                        _maximoPeriodo = Periodos.Last().Periodo;
-
-                        var movimientos = new Dictionary<string, List<BaseMovimiento>>();
-                        //cargo los resúmenes
-                        foreach (var resumen in resumenesPorFecha.OrderBy(a => a.Periodo))
-                        {
-                            var movimientosPorResumen = _movimientosDA.GetMovimientos(resumen).ToList();
-
-                            movimientosPorResumen.RemoveAll(a => a.Cuota.IsNullOrEmpty());
-
-                            if (!IncluyeAjenos)
-                                movimientosPorResumen.RemoveAll(a => a.EsAjeno);
-
-                            if (movimientos.Keys.Contains(resumen.Periodo))
-                                movimientos[resumen.Periodo].AddRange(movimientosPorResumen);
-                            else
-                                movimientos[resumen.Periodo] = movimientosPorResumen;
-                        }
-
-                        while (movimientos.Keys.Last() != MaximoPeriodo)
-                        {
-                            var ultimoPeriodo = movimientos.Keys.Last();
-                            var nuevoPeriodo = (ultimoPeriodo + "01").ToDateTime().AddMonths(1).GetPeriodo();
-                            var nuevosMovimientos = MovimientosViewModel.GetMovimientosProyectados(movimientos[ultimoPeriodo]);
-
-                            movimientos[nuevoPeriodo] = nuevosMovimientos.ToList();
-                        }
+                    //        var items = new List<ItemGrafico>();
+                    //        foreach (var periodo in periodos)
+                    //        {
+                    //            var movimientosDelPeriodo = movimientos.Where(a => a.Key.Equals(periodo))
+                    //                                                         .SelectMany(a => a.Value)
+                    //                                                         .ToList();
+                    //            //armo las fechas
+                    //            var primerFecha = movimientosDelPeriodo.First().Fecha;
+                    //            while (primerFecha.DayOfWeek != DayOfWeek.Friday)
+                    //                primerFecha = primerFecha.AddDays(-1);
 
 
-                        var items = new List<ItemGrafico>();
 
-                        foreach (var periodo in movimientos.Keys)
-                        {
-                            items.Add(new ItemGrafico
-                            {
-                                Id = periodo,
-                                Descripcion = periodo,
-                                Monto = movimientos[periodo].Sum(a => a.Monto),
-                                Grupo = periodo
-                            });
-                        }
+                    //            items.Add(new ItemGrafico()
+                    //            {
+                    //                Id = periodo,
+                    //                Descripcion = periodo,
+                    //                Monto = movimientosDelPeriodo.Sum(a => a.Monto),
+                    //                Grupo = "tag"
+                    //            });
 
-                        var datosDelGrafico = new DatosDelGrafico
-                        {
-                            ChartTitle = "Totales de deuda de tarjetas",
-                            ChartSubTitle = "",
-                            Items = items
-                        };
+                    //            var datosDelGrafico = new DatosDelGrafico
+                    //            {
+                    //                ChartTitle = "tag",
+                    //                ChartSubTitle = "",
+                    //                Items = items
+                    //            };
 
-                        resultado.Add(datosDelGrafico);
+                    //            resultado.Add(datosDelGrafico);
+                    //        }
+                    //    }
+                    //    break;
 
-                    }
-                    break;
+                    default:
+                        break;
+                }
 
-                default:
-                    break;
+                resultado = GraficoSeleccionado != TiposDeAgrupacion.DiferenciaConMesAnterior ?
+                    resultado.OrderByDescending(a => a.Items.Count())
+                             .OrderByDescending(a => a.Items.Sum(b => b.Monto))
+                             .ToList() :
+                    resultado.Cast<DatosDelGraficoDiferencial>().OrderByDescending(a => Math.Abs(a.Diferencia))
+                             .ToList<DatosDelGrafico>();
+
+                return resultado;
+            });
+            task.ContinueWith(t =>
+            {
+                _itemsDelGrafico = t.Result;
+                OnPropertyChanged("ItemsDelGrafico");
+                OnPropertyChanged("TotalDiferencia");
+            });
+
+            task.Start();
+        }
+
+        private void CargarResumenes()
+        {
+            _resumenes = _movimientosDA.GetResumenes();
+            if (_resumenes.Any())
+            {
+                SetPeriodos();
+
+                _minimoPeriodo = (DateTime.Today.Year - 1) + "01";//Enero del año pasado
+                //o junio si ya estamos mes 6
+                if (DateTime.Today.Month > 5)
+                    _minimoPeriodo = (DateTime.Today.Year - 1) + "06";//Junio del año pasado
+
+                if (int.Parse(_minimoPeriodo) < int.Parse(_resumenes.Min(a => a.Periodo)))
+                    _minimoPeriodo = _resumenes.Min(a => a.Periodo);//a menos que no exista
+
             }
+            _maximoPeriodo = _resumenes.Max(a => a.Periodo);
+        }
 
-            resultado = resultado.OrderByDescending(a => a.Items.Count())
-                                 .OrderByDescending(a => a.Items.Sum(b => b.Monto))
-                                 .ToList();
-
-            return resultado;
+        private static DatosDelGrafico GetDatosDelGrafico(string chartTitle, List<ItemGrafico> items, TiposDeAgrupacion graficoSeleccionado)
+        {
+            if (graficoSeleccionado == TiposDeAgrupacion.DiferenciaConMesAnterior)
+            {
+                return new DatosDelGraficoDiferencial
+                {
+                    ChartTitle = chartTitle,
+                    ChartSubTitle = "",
+                    Items = items
+                };
+            }
+            else
+                return new DatosDelGrafico
+                {
+                    ChartTitle = chartTitle,
+                    ChartSubTitle = "",
+                    Items = items
+                };
         }
 
         protected override void OnPropertyChanged(string propertyName)
@@ -498,6 +662,7 @@ namespace ampersand_pb.ViewModels
             {
                 _itemsDelGrafico = null;
                 OnPropertyChanged("ItemsDelGrafico");
+                OnPropertyChanged("TotalDiferencia");
             }
         }
 
@@ -527,6 +692,65 @@ namespace ampersand_pb.ViewModels
         public string ChartSubTitle { get; set; }
         public IEnumerable<ItemGrafico> Items { get; set; }
     }
+
+    public class DatosDelGraficoDiferencial : DatosDelGrafico
+    {
+
+        public string DiferenciaMonto
+        {
+            get
+            {
+                var signo = Diferencia > 0 ? " " : "";
+
+                return ("$" + signo + Diferencia.ToString("N0")).Replace(",", "").PadLeft(10);
+            }
+        }
+
+        public bool SeGastoMenos
+        {
+            get
+            {
+                return Diferencia <= 0;
+            }
+        }
+
+        public decimal Diferencia
+        {
+            get
+            {
+                return Items.ElementAt(1).Monto - Items.ElementAt(0).Monto;
+            }
+        }
+
+        public string DiferenciaPorcentaje
+        {
+            get
+            {
+                var result = string.Empty;
+
+                if (Items.ElementAt(0).Monto > 0)
+                {
+                    var diferenciaPorcentaje = ((Items.ElementAt(1).Monto * 100) / Items.ElementAt(0).Monto);
+                    diferenciaPorcentaje = diferenciaPorcentaje - 100;
+
+                    var strDiferenciaPorcentaje = diferenciaPorcentaje.ToString("N0");
+
+                    if (diferenciaPorcentaje != 0 && Math.Abs(diferenciaPorcentaje) > 10)
+                    {
+                        var signo = diferenciaPorcentaje > 0 ? "+" : "";
+                        result = $"{signo}{strDiferenciaPorcentaje} %";
+                    }
+                    else
+                        result = "~ 0 %";
+                }
+                else
+                    result = "100 %";
+
+                return result.PadLeft(10);
+            }
+        }
+    }
+
 
     public class ItemGrafico
     {

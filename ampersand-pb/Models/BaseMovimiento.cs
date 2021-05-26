@@ -1,14 +1,14 @@
-﻿using ampersand.Core;
-using ampersand.Core.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ampersand.Core;
+using ampersand.Core.Common;
 
 namespace ampersand_pb.Models
 {
     public enum TiposDeMovimiento { Efectivo, Debito, Credito, Deuda }
 
-    public abstract class BaseMovimiento: BaseModel, ICloneable
+    public abstract class BaseMovimiento : BaseModel, ICloneable
     {
         protected BaseMovimiento()
         {
@@ -31,15 +31,29 @@ namespace ampersand_pb.Models
             }
         }
 
+        private string _descripcionPeriodoResumen;
+        public string DescripcionPeriodoResumen
+        {
+            get
+            {
+                return _descripcionPeriodoResumen ?? string.Empty;
+            }
+
+            set
+            {
+                _descripcionPeriodoResumen = value;
+            }
+        }
+
         private bool _seleccionado;
         public bool Seleccionado
         {
             get { return _seleccionado; }
             set { _seleccionado = value; OnPropertyChanged("Seleccionado"); }
         }
-        
+
         public string IdResumen { get; set; }
-        
+
         public int IdMovimiento { get; set; }
 
         public DateTime Fecha { get; set; } = DateTime.Today;
@@ -76,7 +90,7 @@ namespace ampersand_pb.Models
             }
             set
             {
-                _montoME = value; 
+                _montoME = value;
                 _monto = value * Cotizacion;
                 RefrescarMontos();
             }
@@ -126,7 +140,7 @@ namespace ampersand_pb.Models
             get { return _esAjeno; }
             set { _esAjeno = value; OnPropertyChanged("EsAjeno"); }
         }
-        
+
         public string Error
         {
             get;
@@ -193,7 +207,7 @@ namespace ampersand_pb.Models
 
         public override string ToString()
         {
-            var str = string.Format("{0}, {1}, {2}, {3}", IdResumen, Fecha.ToString("dd/MM/yyyy"), Descripcion, Monto);
+            var str = string.Format($"{IdResumen}, {Fecha.ToString("dd/MM/yyyy")}, {Descripcion}, {Monto}");
             return str;
         }
 
@@ -205,8 +219,8 @@ namespace ampersand_pb.Models
 
         public void SetMonto(decimal monto)
         {
-            _monto = monto;
-            _montoME = monto / Cotizacion;
+            _monto = Math.Round(monto, 2);
+            _montoME = _monto / Cotizacion;
             RefrescarMontos();
         }
 
@@ -288,7 +302,7 @@ namespace ampersand_pb.Models
         }
     }
 
-    public class IsSelectedChangedEventHandler: EventArgs
+    public class IsSelectedChangedEventHandler : EventArgs
     {
         public IsSelectedChangedEventHandler(bool isSelected)
         {

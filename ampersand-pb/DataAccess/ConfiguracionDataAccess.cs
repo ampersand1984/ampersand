@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using ampersand_pb.Models;
-using System.Collections.Generic;
+using Serilog;
 
 namespace ampersand_pb.DataAccess
 {
@@ -12,6 +13,8 @@ namespace ampersand_pb.DataAccess
         public ConfiguracionDataAccess()
         {
             _machineName = Environment.MachineName;
+            Log.Information($"ConfiguracionDataAccess start");
+            Log.Information($"ConfiguracionDataAccess machineName: {_machineName}");
         }
 
         private readonly string _machineName;
@@ -22,6 +25,8 @@ namespace ampersand_pb.DataAccess
         {
             var appDirectory = Path.GetDirectoryName(App.ResourceAssembly.Location);
             var filePath = string.Format("{0}\\{1}", appDirectory, CONFIGIGURACION_FILE_NAME);
+
+            Log.Information($"ConfiguracionDataAccess GetConfigFilePath: {filePath}");
             return filePath;
         }
 
@@ -82,7 +87,8 @@ namespace ampersand_pb.DataAccess
                     Id = xelement.Attribute("Id").Value,
                     Descripcion = xelement.Attribute("Descripcion").Value,
                     Tipo = GetTipoDeMovimiento(xelement.Attribute("Tipo").Value),
-                    Ocultar = MovimientosDataAccess.GetValueFromXml("Ocultar", xelement, false)
+                    Ocultar = MovimientosDataAccess.GetValueFromXml("Ocultar", xelement, false),
+                    EsExtensionDe = MovimientosDataAccess.GetValueFromXml("EsExtensionDe", xelement, "")
                 });
             }
 
@@ -106,7 +112,8 @@ namespace ampersand_pb.DataAccess
                 xdoc.Root.Add(new XElement("MedioDePago", new XAttribute("Tipo", item.Tipo),
                                                           new XAttribute("Id", item.Id),
                                                           new XAttribute("Descripcion", item.Descripcion),
-                                                          new XAttribute("Ocultar", item.Ocultar)));
+                                                          new XAttribute("Ocultar", item.Ocultar),
+                                                          new XAttribute("EsExtensionDe", item.EsExtensionDe ?? string.Empty)));
 
             var filePath = string.Format("{0}\\{1}", carpetaDeResumenes, CONFIGIGURACION_DE_PAGOS_FILE_NAME);
             xdoc.Save(filePath);
@@ -130,11 +137,13 @@ namespace ampersand_pb.DataAccess
             }
             catch (Exception) { }
 
+            Log.Information($"ConfiguracionDataAccess GetCarpetaDeResumenes: {filesPath}");
             return filesPath;
         }
 
         public void GuardarConfiguracion(ConfiguracionModel configuracionM)
         {
+            Log.Information($"ConfiguracionDataAccess GuardarConfiguracion start");
             try
             {
                 var xdoc = GetConfiguracionXml();
@@ -187,7 +196,8 @@ namespace ampersand_pb.DataAccess
                                 Id = id,
                                 Descripcion = configDePago?.Descripcion,
                                 Tipo = configDePago.Tipo,
-                                Ocultar = configDePago.Ocultar
+                                Ocultar = configDePago.Ocultar,
+                                EsExtensionDe = configDePago.EsExtensionDe ?? string.Empty
                             };
 
                             mediosDePago.Add(medioDePago);

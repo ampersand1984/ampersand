@@ -1,15 +1,15 @@
-﻿using ampersand.Core;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using ampersand.Core;
 using ampersand.Core.Common;
 using ampersand_pb.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
-using System;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
+using Serilog;
 
 namespace ampersand_pb.ViewModels
 {
@@ -20,6 +20,8 @@ namespace ampersand_pb.ViewModels
 
         public MainWindowViewModel(IConfiguracionDataAccess configuracionDA, IDialogCoordinator dialogCoordinator)
         {
+            Log.Information("MainWindowViewModel start");
+
             _dialogCoordinator = dialogCoordinator;
 
             _configuracionDA = configuracionDA;
@@ -104,6 +106,17 @@ namespace ampersand_pb.ViewModels
                 if (_closeCurrentMainWindowItemCommand == null)
                     _closeCurrentMainWindowItemCommand = new RelayCommand(param => CloseCurrentMainWindowItemCommandExecute());
                 return _closeCurrentMainWindowItemCommand;
+            }
+        }
+
+        private ICommand _buscarCommand;
+        public ICommand BuscarCommand
+        {
+            get
+            {
+                if (_buscarCommand == null)
+                    _buscarCommand = new RelayCommand(param => BuscarCommandExecute());
+                return _buscarCommand;
             }
         }
 
@@ -252,9 +265,15 @@ namespace ampersand_pb.ViewModels
             var resumenAgrupado = MovimientosDA.GetUltimoResumen();
             if (resumenAgrupado != null)
             {
-                var movimientosVM = new MovimientosViewModel(resumenAgrupado, MovimientosDA, _configuracionM);
+                var movimientosVM = new MovimientosViewModel(resumenAgrupado, MovimientosDA, _configuracionM) { DialogCoordinator = _dialogCoordinator };
                 AgregarMainWindowItem(movimientosVM);
             }
+        }
+
+        private void BuscarCommandExecute()
+        {
+            var movimientosVM = new BuscarMovimentosViewModel(MovimientosDA, _configuracionM) { DialogCoordinator = _dialogCoordinator };
+            AgregarMainWindowItem(movimientosVM);
         }
 
         private void MostrarConfiguracionesCommandExecute()

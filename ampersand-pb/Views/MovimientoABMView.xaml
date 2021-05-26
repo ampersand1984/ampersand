@@ -2,7 +2,9 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-             xmlns:common="clr-namespace:ampersand_pb.Common">
+             xmlns:common="clr-namespace:ampersand_pb.Common"
+             xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+             Dialog:DialogParticipation.Register="{Binding}">
 
     <UserControl.Resources>
         <common:BooleanToVisibilityConverter x:Key="boolToVis"/>
@@ -59,7 +61,6 @@
                   SelectedItem="{Binding MedioDePago}" 
                   DisplayMemberPath="Descripcion"
                   IsSynchronizedWithCurrentItem="True" 
-                  IsEnabled="{Binding EdicionCompleta}" 
                   HorizontalContentAlignment="Left"/>
 
         <TextBlock Text="Fecha" 
@@ -68,7 +69,7 @@
         <DatePicker Grid.Row="1" 
                     Grid.Column="1" 
                     SelectedDate="{Binding Fecha}" 
-                    IsEnabled="{Binding EdicionCompleta}" 
+                    IsEnabled="{Binding PermiteEditarFecha}" 
                     HorizontalContentAlignment="Left"
                     Height="{Binding ElementName=cmbTipo, Path=ActualHeight}"
                     Width="{Binding ElementName=txbMonto, Path=ActualWidth}"
@@ -80,13 +81,12 @@
         <TextBox Text="{Binding IdMovimiento}" 
                  Grid.Row="1" 
                  Grid.Column="3" 
-                 IsEnabled="{Binding EdicionCompleta}"
                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
 
         <TextBlock Grid.Row="3" 
                    Grid.Column="0"
                    Text="Descripción"/>
-        <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Descripcion}" IsEnabled="{Binding EdicionCompleta}"
+        <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Descripcion}"
                  />
 
         <TextBlock Grid.Row="4" Text="Descripción adicional"/>
@@ -119,13 +119,13 @@
 
         <Grid Grid.Row="5" Grid.Column="1"
                      x:Name="txbMonto">
-            <TextBox Text="{Binding Monto}" 
+            <TextBox Text="{Binding Monto, StringFormat=N2}" 
                      HorizontalContentAlignment="Right"    
                      Visibility="{Binding ElementName=tglEsME, Path=IsChecked, Converter={StaticResource boolToVis}, ConverterParameter=INV}"
                      Grid.Column="0"
                      Grid.ColumnSpan="3"/>
 
-            <TextBox Text="{Binding MontoME}" 
+            <TextBox Text="{Binding MontoME, StringFormat=N2}" 
                      HorizontalContentAlignment="Right"    
                      Visibility="{Binding ElementName=tglEsME, Path=IsChecked, Converter={StaticResource boolToVis}}"
                      Grid.Column="0"
@@ -148,8 +148,8 @@
         </Grid>
 
         <TextBlock Grid.Row="5" Text="Cuota" Grid.Column="2"/>
-        <ComboBox Grid.Row="5" ItemsSource="{Binding Cuotas}" SelectedItem="{Binding Cuota}" IsEditable="True" IsEnabled="{Binding EdicionCompleta}" Grid.Column="3"/>
-        <TextBlock FontSize="10" Margin="0,0,10,-5" Text="{Binding TotalCuotas}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="3"/>
+        <ComboBox Grid.Row="5" ItemsSource="{Binding Cuotas}" SelectedItem="{Binding Cuota}" IsEditable="True" Grid.Column="3"/>
+        <TextBlock FontSize="10" Margin="0,0,10,-5" Text="{Binding TotalCuotas, StringFormat=N2}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="3"/>
 
         <TextBlock Grid.Row="7" Text="Es mensual"/>
         <CheckBox Grid.Row="7" FlowDirection="LeftToRight" HorizontalContentAlignment="Left" IsChecked="{Binding EsMensual}" Grid.Column="1"/>

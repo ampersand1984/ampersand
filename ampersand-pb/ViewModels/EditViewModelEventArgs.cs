@@ -1,5 +1,5 @@
-﻿using ampersand.Core;
-using System;
+﻿using System;
+using ampersand.Core;
 
 namespace ampersand_pb.ViewModels
 {

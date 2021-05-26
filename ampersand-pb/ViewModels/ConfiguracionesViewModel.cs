@@ -1,16 +1,14 @@
-﻿using ampersand.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ampersand_pb.DataAccess;
-using System.Windows.Input;
-using ampersand.Core.Common;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
+using System.Windows.Input;
+using ampersand.Core;
+using ampersand.Core.Common;
+using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
+using ampersand_pb.Properties;
 using MahApps.Metro.Controls.Dialogs;
 
 namespace ampersand_pb.ViewModels
@@ -36,7 +34,7 @@ namespace ampersand_pb.ViewModels
         public string Header { get; private set; }
 
         public IEnumerable<TiposDeMovimiento> TiposDeMediosDePago { get; private set; }
-        
+
         public string CarpetaDeResumenes
         {
             get { return _configuracionM.CarpetaDeResumenes; }
@@ -56,6 +54,19 @@ namespace ampersand_pb.ViewModels
             get
             {
                 return _configuracionM.MediosDePago;
+            }
+        }
+
+        public bool VerCheckDeVerificacion
+        {
+            get
+            {
+                return Settings.Default.VerCheckDeVerificacion;
+            }
+            set
+            {
+                Settings.Default.VerCheckDeVerificacion = value;
+                OnPropertyChanged("VerCheckDeVerificacion");
             }
         }
 
@@ -115,7 +126,7 @@ namespace ampersand_pb.ViewModels
             get
             {
                 return this["CarpetaDeResumenes"].IsNullOrEmpty() ?
-                    "":
+                    "" :
                     "CarpetaDeResumenes";
             }
         }
@@ -135,7 +146,7 @@ namespace ampersand_pb.ViewModels
             if (propertyName.Equals("CarpetaDeResumenes"))
             {
                 error = Directory.Exists(CarpetaDeResumenes) ?
-                    string.Empty:
+                    string.Empty :
                     "No es una carpeta válida";
             }
 
@@ -150,8 +161,6 @@ namespace ampersand_pb.ViewModels
 
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
                 {
-                    //MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
-
                     CarpetaDeResumenes = folderBrowserDialog.SelectedPath;
                 }
             }
@@ -186,11 +195,11 @@ namespace ampersand_pb.ViewModels
         }
 
         public event EventHandler<PublishViewModelEventArgs> PublishViewModelEvent;
-        
+
         #endregion
     }
 
-    public class ConfiguracionesViewModelSaveEventArgs: EventArgs
+    public class ConfiguracionesViewModelSaveEventArgs : EventArgs
     {
         public ConfiguracionesViewModelSaveEventArgs(ConfiguracionModel configuracionM)
         {

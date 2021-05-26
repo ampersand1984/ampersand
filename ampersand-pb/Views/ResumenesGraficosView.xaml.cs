@@ -1,7 +1,6 @@
-﻿using ampersand_pb.ViewModels;
+﻿using System.Windows.Controls;
+using ampersand_pb.ViewModels;
 using De.TorstenMandelkow.MetroChart;
-using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace ampersand_pb.Views
 {

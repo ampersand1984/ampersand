@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:common="clr-namespace:ampersand_pb.Common"
+             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
@@ -20,11 +21,15 @@
             <RowDefinition Height="40"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="40"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
 
         <Grid.Resources>
+            <common:NullToBooleanConverter x:Key="nullToBooleanConverter"/>
+            <common:BooleanToVisibilityConverter x:Key="bool2vis"/>
+            <common:NullToVisibilityConverter x:Key="null2vis"/>
+            
             <DataTemplate x:Key="dataGridTemplate">
                 <DataGrid Foreground="Black"
                           ItemsSource="{Binding}"
@@ -175,6 +180,14 @@
 
             <Label Content="Ultimas compras" FontWeight="Bold" FontSize="20"/>
 
+            <Controls:ProgressRing Foreground="{DynamicResource AccentColorBrush}"
+                                   IsActive="True"
+                                   Visibility="{Binding Ultimos_Gastos, Converter={StaticResource null2vis}, ConverterParameter=INV}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Grid.Row="2"
+                                   Panel.ZIndex="2"/>
+
             <ContentControl Content="{Binding Ultimos_Gastos}"
                             ContentTemplate="{StaticResource dataGridTemplate}"
                             Grid.Row="2"/>
@@ -191,6 +204,14 @@
 
             <Label Content="Ultimas cuotas" FontWeight="Bold" FontSize="20"/>
 
+            <Controls:ProgressRing Foreground="{DynamicResource AccentColorBrush}"
+                                   IsActive="True"
+                                   Visibility="{Binding Ultimas_Cuotas, Converter={StaticResource null2vis}, ConverterParameter=INV}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Grid.Row="2"
+                                   Panel.ZIndex="2"/>
+
             <ContentControl Content="{Binding Ultimas_Cuotas}"
                             ContentTemplate="{StaticResource dataGridTemplate}"
                             Grid.Row="2"/>
@@ -201,15 +222,24 @@
               IsEnabled="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <Label Content="Totales" FontWeight="Bold" FontSize="20"/>
 
+            <Controls:ProgressRing Foreground="{DynamicResource AccentColorBrush}"
+                                   IsActive="True"
+                                   Visibility="{Binding Totales, Converter={StaticResource null2vis}, ConverterParameter=INV}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Grid.Row="1"
+                                   Panel.ZIndex="2"/>
+
             <chart:ClusteredColumnChart ChartTitle=""
-                            Grid.Row="1"
-                            ChartTitleVisibility="Collapsed"
-                            Focusable="False">
+                                        Grid.Row="1"
+                                        ChartTitleVisibility="Collapsed"
+                                        Focusable="False"
+                                        x:Name="chartTotales">
                 <chart:ClusteredColumnChart.Series>
                     <chart:ChartSeries SeriesTitle="Meses"
                                        DisplayMember="Descripcion"
@@ -219,5 +249,41 @@
                 </chart:ClusteredColumnChart.Series>
             </chart:ClusteredColumnChart>
         </Grid>
+
+        <Grid Grid.Column="3" 
+              Grid.Row="4"
+              IsEnabled="False">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Label Content="Actual" FontWeight="Bold" FontSize="20"/>
+
+            <Controls:ProgressRing Foreground="{DynamicResource AccentColorBrush}"
+                                   IsActive="True"
+                                   Visibility="{Binding TotalesDelMesActual, Converter={StaticResource null2vis}, ConverterParameter=INV}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Grid.Row="1"
+                                   Panel.ZIndex="2"/>
+
+            <chart:PieChart ChartTitle=""
+                            ChartSubTitle="xxx"
+                            Grid.Row="1"
+                            ChartTitleVisibility="Collapsed"
+                            Focusable="False"
+                            Height="{Binding ElementName=chartTotales, Path=ActualHeight}">
+                <chart:PieChart.Series>
+                    <chart:ChartSeries SeriesTitle="Totales"
+                                       DisplayMember="Descripcion"
+                                       ValueMember="Monto"
+                                       ItemsSource="{Binding Path=TotalesDelMesActual}"
+                                       Focusable="False" />
+                </chart:PieChart.Series>
+            </chart:PieChart>
+        </Grid>
+        
+        
     </Grid>
 </UserControl>

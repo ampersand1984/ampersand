@@ -1,11 +1,12 @@
-﻿using ampersand.Core;
-using ampersand.Core.Common;
-using ampersand_pb.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using ampersand.Core;
+using ampersand.Core.Common;
+using ampersand_pb.Models;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace ampersand_pb.ViewModels
 {
@@ -32,7 +33,6 @@ namespace ampersand_pb.ViewModels
         /// <param name="esCopia"></param>
         public MovimientoABMViewModel(BaseMovimiento baseMovimiento, ConfiguracionModel configuracionM, bool esCopia = false)
         {
-            EdicionCompleta = true;
             _modelOriginal = baseMovimiento;
             _model = baseMovimiento.Clone() as BaseMovimiento;
 
@@ -67,8 +67,6 @@ namespace ampersand_pb.ViewModels
                     Descripcion;
             }
         }
-
-        public bool EdicionCompleta { get; private set; }
 
         public int IdMovimiento
         {
@@ -212,6 +210,8 @@ namespace ampersand_pb.ViewModels
             set { _model.EsAjeno = value; OnPropertyChanged("EsAjeno"); }
         }
 
+        public bool PermiteEditarFecha { get; set; } = true;
+
         private IEnumerable<TagModel> _tags;
         public IEnumerable<TagModel> Tags
         {
@@ -231,6 +231,8 @@ namespace ampersand_pb.ViewModels
                 return _saveCommand;
             }
         }
+
+        public IDialogCoordinator DialogCoordinator { get; set; }
 
         #endregion
 
@@ -267,20 +269,34 @@ namespace ampersand_pb.ViewModels
             CloseCommand.Execute(null);
         }
 
-        protected override void OnRequestCloseEvent()
+        protected async override void OnRequestCloseEvent()
         {
             if (!_guardado)
             {
                 var huboCambios = !_model.Equals(_modelOriginal);
                 if (huboCambios)
                 {
-                    var result = MessageBox.Show("Salir sin guardar?", "Salir", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
-                    if (result == MessageBoxResult.No)
+                    var settings = new MetroDialogSettings
+                    {
+                        AnimateShow = true,
+                        DefaultButtonFocus = MessageDialogResult.Negative
+                    };
+                    var messageParam = new MessageParam(Header, "Salir sin guardar cambios?", MessageDialogStyle.AffirmativeAndNegative, settings);
+
+                    var result = await ShowMessage(messageParam);
+                    if (result == MessageDialogResult.Negative)
                         return;
                 }
             }
 
             base.OnRequestCloseEvent();
+        }
+
+        private async Task<MessageDialogResult> ShowMessage(MessageParam messageParam)
+        {
+            var result = await DialogCoordinator.ShowMessageAsync(this, messageParam.Title, messageParam.Message, messageParam.Style, messageParam.Settings);
+
+            return result;
         }
 
         #endregion

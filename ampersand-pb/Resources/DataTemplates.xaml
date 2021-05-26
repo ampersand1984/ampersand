@@ -35,4 +35,8 @@
         <V:BienvenidaView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type VM:BuscarMovimentosViewModel}">
+        <V:BuscarMovimentosView/>
+    </DataTemplate>
+
 </ResourceDictionary>

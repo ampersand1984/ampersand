@@ -5,15 +5,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ampersand_pb.Views"
              xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:common="clr-namespace:ampersand_pb.Common"
              xmlns:chart="clr-namespace:De.TorstenMandelkow.MetroChart;assembly=De.TorstenMandelkow.MetroChart"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+
+    <UserControl.Resources>
+        <common:BooleanToVisibilityConverter x:Key="boolToVis"/>
+        <common:NullToVisibilityConverter x:Key="null2vis"/>
+    </UserControl.Resources>
     
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="40"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         
         <ContentControl Content="{Binding SeleccionDeMediosDePagoVM}" 
@@ -26,36 +33,59 @@
                         Margin="10,0,10,0"/>
             <ComboBox ItemsSource="{Binding TiposDeGraficos}" 
                       DisplayMemberPath="Descripcion"
+                      SelectedValuePath="Tipo"
                       IsEditable="False" 
                       SelectedValue="{Binding GraficoSeleccionado}"
                       Width="200"/>
-            
-            <TextBlock Text="Desde"
-                        VerticalAlignment="Center"
-                        Margin="30,0,10,0"/>
-            <ComboBox ItemsSource="{Binding Periodos}" 
-                        IsEditable="False" 
-                        DisplayMemberPath="TextoPeriodo"
-                        SelectedValuePath="Periodo"
-                        SelectedValue="{Binding MinimoPeriodo}"
-                        Width="180"/>
-
-            <TextBlock Text="Hasta"
-                        VerticalAlignment="Center"
-                        Margin="20,0,10,0"/>
-            <ComboBox ItemsSource="{Binding Periodos}" 
-                        IsEditable="False" 
-                        DisplayMemberPath="TextoPeriodo"
-                        SelectedValuePath="Periodo"
-                        SelectedValue="{Binding MaximoPeriodo}"
-                        Width="180"/>
 
             <TextBlock Text="Incluir ajenos"
                        VerticalAlignment="Center"
                        Margin="20,0,10,0"/>
             <CheckBox IsChecked="{Binding IncluyeAjenos}" />
+            
+            <TextBlock Text="Desde"
+                        VerticalAlignment="Center"
+                        Margin="30,0,10,0"
+                        Visibility="{Binding MostrarPeriodos, Converter={StaticResource boolToVis}}"/>
+            <ComboBox ItemsSource="{Binding Periodos}" 
+                      IsEditable="False" 
+                      DisplayMemberPath="TextoPeriodo"
+                      SelectedValuePath="Periodo"
+                      SelectedValue="{Binding MinimoPeriodo}"
+                      Width="180"
+                      Visibility="{Binding MostrarPeriodos, Converter={StaticResource boolToVis}}"/>
+
+            <TextBlock Text="Hasta"
+                       VerticalAlignment="Center"
+                       Margin="20,0,10,0"
+                       Visibility="{Binding MostrarPeriodos, Converter={StaticResource boolToVis}}"/>
+            <ComboBox ItemsSource="{Binding Periodos}" 
+                      IsEditable="False" 
+                      DisplayMemberPath="TextoPeriodo"
+                      SelectedValuePath="Periodo"
+                      SelectedValue="{Binding MaximoPeriodo}"
+                      Width="180"
+                      Visibility="{Binding MostrarPeriodos, Converter={StaticResource boolToVis}}"/>
+
+            <TextBlock Text="Categorías"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding MostrarTags, Converter={StaticResource boolToVis}}"
+                       Margin="20,0,10,0"/>
+            <ComboBox ItemsSource="{Binding Tags}" 
+                      IsEditable="False" 
+                      SelectedItem="{Binding TagSeleccionado}"
+                      Visibility="{Binding MostrarTags, Converter={StaticResource boolToVis}}"
+                      Width="180"/>
         </StackPanel>
-        
+
+        <controls:ProgressRing Foreground="{DynamicResource AccentColorBrush}"
+                               IsActive="True"
+                               Visibility="{Binding ItemsDelGrafico, Converter={StaticResource null2vis}, ConverterParameter=INV}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Grid.Row="2"
+                               Panel.ZIndex="2"/>
+
         <ScrollViewer Grid.Row="2" Focusable="False">
             <ItemsControl ItemsSource="{Binding ItemsDelGrafico}" Focusable="False">
                 <ItemsControl.ItemsPanel>
@@ -65,24 +95,76 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Focusable="False">
-                            <TextBlock Text="{Binding ChartTitle}" Panel.ZIndex="1" VerticalAlignment="Top" Margin="20,-60,0,0"/>
-                            <chart:ClusteredColumnChart ChartTitleVisibility="Collapsed"
-                                                    ChartLegendVisibility="Hidden"
-                                                    Focusable="False"
-                                                    Margin="0,-30,0,0" MouseDoubleClick="ChartSeries_MouseDoubleClick">
+                        <Grid Focusable="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Text="{Binding ChartTitle}" 
+                                       Panel.ZIndex="3" 
+                                       VerticalAlignment="Top"
+                                       Margin="20,-60,0,0"/>
+                            <chart:ClusteredColumnChart ChartTitleVisibility="Collapsed" Panel.ZIndex="2"
+                                                        ChartLegendVisibility="Hidden"
+                                                        Focusable="False"
+                                                        Margin="0,-30,0,0" 
+                                                        MouseDoubleClick="ChartSeries_MouseDoubleClick"
+                                                        Grid.Row="1">
                                 <chart:ClusteredColumnChart.Series>
                                     <chart:ChartSeries SeriesTitle="Meses"
-                                                   DisplayMember="Descripcion"
-                                                   ValueMember="Monto"
-                                                   ItemsSource="{Binding Items}"/>
+                                                       DisplayMember="Descripcion"
+                                                       ValueMember="Monto"
+                                                       ItemsSource="{Binding Items}"/>
                                 </chart:ClusteredColumnChart.Series>
                             </chart:ClusteredColumnChart>
-                        </StackPanel>
+
+                            <Grid Grid.Row="1"
+                                  Grid.Column="1"
+                                  Margin="0,-30,0,0" 
+                                  Visibility="{Binding DataContext.MostrarDiferenciaConMesAnterior, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource boolToVis}}">
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="150" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SeGastoMenos}" Value="true">
+                                                <DataTrigger.Setters>
+                                                    <Setter Property="Foreground" Value="Green"/>
+                                                </DataTrigger.Setters>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SeGastoMenos}" Value="false">
+                                                <DataTrigger.Setters>
+                                                    <Setter Property="Foreground" Value="Red"/>
+                                                </DataTrigger.Setters>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Resources>
+                                
+                                <TextBlock Text="{Binding DiferenciaMonto}"
+                                           FontFamily="Arial"
+                                           Grid.Column="0"
+                                           FontSize="28"/>
+                                <TextBlock Text="{Binding DiferenciaPorcentaje}"
+                                           FontFamily="Arial"
+                                           Grid.Column="1"
+                                           FontSize="28"/>
+                            </Grid>
+                        </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
+        <TextBlock Text="{Binding TotalDiferencia}" 
+                   Grid.Row="3"
+                   HorizontalAlignment="Right"
+                   Visibility="{Binding MostrarDiferenciaConMesAnterior, Converter={StaticResource boolToVis}}"/>
     </Grid>
     
 </UserControl>

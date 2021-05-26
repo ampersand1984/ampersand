@@ -1,6 +1,6 @@
-﻿using ampersand.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using ampersand.Core;
 
 namespace ampersand_pb.Models
 {

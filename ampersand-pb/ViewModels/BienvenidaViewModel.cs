@@ -1,20 +1,24 @@
-﻿using ampersand.Core;
-using ampersand.Core.Common;
-using ampersand_pb.DataAccess;
-using ampersand_pb.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
+using ampersand.Core;
+using ampersand.Core.Common;
+using ampersand_pb.DataAccess;
+using ampersand_pb.Models;
+using Serilog;
+using static ampersand_pb.ViewModels.MovimientosViewModel;
 
 namespace ampersand_pb.ViewModels
 {
-    public class BienvenidaViewModel: BaseViewModel
+    public class BienvenidaViewModel : BaseViewModel
     {
         public const int ULTIMOS_GASTOS_CANTIDAD = 7;
 
         public BienvenidaViewModel(IMovimientosDataAccess movimientosDA, ConfiguracionModel configuracionM)
         {
+            Log.Information("BienvenidaViewModel start");
             _movimientosDA = movimientosDA;
             _configuracionM = configuracionM;
         }
@@ -39,13 +43,31 @@ namespace ampersand_pb.ViewModels
         private IEnumerable<BaseMovimiento> _ultimos_Gastos;
         public IEnumerable<BaseMovimiento> Ultimos_Gastos
         {
-            get => _ultimos_Gastos ?? (_ultimos_Gastos = GetUltimosGastos());
+            get
+            {
+                if (_ultimos_Gastos == null)
+                    CargarUltimosGastos();
+                return _ultimos_Gastos;
+            }
+        }
+
+        public bool HayUltimosGastos
+        {
+            get
+            {
+                return _ultimos_Gastos != null;
+            }
         }
 
         private IEnumerable<BaseModel> _ultimas_Cuotas;
         public IEnumerable<BaseModel> Ultimas_Cuotas
         {
-            get => _ultimas_Cuotas ?? (_ultimas_Cuotas = GetUltimasCuotas());
+            get
+            {
+                if (_ultimas_Cuotas == null)
+                    CargarUltimasCuotas();
+                return _ultimas_Cuotas;
+            }
         }
 
         private IEnumerable<AgrupacionItem> _totales;
@@ -53,9 +75,23 @@ namespace ampersand_pb.ViewModels
         {
             get
             {
-                return _totales ?? (_totales = GetTotales());
+                if (_totales == null)
+                    CargarTotales();
+                return _totales;
             }
         }
+
+        private IEnumerable<AgrupacionItem> _totalesDelMesActual;
+        public IEnumerable<AgrupacionItem> TotalesDelMesActual
+        {
+            get
+            {
+                if (_totalesDelMesActual == null)
+                    CargarTotalesDelMesActual();
+                return _totalesDelMesActual;
+            }
+        }
+
         private void SeleccionDeMediosDePagoVM_SeleccionDeMediosDePagoCambiada(object sender, EventArgs e)
         {
             _ultimos_Gastos = null;
@@ -66,62 +102,94 @@ namespace ampersand_pb.ViewModels
             OnPropertyChanged("Totales");
         }
 
-        private IEnumerable<BaseMovimiento> GetUltimosGastos()
+        private void CargarUltimosGastos()
         {
-            var resumenAgrupado = _movimientosDA.GetUltimoResumen();
-            var movimientos = _movimientosDA.GetMovimientos(resumenAgrupado);
-            
-            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+            var task = new Task<IEnumerable<BaseMovimiento>>(() =>
+            {
+                Log.Information("BienvenidaViewModel GetUltimosGastos start");
 
-            movimientos = movimientos.Where(a => mediosDePago.Contains(a.IdResumen));
+                var resumenAgrupado = _movimientosDA.GetUltimoResumen();
+                var movimientos = _movimientosDA.GetMovimientos(resumenAgrupado);
 
-            var result = movimientos.Where(a => !a.EsMensual/* && a.Fecha.GetPeriodo() == resumenAgrupado.Periodo*/)
-                .OrderByDescending(a => a.Fecha)
-                .Take(ULTIMOS_GASTOS_CANTIDAD);
+                var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
 
-            return result;
+                movimientos = movimientos.Where(a => mediosDePago.Contains(a.IdResumen));
+
+                var result = movimientos.Where(a => !a.EsMensual/* && a.Fecha.GetPeriodo() == resumenAgrupado.Periodo*/)
+                    .OrderByDescending(a => a.Fecha)
+                    .Take(ULTIMOS_GASTOS_CANTIDAD);
+
+                Log.Information("BienvenidaViewModel GetUltimosGastos end");
+                return result;
+            });
+
+            task.ContinueWith(t =>
+            {
+                _ultimos_Gastos = t.Result;
+                OnPropertyChanged("Ultimos_Gastos");
+            });
+
+            task.Start();
         }
 
-        private IEnumerable<BaseModel> GetUltimasCuotas()
+        private void CargarUltimasCuotas()
         {
-            var resumenAgrupado = _movimientosDA.GetUltimoResumen();
-            var movimientos = _movimientosDA.GetMovimientos(resumenAgrupado);
+            var task = new Task<IEnumerable<BaseModel>>(() =>
+            {
+                Log.Information("BienvenidaViewModel GetUltimasCuotas start");
 
-            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+                var resumenAgrupado = _movimientosDA.GetUltimoResumen();
+                var movimientos = _movimientosDA.GetMovimientos(resumenAgrupado);
 
-            movimientos = movimientos.Where(a => mediosDePago.Contains(a.IdResumen));
+                var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
 
-            var result = movimientos.Where(a => a.CoutasPendientes != -1)
-                .OrderBy(a => a. CoutasPendientes)
-                .Take(ULTIMOS_GASTOS_CANTIDAD);
+                movimientos = movimientos.Where(a => mediosDePago.Contains(a.IdResumen));
 
-            return result;
+                var result = movimientos.Where(a => a.CoutasPendientes != -1)
+                    .OrderBy(a => a.CoutasPendientes)
+                    .Take(ULTIMOS_GASTOS_CANTIDAD);
+
+                Log.Information("BienvenidaViewModel GetUltimasCuotas end");
+                return result;
+            });
+
+            task.ContinueWith(t =>
+            {
+                _ultimas_Cuotas = t.Result;
+                OnPropertyChanged("Ultimas_Cuotas");
+            });
+
+            task.Start();
         }
 
-        private IEnumerable<AgrupacionItem> GetTotales()
+        private void CargarTotales()
         {
-            var resumenActual = _movimientosDA.GetUltimoResumen();
+            var task = new Task<IEnumerable<AgrupacionItem>>(() =>
+            {
+                Log.Information("BienvenidaViewModel GetTotales start");
 
-            var periodoAnterior = DateTime.ParseExact(resumenActual.Periodo + "01", "yyyyMMdd", CultureInfo.InvariantCulture)
-                .AddMonths(-1)
-                .GetPeriodo();
+                var resumenActual = _movimientosDA.GetUltimoResumen();
 
-            var resumenAnterior = _movimientosDA.GetResumen(periodoAnterior);
+                var periodoAnterior = DateTime.ParseExact(resumenActual.Periodo + "01", "yyyyMMdd", CultureInfo.InvariantCulture)
+                    .AddMonths(-1)
+                    .GetPeriodo();
 
-            var movimientosActuales = _movimientosDA.GetMovimientos(resumenActual);
+                var resumenAnterior = _movimientosDA.GetResumen(periodoAnterior);
 
-            var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+                var movimientosActuales = _movimientosDA.GetMovimientos(resumenActual);
 
-            movimientosActuales = movimientosActuales.Where(a => mediosDePago.Contains(a.IdResumen));
+                var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
 
-            var movimientosMesProximo = MovimientosViewModel.GetMovimientosProyectados(movimientosActuales);
+                movimientosActuales = movimientosActuales.Where(a => mediosDePago.Contains(a.IdResumen));
 
-            var textoPeriodoMesProximo = DateTime.ParseExact(resumenActual.Periodo + "01", "yyyyMMdd", CultureInfo.InvariantCulture)
-                .AddMonths(1)
-                .ToString("MMMM yyyy")
-                .ToTitle();
+                var movimientosMesProximo = MovimientosViewModel.GetMovimientosProyectados(movimientosActuales);
 
-            return new List<AgrupacionItem>()
+                var textoPeriodoMesProximo = DateTime.ParseExact(resumenActual.Periodo + "01", "yyyyMMdd", CultureInfo.InvariantCulture)
+                    .AddMonths(1)
+                    .ToString("MMMM yyyy")
+                    .ToTitle();
+
+                var totales = new List<AgrupacionItem>()
             {
                 new AgrupacionItem()
                 {
@@ -139,6 +207,39 @@ namespace ampersand_pb.ViewModels
                     Monto = movimientosMesProximo.Sum(a => a.Monto)
                 }
             };
+
+                Log.Information("BienvenidaViewModel GetTotales end");
+                return totales;
+            });
+            task.ContinueWith(t =>
+            {
+                _totales = t.Result;
+                OnPropertyChanged("Totales");
+            });
+            task.Start();
+        }
+
+        private void CargarTotalesDelMesActual()
+        {
+            var task = new Task<IEnumerable<AgrupacionItem>>(() =>
+            {
+                var mediosDePago = SeleccionDeMediosDePagoVM.GetIds();
+
+                var totales = new List<AgrupacionItem>();
+
+                var resumenActual = _movimientosDA.GetUltimoResumen();
+
+                foreach (var resumen in resumenActual.Resumenes.Where(a => mediosDePago.Contains(a.Id)))
+                    totales.Add(new AgrupacionItem() { Tipo = TiposDeAgrupacion.MedioDePago, Id = resumen.Id, Descripcion = $"{resumen.Descripcion}{Environment.NewLine}{resumen.FechaDeCierre.ToString("dd/MM/yyyy")}", Monto = resumen.GetTotal() });
+
+                return totales;
+            });
+            task.ContinueWith(t =>
+            {
+                _totalesDelMesActual = t.Result;
+                OnPropertyChanged("TotalesDelMesActual");
+            });
+            task.Start();
         }
     }
 }

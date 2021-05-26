@@ -105,5 +105,15 @@ namespace ampersand.Core.Common
 
             return title;
         }
+
+        /// <summary>
+        /// devuelve .ToString("0.00")
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        public static string Round(this decimal number)
+        {
+            return number.ToString("0.00", CultureInfo.InvariantCulture);
+        }
     }
 }

@@ -91,6 +91,7 @@
                  Controls:TextBoxHelper.ButtonCommand="{Binding BuscarCommand, Mode=OneWay}"
                  Controls:TextBoxHelper.ButtonCommandParameter="{Binding ElementName=txbBuscar, Path=Text}"
                  Controls:TextBoxHelper.Watermark="Buscar..."
+                 Controls:TextBoxHelper.ClearTextButton="True"
                  Style="{DynamicResource SearchMetroTextBox}" 
                  Margin=" 10"
                  Width="180"
@@ -104,6 +105,8 @@
             </TextBox.InputBindings>
         </TextBox>
 
+        <FrameworkElement x:Name="dummyElement" Visibility="{Binding VerCheckDeVerificacion, Converter={StaticResource boolToVis}}"/>
+        
         <DataGrid x:Name="dg" ItemsSource="{Binding MovimientosFiltrados}"
                   SelectedIndex="{Binding SelectedIndex}"
                   Style="{StaticResource AzureDataGrid}"
@@ -134,7 +137,20 @@
             </DataGrid.RowStyle>
             
             <DataGrid.Resources>
-                
+
+                <Style x:Key="centerCenterAlignment"
+                       TargetType="{x:Type DataGridCell}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Grid Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
                 <Style x:Key="leftTopAlignment"
                        TargetType="{x:Type DataGridCell}">
                     <Setter Property="Template">
@@ -172,7 +188,18 @@
                 
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="Verificado" Binding="{Binding Seleccionado}" Visibility="Visible"/>
+                <DataGridTemplateColumn Header="Verificado" 
+                                        Visibility="{Binding Visibility, Source={x:Reference dummyElement}}"
+                                        CellStyle="{StaticResource centerCenterAlignment}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox Focusable="False"
+                                      IsChecked="{Binding Seleccionado, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            </CheckBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
                 <DataGridTextColumn Header="Fecha" IsReadOnly="True"
                                     Binding="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy}    '}" 
                                     Width="auto" 
@@ -262,7 +289,7 @@
                 </DataGridTemplateColumn>
 
                 <DataGridTextColumn Header="Monto"
-                                    Binding="{Binding Monto}" 
+                                    Binding="{Binding Monto, StringFormat=N2}" 
                                     FontSize="12" 
                                     FontWeight="Bold"
                                     Width="1*"
@@ -304,7 +331,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
@@ -328,14 +355,14 @@
                 </Grid.ColumnDefinitions>
                 <RadioButton Content="Totales"
                              GroupName="totales"
-                             IsChecked="False"
+                             IsChecked="{Binding GraficoDeTotalesVisible, Mode=TwoWay}"
                              x:Name="rdbTotales"
                              Focusable="False"
                              Grid.Column="0"
                              Panel.ZIndex="2"/>
                 <RadioButton Content="Tags"
                              GroupName="totales"
-                             IsChecked="True"
+                             IsChecked="{Binding GraficoDeTagsVisible, Mode=TwoWay}"
                              x:Name="rdbTags"
                              Margin="20,0"
                              Focusable="False"
@@ -387,6 +414,14 @@
                                        Focusable="False"/>
                 </chart:PieChart.Series>
             </chart:PieChart>
+
+            <TextBlock Text="{Binding TotalExtension}"
+                       Grid.Row="3"
+                       HorizontalAlignment="Left"
+                       FontWeight="Bold"
+                       FontSize="15"
+                       Foreground="{DynamicResource AccentColorBrush}"
+                       Visibility="{Binding Path=IsChecked, ElementName=rdbTotales, Converter={StaticResource boolToVis}}"/>
 
             <StackPanel Grid.Row="4" x:Name="stkBotones"
                        Margin="0,0,0,10"

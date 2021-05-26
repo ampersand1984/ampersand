@@ -91,6 +91,7 @@
             <Controls:HamburgerMenu.ItemsSource>
                 <Controls:HamburgerMenuItemCollection>
                     <Controls:HamburgerMenuGlyphItem Glyph="/ampersand-pb;component/Resources/calendar-check.png" Label="Último" Command="{Binding MostrarActualCommand}" />
+                    <Controls:HamburgerMenuGlyphItem Glyph="/ampersand-pb;component/Resources/layers-search.png" Label="Buscar" Command="{Binding BuscarCommand}" />
                     <Controls:HamburgerMenuGlyphItem Glyph="/ampersand-pb;component/Resources/chart-areaspline.png" Label="Gráficos por mes" Command="{Binding MostrarResumenesGraficosCommand}" />
                     <Controls:HamburgerMenuGlyphItem Glyph="/ampersand-pb;component/Resources/calendar-clock.png" Label="Resúmenes" Command="{Binding MostrarResumenesCommand}" />
                     <Controls:HamburgerMenuGlyphItem Glyph="/ampersand-pb;component/Resources/settings.png" Label="Configuraciones" Command="{Binding MostrarConfiguracionesCommand}" />
@@ -118,23 +119,23 @@
                 </Style>
             </Image.Style>
         </Image>
-        <TabControl Grid.Column="0" 
+        <Controls:MetroTabControl Grid.Column="0" 
                     Grid.ColumnSpan="2"
                     Margin="48 0 0 0"
                     Controls:TabControlHelper.Underlined="TabItems"
                     ItemsSource="{Binding MainWindowItems}"
                     SelectedItem="{Binding CurrentMainWindowItem}">
-            <TabControl.ItemTemplate>
+            <Controls:MetroTabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding DisplayName}"/>
                 </DataTemplate>
-            </TabControl.ItemTemplate>
-            <TabControl.ContentTemplate>
+            </Controls:MetroTabControl.ItemTemplate>
+            <Controls:MetroTabControl.ContentTemplate>
                 <DataTemplate>
                     <ContentControl Content="{Binding}"/>
                 </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
+            </Controls:MetroTabControl.ContentTemplate>
+        </Controls:MetroTabControl>
 
         <ContentControl Grid.Column="0" 
                         Grid.ColumnSpan="2"

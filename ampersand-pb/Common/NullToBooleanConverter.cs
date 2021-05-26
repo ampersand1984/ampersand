@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 
 namespace ampersand_pb.Common
@@ -12,7 +8,9 @@ namespace ampersand_pb.Common
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value != null;
+            return parameter == null ?
+                value != null :
+                value == null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -1,5 +1,5 @@
-﻿using ampersand.Core;
-using System;
+﻿using System;
+using ampersand.Core;
 
 namespace ampersand_pb.Models
 {
@@ -53,6 +53,8 @@ namespace ampersand_pb.Models
             get { return _ocultar; }
             set { _ocultar = value; OnPropertyChanged("Ocultar"); }
         }
+
+        public string EsExtensionDe { get; set; }
 
         public object Clone()
         {

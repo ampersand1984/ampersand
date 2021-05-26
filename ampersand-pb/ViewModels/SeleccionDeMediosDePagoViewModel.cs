@@ -1,11 +1,11 @@
-﻿using ampersand.Core;
-using ampersand.Core.Common;
-using ampersand_pb.Models;
-using ampersand_pb.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using ampersand.Core;
+using ampersand.Core.Common;
+using ampersand_pb.Models;
+using ampersand_pb.Properties;
 
 namespace ampersand_pb.ViewModels
 {

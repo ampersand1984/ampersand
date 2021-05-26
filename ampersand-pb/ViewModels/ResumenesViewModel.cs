@@ -1,12 +1,11 @@
-﻿using ampersand.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Windows.Input;
+using ampersand.Core;
 using ampersand.Core.Common;
 using ampersand_pb.DataAccess;
 using ampersand_pb.Models;
 using MahApps.Metro.Controls.Dialogs;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Windows.Input;
 
 namespace ampersand_pb.ViewModels
 {
@@ -53,7 +52,7 @@ namespace ampersand_pb.ViewModels
         {
             if (resumenAgrupadoM != null)
             {
-                var movimientosVM = new MovimientosViewModel(resumenAgrupadoM, _movimientosDA, _configuracionM);
+                var movimientosVM = new MovimientosViewModel(resumenAgrupadoM, _movimientosDA, _configuracionM) { DialogCoordinator = DialogCoordinator };
                 OnPublishViewModelEvent(movimientosVM);
             }
         }

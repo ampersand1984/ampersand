@@ -1,7 +1,7 @@
-﻿using ampersand.Core.Common;
-using System;
+﻿using System;
 using System.IO;
 using System.Xml.Linq;
+using ampersand.Core.Common;
 
 namespace ampersand_pb.Models
 {
@@ -123,7 +123,7 @@ namespace ampersand_pb.Models
                 decimal.TryParse(strMonto, out monto);
                 total += monto * cotiz;
             }
-            return total;
+            return decimal.Round(total, 2);
         }
 
         public object Clone()

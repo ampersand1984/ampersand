@@ -1,5 +1,5 @@
-﻿using ampersand.Core.Common;
-using System;
+﻿using System;
+using ampersand.Core.Common;
 using MahApps.Metro.Controls.Dialogs;
 
 namespace ampersand_pb.ViewModels
